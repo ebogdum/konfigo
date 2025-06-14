@@ -53,9 +53,9 @@ konfigo -s config.json -S schema.yml -V staging-vars.yml -of staging_config.json
 
 For detailed information on all features, CLI options, and schema capabilities, please visit our full documentation site:
 
-**[Konfigo Documentation Site](docs_markdown/html/index.html)** (Link to your VitePress build output)
+**[Konfigo Documentation Site](https://ebogdum.github.io/konfigo/)**
 
-Alternatively, you can browse the Markdown files directly in the [`/docs`](docs_markdown) directory.
+Alternatively, you can browse the Markdown files directly in the [`/docs_markdown`](docs_markdown) directory.
 
 Key sections:
 *   [User Guide](docs_markdown/guide/index.md)
@@ -63,7 +63,7 @@ Key sections:
 
 ## Contributing
 
-Contributions are welcome! Please refer to our (TODO: Add CONTRIBUTING.md) for guidelines.
+Contributions are welcome!
 
 ## License
 
