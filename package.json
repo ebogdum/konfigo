@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "docs:dev": "vitepress dev docs_markdown",
+    "docs:build": "vitepress build docs_markdown",
+    "docs:preview": "vitepress preview docs_markdown"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}
