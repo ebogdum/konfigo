@@ -23,7 +23,7 @@ This document provides guidelines for contributing to Konfigo. Please read it ca
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the [Konfigo Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [PROJECT_EMAIL_OR_CONTACT_LINK].
+This project and everyone participating in it is governed by the [Konfigo Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to ebogdum.
 
 *(Note: You will need to create a `CODE_OF_CONDUCT.md` file. You can use a template like the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html)).*
 
@@ -88,7 +88,7 @@ This section describes how to set up your development environment to contribute 
 
 ### Prerequisites
 
-*   Go (version X.Y.Z or higher - *please specify the version you use/require*)
+*   Go (version 1.20+ or higher - *please specify the version you use/require*)
 *   Git
 *   *(Any other specific tools or libraries needed, e.g., a particular linter, Docker, etc.)*
 
