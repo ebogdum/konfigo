@@ -62,9 +62,10 @@ func printHelp() {
 	fmt.Fprintf(out, "    -of <path>\tWrite output to file. Extension determines format, or use with -oX flags.\n")
 	fmt.Fprintf(out, "    -oj, -oy, -ot, -oe\n\t\tOutput in a specific format.\n\n")
 	fmt.Fprintf(out, "  Behavior & Logging:\n")
+	fmt.Fprintf(out, "    (Default behavior is quiet; no informational or debug logs are printed unless specified.)\n")
 	fmt.Fprintf(out, "    -c\t\tUse case-sensitive key matching (default is case-insensitive).\n")
-	fmt.Fprintf(out, "    -v\t\tEnable verbose debug logging.\n")
-	fmt.Fprintf(out, "    -q\t\tSuppress all logging except for final output; overrides -v.\n")
+	fmt.Fprintf(out, "    -v\t\tEnable informational (INFO) logging.\n")
+	fmt.Fprintf(out, "    -d\t\tEnable debug (DEBUG and INFO) logging. Overrides -v.\n")
 	fmt.Fprintf(out, "    -h\t\tShow this help message.\n\n")
 	fmt.Fprintf(out, "ENVIRONMENT VARIABLES:\n")
 	fmt.Fprintf(out, "  Konfigo reads two types of environment variables:\n")
@@ -91,8 +92,9 @@ func run() error {
 	sourcePaths := flag.String("s", "", "Comma-separated list of source files/directories. Use '-' for stdin.")
 	recursive := flag.Bool("r", false, "Recursively search for configuration files in subdirectories")
 	caseSensitive := flag.Bool("c", false, "Use case-sensitive key matching (default is case-insensitive)")
-	verbose := flag.Bool("v", false, "Enable verbose debug logging")
-	quiet := flag.Bool("q", false, "Suppress all logging except for final output; overrides -v")
+	verboseFlag := flag.Bool("v", false, "Enable informational (INFO) logging. Overrides default quiet behavior.")
+	debugFlag := flag.Bool("d", false, "Enable debug (DEBUG and INFO) logging. Overrides -v and default quiet behavior.")
+
 	inJSON := flag.Bool("sj", false, "Force input to be parsed as JSON (required for stdin)")
 	inYAML := flag.Bool("sy", false, "Force input to be parsed as YAML (required for stdin)")
 	inTOML := flag.Bool("st", false, "Force input to be parsed as TOML (required for stdin)")
@@ -108,10 +110,19 @@ func run() error {
 	flag.Parse()
 
 	// --- 2. Initialize Logger and Handle Help/No-Argument Case ---
-	if *quiet {
-		*verbose = false
+	loggerIsQuiet := true  // Default to quiet
+	loggerIsDebug := false // Default to no debug logs
+
+	if *debugFlag {
+		loggerIsQuiet = false
+		loggerIsDebug = true
+	} else if *verboseFlag {
+		loggerIsQuiet = false
+		// loggerIsDebug remains false for -v only
 	}
-	logger.Init(*verbose, *quiet)
+
+	logger.Init(loggerIsDebug, loggerIsQuiet)
+
 	if *help || len(os.Args) == 1 {
 		printHelp()
 		return nil
@@ -350,7 +361,7 @@ func run() error {
 		}
 		if target.Filename == "" { // Output to stdout
 			if i > 0 && len(targets) > 1 { // Add separator for multiple stdout formats
-				fmt.Println("\\n---")
+				fmt.Println("---") // Corrected: removed explicit \n from string
 			}
 			fmt.Println(string(outputBytes))
 		} else {
@@ -395,7 +406,8 @@ func resolveFilenamePattern(pattern string, iterVars map[string]interface{}, env
 	}
 
 	// Regex to find ${VAR_NAME}
-	varRegex := regexp.MustCompile(`\\$\\{[A-Z0-9_]+\\}`)
+	// Corrected regex: removed double backslashes
+	varRegex := regexp.MustCompile(`\$\{[A-Z0-9_]+\}`)
 
 	resolvedPattern = varRegex.ReplaceAllStringFunc(resolvedPattern, func(match string) string {
 		varName := strings.TrimSuffix(strings.TrimPrefix(match, "${"), "}")
@@ -419,8 +431,9 @@ func resolveFilenamePattern(pattern string, iterVars map[string]interface{}, env
 				}
 			}
 		}
-		logger.Warn("Variable %s in filenamePattern not found, leaving as is.", match)
-		return match // Leave unresolved
+		// New behavior: Log error and replace with empty string if not found
+		logger.Log("ERROR: Variable %s in filenamePattern not found, replacing with empty string.", match)
+		return "" // Replace unresolved variable with an empty string
 	})
 
 	// Clean up path, e.g. remove double slashes if a variable was empty
@@ -429,7 +442,6 @@ func resolveFilenamePattern(pattern string, iterVars map[string]interface{}, env
 	return resolvedPattern, nil
 }
 
-// ... existing code ...
 // loadFromEnv, processSources, determineOutputTargets, etc. remain the same or with minor adjustments if needed.
 // Make sure processSources returns baseFinalConfig which is the merged config *before* schema processing.
 // The schema.Process function will then be called either once (single mode) or multiple times (batch mode)
@@ -591,7 +603,8 @@ func determineOutputTargets(outputFile string, outJSON bool, outYAML bool, outTO
 }
 
 var (
-	varRegex = regexp.MustCompile(`\\$\\{[A-Z0-9_]+\\}`) // Added for resolveFilenamePattern
+	// Corrected regex: removed double backslashes. This var is used by resolveFilenamePattern.
+	varRegex = regexp.MustCompile(`\$\{[A-Z0-9_]+\}`)
 )
 
 // Make sure this regex is defined if not already (it was in schema/vars.go)
