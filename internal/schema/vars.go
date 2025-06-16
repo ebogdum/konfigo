@@ -11,7 +11,7 @@ import (
 
 // VarRegex is the regular expression for matching variable placeholders like ${VAR_NAME}.
 // It is defined here to be accessible by other parts of the schema package.
-var VarRegex = regexp.MustCompile(`\\$\\{[A-Z0-9_]+\\}`)
+var VarRegex = regexp.MustCompile(`\$\{[A-Z0-9_]+\}`)
 
 type Resolver struct {
 	vars map[string]string
