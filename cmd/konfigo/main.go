@@ -211,12 +211,9 @@ func run() error {
 		}
 	}
 
-	// --- 6. Process Schema (Single or Batch) ---
-	if loadedSchema == nil && forEachDirective != nil {
-		return errors.New("konfigo_forEach directive found in variables file, but no schema file (-S) was provided for processing")
-	}
+	// --- 6. Process Schema (Single or Batch) OR Perform Basic Variable Substitution ---
 
-	if loadedSchema != nil {
+	if loadedSchema != nil { // Schema IS provided
 		if forEachDirective != nil {
 			// Batch Processing Mode
 			logger.Log("Starting batch processing with konfigo_forEach...")
@@ -264,27 +261,23 @@ func run() error {
 			for i, iterVars := range iterationSources {
 				logger.Log("Processing iteration %d...", i)
 
-				// Create a deep copy of the base configuration for this iteration
 				currentConfig, err := util.DeepCopyMap(baseFinalConfig)
 				if err != nil {
 					return fmt.Errorf("failed to deep copy base config for iteration %d: %w", i, err)
 				}
 
-				// Prepare variables for this iteration based on precedence:
-				// Iteration Vars > Global Vars from Vars File > Schema Vars (handled by resolver) > Env Vars (handled by resolver)
 				varsForThisIteration := make(map[string]interface{})
-				if forEachDirective.GlobalVars != nil { // Start with globals from the main vars file
+				if forEachDirective.GlobalVars != nil {
 					for k, v := range forEachDirective.GlobalVars {
 						varsForThisIteration[k] = v
 					}
 				}
-				for k, v := range iterVars { // Override with iteration-specific vars
+				for k, v := range iterVars {
 					varsForThisIteration[k] = v
 				}
 
-				// Add ITEM_INDEX and ITEM_FILE_BASENAME to iteration vars
 				varsForThisIteration["ITEM_INDEX"] = strconv.Itoa(i)
-				if i < len(itemFileBasenames) { // Check bounds for safety
+				if i < len(itemFileBasenames) {
 					varsForThisIteration["ITEM_FILE_BASENAME"] = itemFileBasenames[i]
 				}
 
@@ -293,13 +286,11 @@ func run() error {
 					return fmt.Errorf("schema processing failed for iteration %d: %w", i, err)
 				}
 
-				// Determine output filename for this iteration
 				outputFilename, err := resolveFilenamePattern(forEachDirective.Output.FilenamePattern, varsForThisIteration, envVarsForSchema, loadedSchema.Vars, i, itemFileBasenames[i])
 				if err != nil {
 					return fmt.Errorf("failed to resolve output filename for iteration %d: %w", i, err)
 				}
 
-				// Ensure output directory exists
 				outputDir := filepath.Dir(outputFilename)
 				if err := os.MkdirAll(outputDir, 0755); err != nil {
 					return fmt.Errorf("failed to create output directory %s for iteration %d: %w", outputDir, i, err)
@@ -309,7 +300,7 @@ func run() error {
 				if forEachDirective.Output.Format != "" {
 					outputFormat = strings.ToLower(forEachDirective.Output.Format)
 				}
-				if outputFormat == "" { // Fallback if no extension and no explicit format
+				if outputFormat == "" {
 					logger.Warn("Output format for iteration %d (%s) is ambiguous, defaulting to YAML. Specify format in konfigo_forEach.output.format or use a file extension.", i, outputFilename)
 					outputFormat = "yaml"
 				}
@@ -324,11 +315,11 @@ func run() error {
 				}
 			}
 			logger.Log("Batch processing completed.")
-			return nil // Batch processing handles its own output, so we can return early.
+			return nil // Batch processing handles its own output.
 
 		} else {
-			// Single Processing Mode (original logic)
-			varsToProcess := varsFromFileGlobal // Use only global vars if no forEach
+			// Single Processing Mode with Schema
+			varsToProcess := varsFromFileGlobal
 			if varsToProcess == nil {
 				varsToProcess = make(map[string]interface{}) // Ensure not nil for schema.Process
 			}
@@ -336,11 +327,24 @@ func run() error {
 			if err != nil {
 				return err
 			}
-			baseFinalConfig = processedConfig // Update baseFinalConfig with the processed version
+			baseFinalConfig = processedConfig
 		}
+	} else if forEachDirective != nil { // Batch mode requested but no schema (-S)
+		return errors.New("konfigo_forEach directive found, but no schema file (-S) was provided for processing")
 	} else {
-		// No schema provided, use baseFinalConfig as is
-		logger.Debug("No schema provided, skipping schema processing.")
+		// No schema provided (-S not used) AND not in batch mode.
+		// Perform variable substitution using KONFIGO_VAR_ (envVarsForSchema) and -V file (varsFromFileGlobal).
+		logger.Debug("No schema provided. Performing basic variable substitution from environment and -V file if present.")
+
+		// Create a resolver with available variable sources.
+		// Since no schema, schema.Vars is empty. Pass baseFinalConfig for fromPath consistency, though it won't be used by schema-defined vars.
+		resolver, err := schema.NewResolver(envVarsForSchema, varsFromFileGlobal, []schema.VarDef{}, baseFinalConfig)
+		if err != nil {
+			// This error primarily happens if a schema var (not applicable here as schema.Vars is empty) can't resolve
+			// and has no default. For env/vars-file, it should generally be fine.
+			return fmt.Errorf("failed to create variable resolver without schema: %w", err)
+		}
+		baseFinalConfig = schema.Substitute(baseFinalConfig, resolver)
 	}
 
 	// --- 7. Determine and Generate Outputs (for single mode or if no schema) ---
