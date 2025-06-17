@@ -25,11 +25,9 @@ Whether you're managing simple settings or complex, multi-layered configurations
 
 ### 1. Installation
 
-The primary way to install Konfigo is using `go install` (ensure you have Go installed and your `GOPATH/bin` or `GOBIN` is in your PATH):
+The primary way to install Konfigo is downloading a pre-built binary from the release page:
 
-```bash
-go install github.com/ebogdum/konfigo/cmd/konfigo@latest
-```
+[Releases](https://github.com/ebogdum/konfigo/releases)
 
 For other installation methods, please refer to the [Installation Guide](docs_markdown/installation.md) in our documentation.
 
