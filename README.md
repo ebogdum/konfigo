@@ -47,6 +47,49 @@ Merge `config.json`, process it with `schema.yml`, use variables from `staging-v
 konfigo -s config.json -S schema.yml -V staging-vars.yml -of staging_config.json
 ```
 
+## Command-Line Options
+
+Below is a summary of the available command-line options. For more details, run `konfigo -h`.
+
+**Input & Sources**
+
+| Flag(s)                 | Description                                                                 |
+|-------------------------|-----------------------------------------------------------------------------|
+| `-s <paths>`            | Comma-separated list of source files/directories. Use '-' for stdin.        |
+| `-r`                    | Recursively search for configuration files in subdirectories.               |
+| `-sj`                   | Force input to be parsed as JSON (required for stdin).                      |
+| `-sy`                   | Force input to be parsed as YAML (required for stdin).                      |
+| `-st`                   | Force input to be parsed as TOML (required for stdin).                      |
+| `-se`                   | Force input to be parsed as ENV (required for stdin).                       |
+| `-si`                   | Force input to be parsed as INI (required for stdin).                       |
+
+**Schema & Variables**
+
+| Flag(s)                 | Description                                                                 |
+|-------------------------|-----------------------------------------------------------------------------|
+| `-S, --schema <path>`   | Path to a schema file for processing the config.                            |
+| `-V, --vars-file <path>`| Path to a file providing high-priority variables.                           |
+
+**Output & Formatting**
+
+| Flag(s)                 | Description                                                                 |
+|-------------------------|-----------------------------------------------------------------------------|
+| `-of <path>`            | Write output to file. Extension determines format, or use with -oX flags.   |
+| `-oj`                   | Output in JSON format.                                                      |
+| `-oy`                   | Output in YAML format.                                                      |
+| `-ot`                   | Output in TOML format.                                                      |
+| `-oe`                   | Output in ENV format.                                                       |
+| `-oi`                   | Output in INI format.                                                       |
+
+**Behavior & Logging**
+
+| Flag(s)                 | Description                                                                 |
+|-------------------------|-----------------------------------------------------------------------------|
+| `-c`                    | Use case-sensitive key matching (default is case-insensitive).              |
+| `-v`                    | Enable informational (INFO) logging. Overrides default quiet behavior.      |
+| `-d`                    | Enable debug (DEBUG and INFO) logging. Overrides -v and default quiet behavior. |
+| `-h`                    | Show this help message.                                                     |
+
 ## Documentation
 
 For detailed information on all features, CLI options, and schema capabilities, please visit our full documentation site:
