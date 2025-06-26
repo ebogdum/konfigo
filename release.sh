@@ -6,17 +6,58 @@
 # remote_name: The name of your remote repository (usually "origin")
 # prerelease_suffix: Suffix for pre-releases (e.g., "beta", "rc.1"). Leave empty for stable.
 # generate_notes: Set to "true" to automatically generate release notes from commits.
-#                 Set to "false" to be prompted for notes or use a notes file.
-# notes_file: Path to a file containing release notes (if generate_notes is false and you want to use a file).
+#                 Set to "false" to extract notes from CHANGELOG.md or be prompted for notes.
+# notes_file: Path to a file containing release notes (default: CHANGELOG.md).
+#             The script will try to extract the relevant section for the version being released.
 
 build_dir="builds" # IMPORTANT: Change this to your actual build output directory
 default_branch="main"
 remote_name="origin"
 prerelease_suffix="" # e.g., "rc.1" or "beta"
 generate_notes="false"
-notes_file="" # e.g., "RELEASE_NOTES.md"
+notes_file="CHANGELOG.md"
 
 # --- Helper Functions ---
+
+extract_changelog_for_version() {
+    local version="$1"
+    local changelog_file="$2"
+    
+    if [ ! -f "$changelog_file" ]; then
+        echo "Warning: Changelog file '$changelog_file' not found."
+        return 1
+    fi
+    
+    # Remove 'v' prefix for matching in changelog
+    local version_clean="${version#v}"
+    
+    # Try to find the section for this version in the changelog
+    # Look for patterns like [version], [vversion], ## version, ## [version], etc.
+    local start_line
+    start_line=$(grep -n -E "^##?\s*\[?v?${version_clean}\]?" "$changelog_file" | head -n1 | cut -d: -f1)
+    
+    if [ -z "$start_line" ]; then
+        # If version not found, try to extract the latest section
+        echo "Version $version not found in changelog. Extracting latest changes..."
+        start_line=$(grep -n -E "^##?\s*\[" "$changelog_file" | head -n1 | cut -d: -f1)
+    fi
+    
+    if [ -z "$start_line" ]; then
+        echo "Warning: Could not find version section in changelog."
+        return 1
+    fi
+    
+    # Find the next version section or end of file
+    local end_line
+    end_line=$(tail -n +$((start_line + 1)) "$changelog_file" | grep -n -E "^##?\s*\[" | head -n1 | cut -d: -f1)
+    
+    if [ -n "$end_line" ]; then
+        end_line=$((start_line + end_line - 1))
+        sed -n "${start_line},${end_line}p" "$changelog_file" | head -n -1
+    else
+        tail -n +$start_line "$changelog_file"
+    fi
+}
 get_latest_tag() {
     git fetch --tags "$remote_name" >/dev/null 2>&1
     # Get the latest semantic version tag (vX.Y.Z or X.Y.Z)
@@ -152,8 +193,29 @@ fi
 if [ "$generate_notes" == "true" ]; then
     release_options+=("--generate-notes")
 else
+    # Try to extract changelog content for this version
     if [ -n "$notes_file" ] && [ -f "$notes_file" ]; then
-        release_options+=("--notes-file" "$notes_file")
+        echo "Extracting release notes from $notes_file..."
+        temp_notes_file="/tmp/release_notes_${new_version}.md"
+        if extract_changelog_for_version "$new_version" "$notes_file" > "$temp_notes_file" 2>/dev/null; then
+            if [ -s "$temp_notes_file" ]; then
+                echo "Found changelog content for $new_version"
+                release_options+=("--notes-file" "$temp_notes_file")
+            else
+                echo "No content found for $new_version in changelog, prompting for notes..."
+                rm -f "$temp_notes_file"
+                read -r -e -p "Enter release notes (or leave blank to open editor): " custom_notes
+                if [ -n "$custom_notes" ]; then
+                    release_options+=("--notes" "$custom_notes")
+                fi
+            fi
+        else
+            echo "Could not extract changelog content, prompting for notes..."
+            read -r -e -p "Enter release notes (or leave blank to open editor): " custom_notes
+            if [ -n "$custom_notes" ]; then
+                release_options+=("--notes" "$custom_notes")
+            fi
+        fi
     else
         read -r -e -p "Enter release notes (or leave blank to open editor): " custom_notes
         if [ -n "$custom_notes" ]; then
@@ -179,6 +241,10 @@ fi
 
 if gh release create "$new_version" "${files_to_upload[@]}" --title "$release_title" "${release_options[@]}"; then
     echo "Successfully created GitHub Release $new_version and uploaded artifacts."
+    # Clean up temporary notes file if it was created
+    if [ -n "$temp_notes_file" ] && [ -f "$temp_notes_file" ]; then
+        rm -f "$temp_notes_file"
+    fi
     gh release view "$new_version" --web # Open in browser
 else
     echo "Error: Failed to create GitHub Release."
@@ -186,6 +252,10 @@ else
     echo "  1. Ensure 'gh' is authenticated with sufficient permissions (repo scope)."
     echo "  2. Check if a release for tag '$new_version' already exists."
     echo "The tag '$new_version' was pushed. You might need to create the release manually or delete the tag and retry."
+    # Clean up temporary notes file if it was created
+    if [ -n "$temp_notes_file" ] && [ -f "$temp_notes_file" ]; then
+        rm -f "$temp_notes_file"
+    fi
     exit 1
 fi
 
