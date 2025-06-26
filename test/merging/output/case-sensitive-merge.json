@@ -1,0 +1,19 @@
+{
+  "Database": {
+    "HOST": "localhost",
+    "User": "admin"
+  },
+  "MyApp": {
+    "Name": "Mixed-Case-App",
+    "PORT": 8080
+  },
+  "database": {
+    "host": "remote-db.com",
+    "user": "service"
+  },
+  "myapp": {
+    "name": "lowercase-override",
+    "port": 9090
+  }
+}
+

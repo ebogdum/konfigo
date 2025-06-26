@@ -1,0 +1,22 @@
+vars:
+  - name: "DEFAULT_TIMEOUT"
+    value: "30s"
+  - name: "LOG_LEVEL"
+    defaultValue: "info"
+
+generators:
+  - type: "concat"
+    targetPath: "service.url"
+    format: "http://${SERVICE_HOST}:${SERVICE_PORT}"
+    sources: {}
+
+transform:
+  - type: "setValue"
+    path: "service.name"
+    value: "${SERVICE_NAME}"
+  - type: "setValue"
+    path: "service.replicas"
+    value: "${REPLICAS}"
+  - type: "setValue"
+    path: "service.environment"
+    value: "${ENVIRONMENT}"

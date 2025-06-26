@@ -1,0 +1,25 @@
+{
+  "application": {
+    "environment": "production",
+    "name": "my-app",
+    "port": 8080,
+    "version": "1.0.0"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "ssl": true,
+    "user": "app_user"
+  },
+  "features": {
+    "auth": true,
+    "cache": false,
+    "new_feature": true
+  },
+  "logging": {
+    "format": "text",
+    "level": "info",
+    "output": "stdout"
+  }
+}
+

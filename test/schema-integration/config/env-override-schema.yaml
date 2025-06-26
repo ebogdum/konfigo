@@ -1,0 +1,31 @@
+apiVersion: "konfigo/v1alpha1"
+
+outputSchema:
+  path: "schemas/output-schema.json"
+  strict: false
+
+vars:
+  - name: "ENVIRONMENT"
+    value: "production"
+  - name: "SERVICE_VERSION"
+    value: "1.0.0"
+
+generators:
+  - type: "concat"
+    targetPath: "service.url"
+    format: "${service.protocol}://${service.name}:${service.port}"
+    sources: {}
+
+transform:
+  - type: "setValue"
+    path: "service.environment"
+    value: "${ENVIRONMENT}"
+  - type: "changeCase"
+    path: "service.name"
+    case: "upper"
+
+validate:
+  - path: "service.name"
+    rules:
+      required: true
+      type: "string"

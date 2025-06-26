@@ -1,0 +1,33 @@
+app:
+  debug: false
+  environment: env-wins
+  name: base-app
+  port: 8080
+  version: 1.0.0
+database:
+  connection:
+    pool_size: 10
+    timeout: 30
+  host: localhost
+  name: myapp
+  pool_size: 20
+  port: 5432
+  ssl: true
+features:
+  auth: true
+  cache: false
+  monitoring: true
+logging:
+  format: text
+  level: env-debug
+  outputs:
+    - stdout
+    - file
+nested:
+  deep:
+    very:
+      deep:
+        value: original
+security:
+  enabled: true
+  tls_version: env-tls-1.3

@@ -1,0 +1,19 @@
+{
+  "service": {
+    "name": "",
+    "url": "",
+    "environment": ""
+  },
+  "database": {
+    "connection_string": "",
+    "pool_size": 0.0
+  },
+  "features": {
+    "cache": false,
+    "analytics": false
+  },
+  "monitoring": {
+    "enabled": false,
+    "endpoint": ""
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "application": {
+    "port": 9090,
+    "environment": "production"
+  },
+  "database": {
+    "host": "prod-db.example.com",
+    "ssl": true,
+    "pool": {
+      "min": 5,
+      "max": 20
+    }
+  },
+  "logging": {
+    "level": "warn",
+    "format": "json"
+  },
+  "features": {
+    "cache": true,
+    "monitoring": true
+  },
+  "secrets": {
+    "api_key": "prod-key-123"
+  }
+}

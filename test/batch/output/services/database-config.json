@@ -1,0 +1,25 @@
+{
+  "application": {
+    "name": "base-app",
+    "version": "1.0.0"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "ssl": false
+  },
+  "logging": {
+    "format": "text",
+    "level": "info"
+  },
+  "server": {
+    "host": "localhost",
+    "port": 8080
+  },
+  "service": {
+    "environment": "critical",
+    "name": "database",
+    "replicas": "1",
+    "url": "http://db.example.com:5432"
+  }
+}

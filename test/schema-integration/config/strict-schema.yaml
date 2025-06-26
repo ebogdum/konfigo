@@ -1,0 +1,28 @@
+apiVersion: "konfigo/v1alpha1"
+
+inputSchema:
+  path: "schemas/input-schema-strict.json"
+  strict: true
+
+outputSchema:
+  path: "schemas/output-schema-strict.json"
+  strict: true
+
+vars:
+  - name: "SERVICE_NAME"
+    value: "strict-service"
+
+transform:
+  - type: "setValue"
+    path: "service.name"
+    value: "${SERVICE_NAME}"
+
+validate:
+  - path: "service.name"
+    rules:
+      required: true
+      type: "string"
+  - path: "service.port"
+    rules:
+      required: true
+      type: "number"

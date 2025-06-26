@@ -1,0 +1,36 @@
+validate:
+  # Test required field missing
+  - path: "service.requiredField"
+    rules:
+      required: true
+      type: "string"
+  
+  # Test type mismatch (expecting string, got number)
+  - path: "service.port"
+    rules:
+      type: "string"
+  
+  # Test min/max violations
+  - path: "service.port"
+    rules:
+      type: "number"
+      min: 10000  # Current value 8080 is too low
+      max: 65535
+  
+  # Test minLength violation
+  - path: "service.name"
+    rules:
+      type: "string"
+      minLength: 20  # Current value "user-service" is too short
+  
+  # Test enum violation
+  - path: "service.environment"
+    rules:
+      type: "string"
+      enum: ["development", "testing"]  # "prod" not in list
+  
+  # Test regex mismatch
+  - path: "service.version"
+    rules:
+      type: "string"
+      regex: "^v\\d+$"  # Expecting "v1" format, got "1.2.3"

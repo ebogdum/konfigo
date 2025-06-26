@@ -1,0 +1,6 @@
+SERVICE_NAME: "staging-service"
+SERVICE_HOST: "staging.example.com"
+SERVICE_PORT: 8080
+REPLICAS: 2
+ENVIRONMENT: "staging"
+DEBUG: false

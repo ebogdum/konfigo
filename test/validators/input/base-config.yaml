@@ -1,0 +1,43 @@
+service:
+  name: user-service
+  port: 8080
+  environment: prod
+  apiKey: abcdef0123456789abcdef0123456789
+  debug: false
+  version: "1.2.3"
+
+database:
+  host: db.example.com
+  port: 5432
+  ssl: true
+  timeout: 30.5
+  credentials:
+    username: admin
+    password: complex_password123
+  pools:
+    max: 100
+    min: 5
+
+features:
+  betaEnabled: true
+  features:
+    - auth
+    - payments
+    - analytics
+
+timeouts:
+  read: 30
+  write: 45
+  connect: 10.5
+
+metrics:
+  enabled: true
+  interval: 60
+  tags:
+    - "env:prod"
+    - "service:user"
+
+cache:
+  ttl: 3600
+  maxSize: 1000000
+  type: redis

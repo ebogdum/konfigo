@@ -1,0 +1,27 @@
+apiVersion: "konfigo/v1alpha1"
+
+vars:
+  - name: "DEFAULT_LOG_LEVEL"
+    value: "info"
+  - name: "DEFAULT_PORT"
+    value: "8080"
+
+immutable:
+  - "app.name"
+  - "database.host"
+
+validate:
+  - path: "app.name"
+    rules:
+      required: true
+      type: "string"
+  - path: "app.port"
+    rules:
+      type: "number"
+      min: 1024
+      max: 65535
+  - path: "database.connection.pool_size"
+    rules:
+      type: "number"
+      min: 1
+      max: 100

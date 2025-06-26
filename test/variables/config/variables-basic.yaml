@@ -1,0 +1,6 @@
+# Test variables file - basic scenarios
+API_HOST: "vars-file-api.example.com"
+NESTED_VAR: "from-vars-file"
+CUSTOM_VAR: "only-in-vars"
+ENV_OVERRIDE_TEST: "from-vars-file"
+DATABASE_PASSWORD: "vars-file-password"

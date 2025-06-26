@@ -1,0 +1,26 @@
+# Top-level configuration
+region = "us-west-2"
+environment = "production"
+arrays = ["item1", "item2", "item3"]
+
+[service]
+name = "data-processor"
+instanceId = "instance-007"
+version = "1.2.3"
+port = 8080
+
+[database]
+host = "db-server"
+port = 5432
+name = "app_db"
+
+[nested.level1.level2]
+value = "deep-value"
+
+[numbers]
+int = 42
+float = 3.14
+
+[booleans]
+enabled = true
+debug = false

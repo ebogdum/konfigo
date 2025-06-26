@@ -1,0 +1,35 @@
+apiSettings:
+  BaseURL: HTTP://API.EXAMPLE.COM
+  MaxRetries: Five
+  RequestTimeout: ThirtySeconds
+database:
+  host: localhost
+  name: myapp_db
+  port: 5432
+feature:
+  flags:
+    betaFeatures: true
+    newUI: false
+legacy:
+  auth_token: legacy-token-123
+serverConfig:
+  host: 0.0.0.0
+  port: 8080
+  ssl: false
+service:
+  prod_environment: prod
+  prod_url: http://old-domain.com/api
+settings:
+  debug: true
+  retries: 3
+  timeout: 30
+strings:
+  CamelCase: testValue
+  Mixed_Format: mixed-Format_STRING
+  UPPER_CASE: THIRD_VALUE
+  kebab-case: fourth-value
+  snake_case: another_value
+user:
+  email: alice@example.com
+  id: 123
+  name: Alice

@@ -1,0 +1,21 @@
+{
+  "service": {
+    "name": "",
+    "port": 0.0,
+    "protocol": ""
+  },
+  "database": {
+    "host": "",
+    "port": 0.0,
+    "name": "",
+    "ssl": false
+  },
+  "logging": {
+    "level": "",
+    "format": ""
+  },
+  "features": {
+    "cache": false,
+    "analytics": false
+  }
+}

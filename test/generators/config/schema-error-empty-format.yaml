@@ -1,0 +1,6 @@
+generators:
+  - type: "concat"
+    targetPath: "error.emptyFormat"
+    format: ""
+    sources:
+      test: "service.name"

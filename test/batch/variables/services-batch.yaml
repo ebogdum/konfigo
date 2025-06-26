@@ -1,0 +1,22 @@
+# Global variables available to all iterations
+GLOBAL_API_KEY: "shared-api-key"
+ENVIRONMENT: "production"
+
+konfigo_forEach:
+  items:
+    - SERVICE_NAME: "frontend"
+      SERVICE_HOST: "frontend.example.com"
+      SERVICE_PORT: 80
+      REPLICAS: 3
+    - SERVICE_NAME: "backend"
+      SERVICE_HOST: "backend.example.com"
+      SERVICE_PORT: 8080
+      REPLICAS: 5
+    - SERVICE_NAME: "database"
+      SERVICE_HOST: "db.example.com"
+      SERVICE_PORT: 5432
+      REPLICAS: 1
+      ENVIRONMENT: "critical"  # Override global environment
+  output:
+    filenamePattern: "output/services/${SERVICE_NAME}-config.json"
+    format: "json"

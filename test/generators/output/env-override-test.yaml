@@ -1,0 +1,30 @@
+arrays:
+  - item1
+  - item2
+  - item3
+booleans:
+  debug: false
+  enabled: true
+database:
+  host: db-server
+  name: app_db
+  port: 5432
+environment: production
+mixed:
+  booleanFormat: 'Enabled: true, Debug: false'
+  deepPath: 'Deep: deep-value'
+  numberFormat: 'Port: 8080, Int: 42, Float: 3.14'
+  withVariables: Static text + data-processor + env-global-value
+nested:
+  level1:
+    level2:
+      value: deep-value
+numbers:
+  float: 3.14
+  int: 42
+region: us-west-2
+service:
+  instanceId: instance-007
+  name: data-processor
+  port: 8080
+  version: 1.2.3

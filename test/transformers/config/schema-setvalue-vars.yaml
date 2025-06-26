@@ -1,0 +1,15 @@
+vars:
+  - name: "ADMIN_EMAIL"
+    value: "admin@example.com"
+  - name: "APP_VERSION"
+    value: "2.1.0"
+transform:
+  - type: "setValue"
+    path: "contact.admin"
+    value: "Email: ${ADMIN_EMAIL}"
+  - type: "setValue"
+    path: "app.version"
+    value: "${APP_VERSION}"
+  - type: "setValue"
+    path: "deployment.environment"
+    value: "production"

@@ -1,0 +1,7 @@
+transform:
+  - type: "setValue"
+    path: "contact.admin"
+    value: "admin@example.com"
+  - type: "setValue"
+    path: "app.version"
+    value: "2.0.0"

@@ -1,0 +1,17 @@
+validate:
+  - path: "email"
+    rules:
+      type: "string"
+      regex: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+  - path: "phone"
+    rules:
+      type: "string"
+      regex: "^\\d{3}-\\d{3}-\\d{4}$"
+  - path: "uuid"
+    rules:
+      type: "string"
+      regex: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+  - path: "version"
+    rules:
+      type: "string"
+      regex: "^\\d+\\.\\d+\\.\\d+$"

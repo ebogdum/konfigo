@@ -1,0 +1,28 @@
+app:
+  config:
+    max_connections: 1000
+    timeout: 30
+  environment: development
+  features:
+    - authentication
+    - logging
+    - monitoring
+  name: base-application
+  port: 8080
+  version: 1.0.0
+database:
+  backup:
+    enabled: true
+    retention_days: 30
+    schedule: 0 2 * * *
+  connection:
+    pool_size: 20
+    retry_attempts: 3
+    timeout: 45
+  host: localhost
+  name: myapp_db
+  port: 5432
+  ssl: true
+global:
+  debug: true
+  timezone: UTC

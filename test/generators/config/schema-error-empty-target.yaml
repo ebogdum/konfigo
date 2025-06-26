@@ -1,0 +1,6 @@
+generators:
+  - type: "concat"
+    targetPath: ""
+    format: "This should fail"
+    sources:
+      test: "service.name"

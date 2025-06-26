@@ -1,0 +1,8 @@
+database:
+  pool_size: 20
+features:
+  analytics: true
+  cache: true
+service:
+  environment: production
+  name: should-not-work

@@ -1,0 +1,43 @@
+validate:
+  # Edge case: Empty string validation
+  - path: "service.name"
+    rules:
+      type: "string"
+      minLength: 1  # Ensure not empty
+  
+  # Edge case: Zero values
+  - path: "database.pools.min"
+    rules:
+      type: "number"
+      min: 0  # Allow zero
+  
+  # Edge case: Decimal precision
+  - path: "database.timeout"
+    rules:
+      type: "number"
+      min: 0.001
+      max: 999.999
+  
+  # Edge case: Large numbers
+  - path: "cache.maxSize"
+    rules:
+      type: "number"
+      min: 1000000
+      max: 10000000
+  
+  # Edge case: Complex regex
+  - path: "service.apiKey"
+    rules:
+      type: "string"
+      regex: "^[a-f0-9]{32}$"
+  
+  # Edge case: Multiple enum values
+  - path: "cache.type"
+    rules:
+      type: "string"
+      enum: ["memory", "redis", "memcached", "disk", "hybrid"]
+  
+  # Edge case: Boolean validation (implicit)
+  - path: "features.betaEnabled"
+    rules:
+      type: "bool"

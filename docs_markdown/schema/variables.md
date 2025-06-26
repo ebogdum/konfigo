@@ -1,103 +1,346 @@
 # Schema: Variables & Substitution
 
-Konfigo's variable system is a cornerstone of its processing capabilities, allowing you to create dynamic and reusable configurations. Variables can be defined in multiple locations and are resolved using a strict precedence order. They are substituted into your configuration data and even within other schema directives using the `${VAR_NAME}` syntax.
+Konfigo's variable system enables dynamic, reusable configurations through layered variable resolution and `${VAR_NAME}` substitution. Variables can be defined in multiple locations with strict precedence ordering.
 
-## Variable Definition and Precedence
+## Variable Precedence (Highest to Lowest)
 
-Variables can be defined in three main places, listed here from highest to lowest precedence:
+1. **Environment Variables** (`KONFIGO_VAR_*`)
+2. **Variables File** (`-V` or `--vars-file`)  
+3. **Schema vars Block** (in schema file)
 
-1.  **Environment Variables (`KONFIGO_VAR_...`) (Highest Priority)**
-    *   **Syntax**: `KONFIGO_VAR_VARNAME=value` (e.g., `export KONFIGO_VAR_API_KEY=secret123`)
-    *   **Description**: Variables set in the environment using the `KONFIGO_VAR_` prefix. These override any other variable definitions.
-    *   **Use Case**: Ideal for injecting secrets or highly dynamic, environment-specific values during runtime or in CI/CD pipelines.
-    *   See [Environment Variables](../guide/environment-variables.md) for more details.
+## Schema Variables Block
 
-2.  **Variables File (`-V` or `--vars-file`)**
-    *   **Syntax**: A separate YAML, JSON, or TOML file passed via the `-V` or `--vars-file` CLI flag.
-    *   **Description**: This file can contain simple key-value pairs that define variables. It can also host the [`konfigo_forEach`](#batch-processing-with-konfigo_foreach) directive for batch processing.
-    *   **Use Case**: Defining sets of variables for specific environments (e.g., `dev-vars.yml`, `prod-vars.yml`) or for controlling batch operations.
-    *   **Example (`example-vars.yml` provided via `-V my-configs/example-vars.yml`):**
-        ```yaml
-        # Simple key-value pairs
-        GREETING: "Hello from example-vars.yml"
-        SERVICE_NAME: "my-awesome-app"
-        REPLICA_COUNT: 3
+Define variables in your schema file using the `vars` key:
 
-        # Nested structures are also possible, though direct variable
-        # substitution typically uses simple key-value pairs from the resolved map.
-        DATABASE:
-          HOST: "db.example.com"
-          PORT: 5432
-        ```
-        In this example, `${GREETING}`, `${SERVICE_NAME}`, `${REPLICA_COUNT}`, `${DATABASE.HOST}`, and `${DATABASE.PORT}` (if flattened or accessed via path) would be available. Konfigo typically flattens these for direct substitution, or you might refer to nested values if your schema logic supports it (e.g., `fromPath` in schema `vars`).
+```yaml
+vars:
+  - name: "VARIABLE_NAME"
+    value: "literal value"
+    # OR use one of these sources:
+    # fromEnv: "SYSTEM_ENV_VAR"
+    # fromPath: "config.path.to.value"
+    # defaultValue: "fallback"  # Used with fromEnv/fromPath
+```
 
-3.  **Schema `vars` Block (Lowest Priority)**
-    *   **Syntax**: The `vars:` block list within your main schema file (`-S`).
-    *   **Description**: Defines the default set of variables, their sources (literal, from other environment variables, from other config paths), and fallback default values.
-    *   **Use Case**: Establishing the baseline variable logic for your application.
+### Variable Definition Fields
 
-## Defining Variables in the Schema (`vars:` block)
+**`name`** (Required): Variable name for `${VAR_NAME}` substitution
 
-The `vars` block in your schema file is a list of variable definitions. Each definition is an object that specifies the variable's `name` and how its value should be determined.
+**Value Sources** (choose one):
+- **`value`**: Literal string value
+- **`fromEnv`**: Read from system environment variable
+- **`fromPath`**: Read from merged configuration path
 
-### Common Fields for each Variable Definition:
+**`defaultValue`** (Optional): Fallback when `fromEnv`/`fromPath` fails
 
-*   `name` (Required, string): The name of the variable (e.g., `API_URL`). This is the name you'll use for substitution, like `${API_URL}`.
+## Examples from Tests
 
-### Value Sources (choose one per definition):
+### Basic Variable Definition
 
-*   `value` (string):
-    *   **Description**: Defines a literal, static string value for the variable.
-    *   **Example**:
-        ```yaml
-        vars:
-          - name: "DEFAULT_REGION"
-            value: "us-east-1"
-        ```
+**Schema:**
+```yaml
+vars:
+  # Literal value
+  - name: "API_HOST"
+    value: "api.example.com"
+  
+  # From environment with default
+  - name: "API_PORT"
+    fromEnv: "SERVICE_PORT"
+    defaultValue: "8080"
+    
+  # From configuration path
+  - name: "TARGET_NAMESPACE"
+    fromPath: "deployment.namespace"
+    
+  # Environment with fallback
+  - name: "DATABASE_PASSWORD"
+    fromEnv: "DB_PASS"
+    defaultValue: "default-password"
+```
 
-*   `fromEnv` (string):
-    *   **Description**: Sources the variable's value from a system environment variable (different from `KONFIGO_VAR_...`). This allows you to map existing system environment variables to Konfigo variables.
-    *   **Example**:
-        ```yaml
-        vars:
-          - name: "DOCKER_TAG"
-            fromEnv: "CI_COMMIT_SHA" # Reads the value of the CI_COMMIT_SHA system env var
-        ```
+**Configuration Usage:**
+```yaml
+config:
+  api:
+    host: "${API_HOST}"
+    port: "${API_PORT}"
+    endpoint: "${API_HOST}:${API_PORT}/api/v1"
+  database:
+    connectionString: "postgres://user:${DATABASE_PASSWORD}@${API_HOST}:5432/db"
+  settings:
+    namespace: "${TARGET_NAMESPACE}"
+```
 
-*   `fromPath` (string):
-    *   **Description**: Sources the variable's value from another key within the *merged configuration data* (i.e., after all `-s` sources are merged, but before most schema processing like generators or transforms). The path is dot-separated.
-    *   **Example**:
-        ```yaml
-        # Assuming merged config has: deployment: { namespace: "production" }
-        vars:
-          - name: "PRIMARY_NAMESPACE"
-            fromPath: "deployment.namespace" # Value will be "production"
-        ```
+### Input Configuration
 
-### Optional Fallback:
+**`base-config.yaml`:**
+```yaml
+deployment:
+  namespace: "production"
+  replicas: 3
+database:
+  host: "db-server"
+  port: 5432
+```
 
-*   `defaultValue` (string):
-    *   **Description**: Provides a fallback value if a variable defined using `fromEnv` or `fromPath` cannot be resolved (e.g., the environment variable is not set, or the path does not exist in the configuration).
-    *   This is **not** used if `value` is specified.
-    *   **Example**:
-        ```yaml
-        vars:
-          - name: "RELEASE_VERSION"
-            fromEnv: "CI_COMMIT_TAG"
-            defaultValue: "latest" # If CI_COMMIT_TAG is not set, RELEASE_VERSION becomes "latest"
-          - name: "OPTIONAL_SETTING"
-            fromPath: "user.preferences.theme"
-            defaultValue: "dark"
-        ```
+### Variable Resolution Process
 
-### Resolution Logic within Schema `vars`:
+**Without Environment Variables:**
+```yaml
+# Resolved variables:
+# API_HOST = "api.example.com" (from value)
+# API_PORT = "8080" (fromEnv failed, used defaultValue)
+# TARGET_NAMESPACE = "production" (fromPath successful)
+# DATABASE_PASSWORD = "default-password" (fromEnv failed, used defaultValue)
 
-For each variable defined in the schema's `vars` block:
-1.  If `value` is present, that's the variable's value.
-2.  Else, if `fromEnv` is present, Konfigo attempts to read that system environment variable.
-3.  Else, if `fromPath` is present, Konfigo attempts to read that path from the merged configuration.
-4.  If the chosen source (`fromEnv` or `fromPath`) yields a value, that's used.
-5.  If not, and `defaultValue` is present, that's used.
+# Final result:
+config:
+  api:
+    host: "api.example.com"
+    port: "8080"
+    endpoint: "api.example.com:8080/api/v1"
+  database:
+    connectionString: "postgres://user:default-password@api.example.com:5432/db"
+  settings:
+    namespace: "production"
+```
+
+**With Environment Variables:**
+```bash
+export SERVICE_PORT=9000
+export DB_PASS=secure-password
+export KONFIGO_VAR_API_HOST=prod-api.example.com
+```
+
+```yaml
+# Resolved variables:
+# API_HOST = "prod-api.example.com" (KONFIGO_VAR_* highest precedence)
+# API_PORT = "9000" (fromEnv successful)
+# TARGET_NAMESPACE = "production" (fromPath successful)
+# DATABASE_PASSWORD = "secure-password" (fromEnv successful)
+
+# Final result:
+config:
+  api:
+    host: "prod-api.example.com"
+    port: "9000"
+    endpoint: "prod-api.example.com:9000/api/v1"
+  database:
+    connectionString: "postgres://user:secure-password@prod-api.example.com:5432/db"
+  settings:
+    namespace: "production"
+```
+
+## Variables File Override
+
+**External Variables File** (`variables-basic.yaml`):
+```yaml
+# Overrides schema-defined variables
+API_HOST: "external-api.example.com"
+NESTED_VAR: "from-external-file"
+NEW_VAR: "only-in-external"
+```
+
+**Command:**
+```bash
+konfigo -s base-config.yaml -S schema-basic.yaml -V variables-basic.yaml
+```
+
+**Result:** Variables from `-V` file override schema `vars` with same names.
+
+## Variable Substitution Contexts
+
+Variables are substituted in multiple contexts:
+
+### 1. Configuration Values
+```yaml
+# In merged configuration
+database:
+  url: "postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+  timeout: "${CONNECTION_TIMEOUT}"
+```
+
+### 2. Schema Directives
+
+**In Generators:**
+```yaml
+generators:
+  - type: "concat"
+    targetPath: "service.url"
+    format: "https://{service}.${DOMAIN}:{port}"
+    sources:
+      service: "service.name"
+      port: "service.port"
+```
+
+**In Transformations:**
+```yaml
+transform:
+  - type: "setValue"
+    path: "app.environment"
+    value: "${ENVIRONMENT}"
+  - type: "addKeyPrefix"
+    path: "database"
+    prefix: "${ENV_PREFIX}_"
+```
+
+**In Validation:**
+```yaml
+validate:
+  - path: "app.version"
+    rules:
+      regex: "^${VERSION_PATTERN}$"
+```
+
+## Advanced Variable Patterns
+
+### Conditional Variables with Defaults
+
+```yaml
+vars:
+  # Environment-specific configuration
+  - name: "LOG_LEVEL"
+    fromEnv: "APP_LOG_LEVEL"
+    defaultValue: "info"
+  
+  - name: "DEBUG_MODE"
+    fromEnv: "DEBUG"
+    defaultValue: "false"
+  
+  # Database configuration
+  - name: "DB_SSL_MODE"
+    fromEnv: "DATABASE_SSL"
+    defaultValue: "disable"
+  
+  # Feature flags
+  - name: "FEATURE_AUTH"
+    fromPath: "features.authentication.enabled"
+    defaultValue: "true"
+```
+
+### Complex Path Resolution
+
+```yaml
+vars:
+  # Extract nested values
+  - name: "REPLICA_COUNT"
+    fromPath: "deployment.replicas"
+    defaultValue: "2"
+  
+  - name: "SERVICE_VERSION"
+    fromPath: "metadata.labels.version"
+    defaultValue: "latest"
+  
+  # Combine with configuration usage
+config:
+  deployment:
+    replicas: "${REPLICA_COUNT}"
+    image: "myapp:${SERVICE_VERSION}"
+```
+
+### Variable Cascading
+
+Variables can reference configuration values that contain other variables:
+
+```yaml
+# Input configuration
+app:
+  name: "user-service"
+  version: "v1.2.3"
+
+# Schema variables
+vars:
+  - name: "APP_NAME"
+    fromPath: "app.name"
+  - name: "APP_VERSION"
+    fromPath: "app.version"
+
+# Generator using both variables
+generators:
+  - type: "concat"
+    targetPath: "deployment.image"
+    format: "${APP_NAME}:${APP_VERSION}"
+    sources: {}  # No config sources, only variables
+```
+
+## Error Handling
+
+### Missing Required Variables
+
+```yaml
+vars:
+  - name: "REQUIRED_VAR"
+    fromEnv: "MISSING_ENV_VAR"
+    # No defaultValue - will fail if env var not set
+```
+
+**Error:** `Failed to resolve variable REQUIRED_VAR: environment variable MISSING_ENV_VAR not found`
+
+### Invalid Path References
+
+```yaml
+vars:
+  - name: "MISSING_PATH"
+    fromPath: "nonexistent.config.path"
+    # No defaultValue - will fail if path not found
+```
+
+**Error:** `Failed to resolve variable MISSING_PATH: path nonexistent.config.path not found`
+
+### Circular References
+
+```yaml
+# Avoid circular variable references
+config:
+  value1: "${VAR2}"
+  value2: "${VAR1}"
+
+vars:
+  - name: "VAR1"
+    fromPath: "value1"
+  - name: "VAR2"
+    fromPath: "value2"
+```
+
+## Variable Testing Strategies
+
+### 1. Test Variable Precedence
+
+```bash
+# Test 1: Schema variables only
+konfigo -s config.yaml -S schema.yaml
+
+# Test 2: External variables override
+konfigo -s config.yaml -S schema.yaml -V vars.yaml
+
+# Test 3: Environment variables override all
+KONFIGO_VAR_API_HOST=env-override konfigo -s config.yaml -S schema.yaml -V vars.yaml
+```
+
+### 2. Test Default Fallbacks
+
+```bash
+# Ensure defaults work when environment variables missing
+unset SERVICE_PORT
+konfigo -s config.yaml -S schema.yaml
+```
+
+### 3. Test Path Resolution
+
+```bash
+# Verify configuration paths are correctly resolved
+konfigo -s config-with-target-paths.yaml -S schema-with-frompath.yaml
+```
+
+## Best Practices
+
+1. **Use Descriptive Names**: Variable names should clearly indicate their purpose
+2. **Provide Defaults**: Always include `defaultValue` for optional variables
+3. **Document Sources**: Comment variable definitions to explain their sources
+4. **Test All Paths**: Verify variables work with and without external sources
+5. **Environment Separation**: Use `-V` files for environment-specific variables
+6. **Security**: Use `KONFIGO_VAR_*` environment variables for secrets
 6.  If the source doesn't yield a value and no `defaultValue` is provided, Konfigo will error, as the variable cannot be resolved.
 
 This resolved value from the schema `vars` block is then subject to being overridden by the `-V` file or `KONFIGO_VAR_...` environment variables as per the overall precedence rules.

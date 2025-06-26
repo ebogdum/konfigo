@@ -1,0 +1,13 @@
+service:
+  environment: "production"
+  replicas: 3.0
+database:
+  pool_size: 20.0
+  timeout: "30s"
+logging:
+  level: "warn"
+  output: "stdout"
+features:
+  cache: true
+  analytics: true
+  new_feature: true

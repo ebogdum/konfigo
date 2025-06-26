@@ -1,0 +1,35 @@
+validate:
+  # Complex nested path validation
+  - path: "database.credentials.username"
+    rules:
+      required: true
+      type: "string"
+      minLength: 3
+      regex: "^[a-zA-Z][a-zA-Z0-9_]*$"
+  
+  - path: "database.credentials.password"
+    rules:
+      required: true
+      type: "string"
+      minLength: 8
+      regex: "^[a-zA-Z0-9_@$!%*?&]{8,}$"  # Include underscore
+  
+  # Array element validation (if supported)
+  - path: "features.features"
+    rules:
+      type: "slice"
+  
+  # Multiple constraints on same field
+  - path: "service.port"
+    rules:
+      required: true
+      type: "number"
+      min: 1024
+      max: 65535
+  
+  # Floating point validation
+  - path: "timeouts.connect"
+    rules:
+      type: "number"
+      min: 0.1
+      max: 60.0

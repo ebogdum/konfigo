@@ -1,0 +1,15 @@
+application:
+  port: 3000
+  environment: development
+  debug: true
+database:
+  host: dev-db.local
+  port: 5433
+  ssl: false
+logging:
+  level: debug
+  output: file
+  file: /tmp/app.log
+features:
+  cache: false
+  profiling: true

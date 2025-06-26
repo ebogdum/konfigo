@@ -1,0 +1,4 @@
+transform:
+  - type: "renameKey"
+    from: "nonexistent.path"
+    to: "new.path"

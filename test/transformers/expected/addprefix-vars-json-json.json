@@ -1,0 +1,44 @@
+{
+  "apiSettings": {
+    "BaseURL": "HTTP://API.EXAMPLE.COM",
+    "MaxRetries": "Five",
+    "RequestTimeout": "ThirtySeconds"
+  },
+  "database": {
+    "prod_host": "localhost",
+    "prod_name": "myapp_db",
+    "prod_port": 5432
+  },
+  "feature": {
+    "flags": {
+      "betaFeatures": true,
+      "newUI": false
+    }
+  },
+  "legacy": {
+    "api_endpoint": "HTTP://OLD-DOMAIN.COM/api",
+    "auth_token": "legacy-token-123"
+  },
+  "serverConfig": {
+    "server_host": "0.0.0.0",
+    "server_port": 8080,
+    "server_ssl": false
+  },
+  "settings": {
+    "debug": true,
+    "retries": 3,
+    "timeout": 30
+  },
+  "strings": {
+    "CamelCase": "testValue",
+    "Mixed_Format": "mixed-Format_STRING",
+    "UPPER_CASE": "THIRD_VALUE",
+    "kebab-case": "fourth-value",
+    "snake_case": "another_value"
+  },
+  "user": {
+    "email": "alice@example.com",
+    "id": 123,
+    "name": "Alice"
+  }
+}

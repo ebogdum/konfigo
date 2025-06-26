@@ -1,0 +1,4 @@
+transform:
+  - type: "addKeyPrefix"
+    path: "settings"
+    prefix: "http_"

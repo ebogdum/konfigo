@@ -1,0 +1,11 @@
+service:
+  name: ""  # Empty string
+  port: 8080
+  environment: prod
+
+database:
+  host: db.example.com
+  # port missing - required field
+  credentials:
+    username: admin
+    # password missing - required field

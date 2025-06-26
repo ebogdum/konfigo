@@ -1,0 +1,50 @@
+{
+  "cache": {
+    "maxSize": 1000000,
+    "ttl": 3600,
+    "type": "redis"
+  },
+  "database": {
+    "credentials": {
+      "password": "complex_password123",
+      "username": "admin"
+    },
+    "host": "db.example.com",
+    "pools": {
+      "max": 100,
+      "min": 5
+    },
+    "port": 5432,
+    "ssl": true,
+    "timeout": 30.5
+  },
+  "features": {
+    "betaEnabled": true,
+    "features": [
+      "auth",
+      "payments",
+      "analytics"
+    ]
+  },
+  "metrics": {
+    "enabled": true,
+    "interval": 60,
+    "tags": [
+      "env:prod",
+      "service:user"
+    ]
+  },
+  "service": {
+    "apiKey": "abcdef0123456789abcdef0123456789",
+    "debug": false,
+    "environment": "prod",
+    "name": "user-service",
+    "port": 8080,
+    "version": "1.2.3"
+  },
+  "timeouts": {
+    "connect": 10.5,
+    "read": 30,
+    "write": 45
+  }
+}

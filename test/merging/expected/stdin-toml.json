@@ -1,0 +1,7 @@
+{
+  "application": {
+    "name": "stdin-toml-app",
+    "port": 6000
+  }
+}
+

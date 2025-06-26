@@ -1,0 +1,26 @@
+vars:
+  - name: "APP_VERSION"
+    value: "1.2.3"
+  - name: "DOMAIN"
+    value: "example.com"
+generators:
+  - type: "concat"
+    targetPath: "service.url"
+    format: "https://{service}.${DOMAIN}:{port}"
+    sources:
+      service: "service.name"
+      port: "service.port"
+  - type: "concat"
+    targetPath: "database.connectionString"
+    format: "postgresql://{host}:{port}/{db}"
+    sources:
+      host: "database.host"
+      port: "database.port"
+      db: "database.name"
+  - type: "concat"
+    targetPath: "service.fullIdentifier"
+    format: "{name}-{version} - ${APP_VERSION} ({env})"
+    sources:
+      name: "service.name"
+      version: "service.version"
+      env: "environment"

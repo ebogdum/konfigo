@@ -1,0 +1,8 @@
+{
+  "region": "us-east-1",
+  "service": {
+    "identifier": "Service: stdin-test (ID: id-123) running in us-east-1",
+    "instanceId": "id-123",
+    "name": "stdin-test"
+  }
+}

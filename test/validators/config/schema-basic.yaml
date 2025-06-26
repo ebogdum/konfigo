@@ -1,0 +1,125 @@
+validate:
+  # Basic type validations
+  - path: "service.name"
+    rules:
+      required: true
+      type: "string"
+      minLength: 3
+  
+  - path: "service.port"
+    rules:
+      required: true
+      type: "number"
+      min: 1024
+      max: 65535
+  
+  - path: "service.environment"
+    rules:
+      required: true
+      type: "string"
+      enum: ["dev", "staging", "prod"]
+  
+  - path: "service.debug"
+    rules:
+      type: "bool"
+  
+  # String validation with regex
+  - path: "service.apiKey"
+    rules:
+      required: false
+      type: "string"
+      regex: "^[a-f0-9]{32}$"
+  
+  - path: "service.version"
+    rules:
+      type: "string"
+      regex: "^\\d+\\.\\d+\\.\\d+$"
+  
+  # Numeric validations
+  - path: "database.port"
+    rules:
+      required: true
+      type: "number"
+      min: 1
+      max: 65535
+  
+  - path: "database.timeout"
+    rules:
+      type: "number"
+      min: 0.1
+      max: 300.0
+  
+  - path: "database.pools.min"
+    rules:
+      type: "number"
+      min: 1
+      max: 50
+  
+  - path: "database.pools.max"
+    rules:
+      type: "number"
+      min: 10
+      max: 500
+  
+  # Boolean validation
+  - path: "database.ssl"
+    rules:
+      type: "bool"
+  
+  # String validations
+  - path: "database.host"
+    rules:
+      required: true
+      type: "string"
+      minLength: 1
+  
+  - path: "database.credentials.username"
+    rules:
+      required: true
+      type: "string"
+      minLength: 2
+  
+  - path: "database.credentials.password"
+    rules:
+      required: true
+      type: "string"
+      minLength: 8
+  
+  # Array validation
+  - path: "features.features"
+    rules:
+      type: "slice"  # Go's reflect type for arrays/slices
+  
+  - path: "metrics.tags"
+    rules:
+      type: "slice"
+  
+  # More numeric validations
+  - path: "timeouts.read"
+    rules:
+      type: "number"
+      min: 1
+      max: 300
+  
+  - path: "timeouts.write"
+    rules:
+      type: "number"
+      min: 1
+      max: 300
+  
+  - path: "timeouts.connect"
+    rules:
+      type: "number"
+      min: 0.1
+      max: 60.0
+  
+  - path: "cache.ttl"
+    rules:
+      type: "number"
+      min: 60
+      max: 86400  # 24 hours
+  
+  - path: "cache.type"
+    rules:
+      type: "string"
+      enum: ["memory", "redis", "memcached"]
