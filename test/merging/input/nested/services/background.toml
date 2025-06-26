@@ -1,0 +1,9 @@
+[services.worker]
+port = 8003
+replicas = 2
+queue = "tasks"
+
+[services.scheduler]
+port = 8004
+replicas = 1
+cron = "0 */6 * * *"

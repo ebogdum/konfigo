@@ -1,0 +1,12 @@
+{
+  "app": {
+    "name": "base-application",
+    "version": "1.0.0",
+    "port": 8080,
+    "environment": "development"
+  },
+  "global": {
+    "debug": true,
+    "timezone": "UTC"
+  }
+}

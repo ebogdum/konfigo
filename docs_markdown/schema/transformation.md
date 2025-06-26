@@ -1,51 +1,319 @@
 # Schema: Data Transformation
 
-Konfigo's `transform` directives allow you to modify the structure and content of your merged configuration data. Transformations are applied after initial merging and variable resolution (for the transform directives themselves) but typically before final validation.
+Konfigo's `transform` directives modify configuration structure and content after merging but before validation. Transformations process sequentially, with each operation receiving the output from the previous one.
 
-Transformations are defined as a list under the `transform` key in your schema file. Each transformation object in the list defines a specific operation.
+## Processing Order
 
-## Common Behavior
-
-*   **Variable Substitution in Directives**: Before a transformation is applied, Konfigo will perform variable substitution (e.g., `${MY_VAR}`) on the string values within the transformation definition itself (like `path`, `from`, `to`, `prefix`, or `value` if it's a string).
-*   **Order of Execution**: Transformations are executed in the order they appear in the `transform` list. The output of one transformation becomes the input for the next.
+1. Variable substitution in transform directives
+2. Execute transformations in list order
+3. Each transformation modifies the configuration state
+4. Results passed to validation (if defined)
 
 ## Transformation Types
 
-### 1. `renameKey`
+### 1. `renameKey` - Move Configuration Keys
 
-Changes the name of a key at a specified path, effectively moving its value to a new key and deleting the old one.
+Moves a value from one path to another, creating nested structures as needed.
 
-*   **Structure**:
-    ```yaml
-    transform:
-      - type: "renameKey"
-        from: "old.path.to.key"  # Dot-separated path of the key to rename.
-        to: "new.path.to.key"    # Dot-separated new path for the key.
-    ```
-*   **Fields**:
-    *   `type` (Required): `"renameKey"`
-    *   `from` (Required, string): The current dot-separated path to the key you want to rename.
-    *   `to` (Required, string): The new dot-separated path where the value should be moved.
-*   **Behavior**:
-    *   Retrieves the value from the `from` path.
-    *   If the `from` path is not found, an error occurs.
-    *   Sets the retrieved value at the `to` path (creating intermediate maps if necessary).
-    *   Deletes the key at the original `from` path.
-*   **Example**:
-    ```yaml
-    # Config before: { "user": { "name": "Alice", "id": 123 } }
-    transform:
-      - type: "renameKey"
-        from: "user.name"
-        to: "user.fullName"
-    # Config after: { "user": { "fullName": "Alice", "id": 123 } }
-    ```
+**Structure:**
+```yaml
+transform:
+  - type: "renameKey"
+    from: "old.path.to.key"
+    to: "new.path.to.key"
+```
 
-### 2. `changeCase`
+**Fields:**
+- **`type`** (Required): `"renameKey"`
+- **`from`** (Required): Source path (must exist)
+- **`to`** (Required): Destination path (created if needed)
 
-Modifies the case of a string value at a specified path.
+**Example from Tests:**
+```yaml
+# Input config:
+legacy:
+  api_endpoint: "HTTP://OLD-DOMAIN.COM/api"
 
-*   **Structure**:
+# Transform:
+transform:
+  - type: "renameKey"
+    from: "legacy.api_endpoint"
+    to: "service.url"
+
+# Result:
+service:
+  url: "HTTP://OLD-DOMAIN.COM/api"
+# legacy key removed
+```
+
+### 2. `changeCase` - Modify String Case
+
+Converts string values to different case formats.
+
+**Structure:**
+```yaml
+transform:
+  - type: "changeCase"
+    path: "path.to.string.value"
+    case: "lower"  # upper, lower, snake, camel
+```
+
+**Fields:**
+- **`type`** (Required): `"changeCase"`
+- **`path`** (Required): Path to string value
+- **`case`** (Required): Target case format
+
+**Supported Cases:**
+- `"upper"`: UPPERCASE
+- `"lower"`: lowercase  
+- `"snake"`: snake_case
+- `"camel"`: camelCase
+
+**Example from Tests:**
+```yaml
+# Input config:
+service:
+  url: "HTTP://OLD-DOMAIN.COM/api"
+
+# Transform:
+transform:
+  - type: "changeCase"
+    path: "service.url"
+    case: "lower"
+
+# Result:
+service:
+  url: "http://old-domain.com/api"
+```
+
+### 3. `addKeyPrefix` - Prefix Map Keys
+
+Adds a prefix to all keys within a map object.
+
+**Structure:**
+```yaml
+transform:
+  - type: "addKeyPrefix"
+    path: "path.to.map"
+    prefix: "prefix_"
+```
+
+**Fields:**
+- **`type`** (Required): `"addKeyPrefix"`
+- **`path`** (Required): Path to map object
+- **`prefix`** (Required): String to prepend to keys
+
+**Example from Tests:**
+```yaml
+# Input config:
+service:
+  url: "http://old-domain.com/api"
+  environment: "prod"
+
+# Transform:
+vars:
+  - name: "ENV_PREFIX"
+    value: "prod"
+transform:
+  - type: "addKeyPrefix"
+    path: "service"
+    prefix: "${ENV_PREFIX}_"
+
+# Result:
+service:
+  prod_url: "http://old-domain.com/api"
+  prod_environment: "prod"
+```
+
+### 4. `setValue` - Set Configuration Values
+
+Sets any value at a specified path, with variable substitution support.
+
+**Structure:**
+```yaml
+transform:
+  - type: "setValue"
+    path: "path.to.key"
+    value: "any value type"
+```
+
+**Fields:**
+- **`type`** (Required): `"setValue"`
+- **`path`** (Required): Target path (created if needed)
+- **`value`** (Required): Value to set (any type, strings get variable substitution)
+
+**Examples from Tests:**
+
+**String Value with Variables:**
+```yaml
+vars:
+  - name: "ENV_PREFIX"
+    value: "prod"
+transform:
+  - type: "setValue"
+    path: "service.environment"
+    value: "${ENV_PREFIX}"
+
+# Result:
+service:
+  environment: "prod"
+```
+
+**Complex Object Value:**
+```yaml
+transform:
+  - type: "setValue"
+    path: "app.settings"
+    value:
+      enabled: true
+      features: ["auth", "logging"]
+      timeout: 30
+
+# Result:
+app:
+  settings:
+    enabled: true
+    features: ["auth", "logging"]
+    timeout: 30
+```
+
+## Combined Transformations
+
+**Complete Example from Tests:**
+```yaml
+# Input config:
+legacy:
+  api_endpoint: "HTTP://OLD-DOMAIN.COM/api"
+database:
+  host: "db-server"
+
+# Schema with transformations:
+vars:
+  - name: "ENV_PREFIX"
+    value: "prod"
+transform:
+  - type: "renameKey"
+    from: "legacy.api_endpoint"
+    to: "service.url"
+  - type: "changeCase"
+    path: "service.url"
+    case: "lower"
+  - type: "setValue"
+    path: "service.environment"
+    value: "${ENV_PREFIX}"
+  - type: "addKeyPrefix"
+    path: "service"
+    prefix: "${ENV_PREFIX}_"
+
+# Final result:
+database:
+  host: "db-server"
+prod_service:
+  prod_url: "http://old-domain.com/api"
+  prod_environment: "prod"
+```
+
+## Advanced Transformation Patterns
+
+### Conditional Value Setting
+
+Use variables to set values conditionally:
+
+```yaml
+vars:
+  - name: "ENVIRONMENT"
+    fromEnv: "NODE_ENV"
+    defaultValue: "development"
+  - name: "DEBUG_MODE"
+    value: "true"
+    # Only in dev
+transform:
+  - type: "setValue"
+    path: "app.debug"
+    value: "${DEBUG_MODE}"
+```
+
+### Restructuring Legacy Configurations
+
+Transform old configuration formats:
+
+```yaml
+transform:
+  # Migrate old database config
+  - type: "renameKey"
+    from: "db.connection_string"
+    to: "database.url"
+  - type: "renameKey" 
+    from: "db.max_connections"
+    to: "database.pool.max"
+  
+  # Add new required fields
+  - type: "setValue"
+    path: "database.pool.min"
+    value: 5
+```
+
+### Environment-Specific Transformations
+
+Apply different transformations per environment:
+
+```yaml
+vars:
+  - name: "ENV"
+    fromEnv: "ENVIRONMENT"
+    defaultValue: "dev"
+transform:
+  - type: "setValue"
+    path: "app.environment"
+    value: "${ENV}"
+  - type: "addKeyPrefix"
+    path: "database"
+    prefix: "${ENV}_"
+```
+
+## Error Handling
+
+Common transformation errors:
+
+### Path Not Found
+```yaml
+transform:
+  - type: "renameKey"
+    from: "missing.path"  # ERROR: path doesn't exist
+    to: "new.path"
+```
+
+### Type Mismatch
+```yaml
+transform:
+  - type: "changeCase"
+    path: "numeric.value"  # ERROR: value is not a string
+    case: "lower"
+```
+
+### Invalid Case Format
+```yaml
+transform:
+  - type: "changeCase"
+    path: "string.value"
+    case: "invalid"  # ERROR: unsupported case format
+```
+
+### Non-Map Prefix Target
+```yaml
+transform:
+  - type: "addKeyPrefix"
+    path: "string.value"  # ERROR: value is not a map
+    prefix: "pre_"
+```
+
+## Best Practices
+
+1. **Order Matters**: Plan transformation sequence carefully
+2. **Path Validation**: Ensure source paths exist before renaming
+3. **Variable Usage**: Leverage variables for dynamic prefixes and values
+4. **Error Testing**: Test with invalid inputs to verify error handling
+5. **Documentation**: Document complex transformation chains
     ```yaml
     transform:
       - type: "changeCase"

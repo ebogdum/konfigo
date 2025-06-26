@@ -1,0 +1,48 @@
+{
+  "application": {
+    "name": "my-app",
+    "port": 8080,
+    "version": "1.0.0"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600
+  },
+  "database": {
+    "host": "env-specific-db.com",
+    "port": 5432,
+    "ssl": false,
+    "timeout": 30,
+    "user": "app_user"
+  },
+  "features": {
+    "auth": true,
+    "cache": false
+  },
+  "logging": {
+    "format": "text",
+    "level": "info",
+    "output": "stdout"
+  },
+  "services": {
+    "api": {
+      "port": 8002,
+      "replicas": 5
+    },
+    "auth": {
+      "port": 8001,
+      "replicas": 3
+    },
+    "scheduler": {
+      "cron": "0 */6 * * *",
+      "port": 8004,
+      "replicas": 1
+    },
+    "worker": {
+      "port": 8003,
+      "queue": "tasks",
+      "replicas": 2
+    }
+  }
+}
+

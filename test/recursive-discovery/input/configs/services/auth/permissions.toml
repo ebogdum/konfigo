@@ -1,0 +1,10 @@
+[services.auth.permissions]
+admin = ["read", "write", "delete"]
+user = ["read"]
+guest = ["read:public"]
+
+[services.auth.session]
+cookie_name = "session_id"
+secure = true
+http_only = true
+same_site = "strict"

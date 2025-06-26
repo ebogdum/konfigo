@@ -1,0 +1,9 @@
+{
+  "SERVICE_NAME": "prod-service",
+  "SERVICE_HOST": "prod.example.com",
+  "SERVICE_PORT": 443,
+  "REPLICAS": 5,
+  "ENVIRONMENT": "production",
+  "DEBUG": false,
+  "SSL": true
+}

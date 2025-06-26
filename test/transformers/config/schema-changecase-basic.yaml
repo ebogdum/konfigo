@@ -1,0 +1,10 @@
+transform:
+  - type: "changeCase"
+    path: "apiSettings.RequestTimeout"
+    case: "snake"
+  - type: "changeCase"
+    path: "apiSettings.MaxRetries"
+    case: "lower"
+  - type: "changeCase"
+    path: "apiSettings.BaseURL"
+    case: "lower"

@@ -1,0 +1,28 @@
+app:
+  name: base-app
+  port: 8080
+  version: 1.0.0
+database:
+  connection:
+    pool_size: 10
+    timeout: 30
+  host: localhost
+  name: myapp
+  port: 5432
+  ssl: false
+features:
+  auth: true
+  cache: false
+  monitoring: true
+logging:
+  format: json
+  level: info
+  outputs:
+    "0": stderr
+    "1": journald
+    "2": custom
+nested:
+  deep:
+    very:
+      deep:
+        value: original

@@ -1,0 +1,24 @@
+{
+  "vars": [
+    {
+      "name": "APP_VERSION",
+      "value": "1.2.3"
+    },
+    {
+      "name": "DOMAIN",
+      "value": "example.com"
+    }
+  ],
+  "generators": [
+    {
+      "type": "concat",
+      "targetPath": "service.identifier",
+      "format": "Service: {name} (ID: {id}) running in {region}",
+      "sources": {
+        "name": "service.name",
+        "id": "service.instanceId",
+        "region": "region"
+      }
+    }
+  ]
+}

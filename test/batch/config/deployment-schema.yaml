@@ -1,0 +1,22 @@
+vars:
+  - name: "CLUSTER_NAME"
+    value: "production"
+  - name: "NAMESPACE"
+    defaultValue: "default"
+
+transform:
+  - type: "setValue"
+    path: "deployment.name"
+    value: "${SERVICE_NAME}-deployment"
+  - type: "setValue"
+    path: "deployment.replicas"
+    value: "${REPLICAS}"
+  - type: "setValue"
+    path: "deployment.image"
+    value: "${IMAGE_NAME}:${IMAGE_TAG}"
+  - type: "setValue"
+    path: "deployment.namespace"
+    value: "${NAMESPACE}"
+  - type: "setValue"
+    path: "deployment.cluster"
+    value: "${CLUSTER_NAME}"

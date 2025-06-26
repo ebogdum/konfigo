@@ -1,0 +1,31 @@
+{
+  "service": {
+    "name": "data-processor",
+    "instanceId": "instance-007",
+    "version": "1.2.3",
+    "port": 8080
+  },
+  "region": "us-west-2",
+  "environment": "production",
+  "database": {
+    "host": "db-server",
+    "port": 5432,
+    "name": "app_db"
+  },
+  "nested": {
+    "level1": {
+      "level2": {
+        "value": "deep-value"
+      }
+    }
+  },
+  "arrays": ["item1", "item2", "item3"],
+  "numbers": {
+    "int": 42,
+    "float": 3.14
+  },
+  "booleans": {
+    "enabled": true,
+    "debug": false
+  }
+}

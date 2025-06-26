@@ -1,0 +1,49 @@
+CACHE_BACKUP_ENABLED: "false"
+CACHE_CLUSTER_ENABLED: "true"
+CACHE_CLUSTER_NODES: redis1.example.com,redis2.example.com,redis3.example.com
+CACHE_FAILOVER_ENABLED: "true"
+services:
+  auth:
+    enabled: true
+    jwt:
+      algorithm: HS256
+      expiration: 86400
+      secret_key: super-secret-key
+    oauth:
+      client_id: auth-client-123
+      client_secret: auth-secret-456
+      redirect_uri: https://app.example.com/callback
+    permissions:
+      admin:
+        - read
+        - write
+        - delete
+      guest:
+        - read:public
+      user:
+        - read
+    provider: oauth2
+    session:
+      cookie_name: session_id
+      http_only: true
+      same_site: strict
+      secure: true
+    timeout: 10
+  cache:
+    enabled: true
+    provider: redis
+    redis:
+      database: 0
+      host: redis.example.com
+      max_connections: 100
+      password: redis-password
+      port: 6379
+    settings:
+      default_ttl: 3600
+      eviction_policy: allkeys-lru
+      max_memory: 512mb
+    ttl: 3600
+  monitoring:
+    enabled: true
+    interval: 30
+    provider: prometheus

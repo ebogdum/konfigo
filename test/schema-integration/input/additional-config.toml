@@ -1,0 +1,12 @@
+[monitoring]
+enabled = true
+endpoint = "https://metrics.example.com"
+interval = "10s"
+
+[security]
+tls_enabled = true
+cert_path = "/etc/ssl/certs"
+
+[performance]
+max_connections = 1000.0
+request_timeout = "5s"

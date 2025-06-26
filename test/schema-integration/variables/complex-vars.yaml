@@ -1,0 +1,10 @@
+ENVIRONMENT: "staging"
+SERVICE_VERSION: "2.1.0"
+DB_PROTOCOL: "mysql"
+LOG_LEVEL: "warn"
+FEATURE_FLAGS:
+  advanced_caching: true
+  beta_features: false
+API_CONFIG:
+  rate_limit: 1000
+  timeout: "15s"

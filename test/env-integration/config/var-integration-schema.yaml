@@ -1,0 +1,27 @@
+apiVersion: "konfigo/v1alpha1"
+
+vars:
+  - name: "SERVICE_NAME"
+    value: "${KONFIGO_SERVICE_NAME}"
+  - name: "DEPLOYMENT_ENV" 
+    value: "${KONFIGO_ENVIRONMENT}"
+
+generators:
+  - type: "concat"
+    targetPath: "app.full_name"
+    format: "${SERVICE_NAME}-${DEPLOYMENT_ENV}"
+    sources: {}
+
+transform:
+  - type: "setValue"
+    path: "app.environment"
+    value: "${DEPLOYMENT_ENV}"
+  - type: "setValue"
+    path: "deployment.service"
+    value: "${SERVICE_NAME}"
+
+validate:
+  - path: "app.full_name"
+    rules:
+      required: true
+      type: "string"

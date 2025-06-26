@@ -1,0 +1,27 @@
+vars:
+  - name: "GLOBAL_VAR"
+    value: "global-value"
+generators:
+  - type: "concat"
+    targetPath: "mixed.withVariables"
+    format: "Static text + {placeholder} + ${GLOBAL_VAR}"
+    sources:
+      placeholder: "service.name"
+  - type: "concat"
+    targetPath: "mixed.deepPath"
+    format: "Deep: {deep}"
+    sources:
+      deep: "nested.level1.level2.value"
+  - type: "concat"
+    targetPath: "mixed.numberFormat"
+    format: "Port: {port}, Int: {int}, Float: {float}"
+    sources:
+      port: "service.port"
+      int: "numbers.int"
+      float: "numbers.float"
+  - type: "concat"
+    targetPath: "mixed.booleanFormat"
+    format: "Enabled: {enabled}, Debug: {debug}"
+    sources:
+      enabled: "booleans.enabled"
+      debug: "booleans.debug"

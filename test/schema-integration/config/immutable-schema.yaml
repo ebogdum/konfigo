@@ -1,0 +1,26 @@
+apiVersion: "konfigo/v1alpha1"
+
+immutable:
+  - "service.name"
+  - "database.host"
+
+inputSchema:
+  path: "schemas/simple-input-schema.json"
+
+outputSchema:
+  path: "schemas/output-schema.json"
+
+vars:
+  - name: "OVERRIDE_ATTEMPT"
+    value: "should-not-work"
+
+transform:
+  - type: "setValue"
+    path: "service.name"
+    value: "${OVERRIDE_ATTEMPT}"
+  - type: "setValue"
+    path: "database.host"
+    value: "${OVERRIDE_ATTEMPT}"
+  - type: "setValue"
+    path: "logging.level"
+    value: "debug"

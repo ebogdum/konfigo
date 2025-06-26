@@ -1,0 +1,7 @@
+[metrics]
+enabled = true
+endpoint = "https://metrics.example.com"
+
+[additional]
+feature_flags = true
+experimental = false

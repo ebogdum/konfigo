@@ -1,53 +1,354 @@
 # Schema: Data Validation
 
-Konfigo's `validate` directives allow you to enforce rules and constraints on your processed configuration data, ensuring its integrity and correctness before final output. Validation occurs after variables are substituted, generators are run, and transformations are applied.
+Konfigo's `validate` directives enforce rules and constraints on processed configuration data, ensuring integrity before final output. Validation executes after variables, generators, and transformations are complete.
 
-Validation rules are defined within the `validate` key in your schema file. This key holds a list of validation groups, where each group targets a specific path in the configuration and applies a set of rules to the value at that path.
-
-## Structure of a Validation Group
+## Validation Structure
 
 ```yaml
 validate:
-  - path: "path.to.value.to.validate"  # Dot-separated path to the configuration key.
-    rules:                             # Object containing the validation rules for this path.
+  - path: "config.path.to.validate"
+    rules:
       required: true
-      type: "string"                 # Expected data type.
-      minLength: 5
-      enum: ["active", "inactive", "pending"]
-      regex: "^[a-zA-Z0-9_-]+$"
-      # For numbers:
-      # type: "number" # or "integer"
-      # min: 0
-      # max: 100
+      type: "string"
+      minLength: 3
+      regex: "^[a-zA-Z][a-zA-Z0-9_]*$"
 ```
 
-### Fields:
+### Fields
 
-*   `path` (Required, string): A dot-separated path to the value in the configuration that this set of rules should validate.
-*   `rules` (Required, object): An object containing one or more validation rules.
+- **`path`** (Required): Dot-separated path to configuration value
+- **`rules`** (Required): Object containing validation constraints
 
 ## Validation Rules
 
-All rules are optional within the `rules` object. If a value at the specified `path` is not found, only the `required` rule is checked. If `required` is `false` or not set, and the path is not found, other validation rules for that path are skipped.
+### Core Rules
 
-*   `required` (boolean, default: `false`):
-    *   If `true`, the value at `path` must exist in the configuration. If it's missing, validation fails.
-    *   **Example**: `required: true`
+**`required` (boolean, default: false)**
+- When `true`, value must exist at path
+- When `false` or missing, other rules skipped if path not found
 
-*   `type` (string):
-    *   Specifies the expected data type of the value.
-    *   Supported types:
-        *   `"string"`
-        *   `"number"` (matches floating-point or integer numbers; JSON numbers are typically `float64`)
-        *   `"integer"` (specifically checks if a number is a whole number, e.g., `10.0` is a valid integer, but `10.5` is not)
-        *   `"boolean"`
-        *   `"array"` (Note: Konfigo currently uses `reflect.TypeOf(val).Kind().String()` which might return `slice` for arrays/lists from JSON/YAML)
-        *   `"map"` (Note: Konfigo currently uses `reflect.TypeOf(val).Kind().String()` which might return `map` for objects from JSON/YAML)
-    *   If the actual type does not match the expected type, validation fails.
-    *   **Example**: `type: "number"`
+**`type` (string)**
+- Enforces specific data type
+- Supported types: `"string"`, `"number"`, `"integer"`, `"boolean"`, `"slice"`, `"map"`
 
-*   `min` (number):
-    *   For values of `type: "number"` or `"integer"`. The value must be greater than or equal to `min`.
+### String Rules
+
+**`minLength` (integer)**
+- Minimum string length
+
+**`regex` (string)** 
+- ECMA 262 JavaScript-style regular expression pattern
+
+**`enum` (array of strings)**
+- Value must match one of the provided options
+
+### Numeric Rules
+
+**`min` (number)**
+- Minimum value (inclusive) for numbers and integers
+
+**`max` (number)**
+- Maximum value (inclusive) for numbers and integers
+
+## Examples from Tests
+
+### Basic Configuration Validation
+
+**Input Configuration:**
+```yaml
+service:
+  name: "user-service"
+  port: 8080
+  environment: "production"
+database:
+  host: "db-server"
+  port: 5432
+```
+
+**Validation Schema:**
+```yaml
+validate:
+  - path: "service.name"
+    rules:
+      required: true
+      type: "string"
+      minLength: 3
+      regex: "^[a-zA-Z][a-zA-Z0-9_-]*$"
+  
+  - path: "service.port"
+    rules:
+      required: true
+      type: "number"
+      min: 1024
+      max: 65535
+  
+  - path: "service.environment"
+    rules:
+      type: "string"
+      enum: ["development", "staging", "production"]
+```
+
+### Complex Nested Validation
+
+**Schema with Multiple Constraints:**
+```yaml
+validate:
+  # Database credentials validation
+  - path: "database.credentials.username"
+    rules:
+      required: true
+      type: "string"
+      minLength: 3
+      regex: "^[a-zA-Z][a-zA-Z0-9_]*$"
+  
+  - path: "database.credentials.password"
+    rules:
+      required: true
+      type: "string"
+      minLength: 8
+      regex: "^[a-zA-Z0-9_@$!%*?&]{8,}$"
+  
+  # Array validation
+  - path: "features.features"
+    rules:
+      type: "slice"
+  
+  # Multiple constraints on same field
+  - path: "service.port"
+    rules:
+      required: true
+      type: "number"
+      min: 1024
+      max: 65535
+  
+  # Floating point validation
+  - path: "timeouts.connect"
+    rules:
+      type: "number"
+      min: 0.1
+      max: 60.0
+```
+
+### Optional Field Validation
+
+**Configuration:**
+```yaml
+api:
+  endpoint: "https://api.example.com"
+  timeout: 30
+  # apiKey is optional
+cache:
+  enabled: true
+  ttl: 300
+```
+
+**Schema:**
+```yaml
+validate:
+  # Required fields
+  - path: "api.endpoint"
+    rules:
+      required: true
+      type: "string"
+      regex: "^https?://"
+  
+  - path: "api.timeout"
+    rules:
+      required: true
+      type: "number"
+      min: 1
+      max: 300
+  
+  # Optional field with validation when present
+  - path: "api.apiKey"
+    rules:
+      required: false  # Optional
+      type: "string"
+      minLength: 32
+      regex: "^[a-f0-9]{32}$"  # 32-char hex
+  
+  - path: "cache.enabled"
+    rules:
+      type: "boolean"
+  
+  - path: "cache.ttl"
+    rules:
+      type: "number"
+      min: 60
+      max: 3600
+```
+
+### Environment-Specific Validation
+
+**Development vs Production Constraints:**
+```yaml
+# Different validation based on environment
+vars:
+  - name: "ENV"
+    fromEnv: "ENVIRONMENT"
+    defaultValue: "development"
+
+validate:
+  - path: "database.ssl"
+    rules:
+      required: true
+      type: "boolean"
+  
+  # Stricter password rules in production
+  - path: "database.password"
+    rules:
+      required: true
+      type: "string"
+      minLength: 12  # Longer in production
+      regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,}$"
+  
+  # Debug mode validation
+  - path: "app.debug"
+    rules:
+      type: "boolean"
+```
+
+## Validation Processing
+
+### Order of Operations
+
+1. **Path Resolution**: Check if configuration value exists at path
+2. **Required Check**: If `required: true` and path missing, fail immediately
+3. **Skip Missing**: If path missing and not required, skip other rules
+4. **Type Validation**: Check data type if specified
+5. **Constraint Validation**: Apply min/max, minLength, enum, regex rules
+
+### Example Processing Flow
+
+```yaml
+# Configuration:
+service:
+  port: "8080"  # String instead of number
+
+# Validation:
+- path: "service.port"
+  rules:
+    required: true
+    type: "number"
+    min: 1024
+
+# Processing:
+# 1. Path "service.port" exists ✓
+# 2. required: true and value exists ✓
+# 3. type: "number" but value is string ✗ FAIL
+# 4. min: 1024 not checked (type failed)
+```
+
+## Error Scenarios from Tests
+
+### Type Mismatches
+
+```yaml
+# ERROR: Expected number, got string
+service:
+  port: "eight-thousand"
+
+validate:
+  - path: "service.port"
+    rules:
+      type: "number"
+```
+
+### Range Violations
+
+```yaml
+# ERROR: Value 99999 exceeds max 65535
+service:
+  port: 99999
+
+validate:
+  - path: "service.port"
+    rules:
+      type: "number"
+      max: 65535
+```
+
+### Pattern Mismatches
+
+```yaml
+# ERROR: Invalid username format
+user:
+  name: "123invalid"
+
+validate:
+  - path: "user.name"
+    rules:
+      regex: "^[a-zA-Z][a-zA-Z0-9_]*$"
+```
+
+### Enum Violations
+
+```yaml
+# ERROR: "test" not in allowed values
+environment: "test"
+
+validate:
+  - path: "environment"
+    rules:
+      enum: ["development", "staging", "production"]
+```
+
+## Advanced Validation Patterns
+
+### Multi-Field Dependencies
+
+While Konfigo doesn't support cross-field validation directly, you can use generators and transformations to prepare validation:
+
+```yaml
+# Generate computed field for validation
+generators:
+  - type: "concat"
+    targetPath: "validation.dbConnection"
+    format: "{host}:{port}"
+    sources:
+      host: "database.host"
+      port: "database.port"
+
+validate:
+  - path: "validation.dbConnection"
+    rules:
+      regex: "^[a-zA-Z0-9.-]+:[0-9]+$"
+```
+
+### Conditional Validation with Variables
+
+```yaml
+vars:
+  - name: "REQUIRE_SSL"
+    fromEnv: "PROD_MODE"
+    defaultValue: "false"
+
+# Set required SSL field based on environment
+transform:
+  - type: "setValue"
+    path: "database.sslRequired"
+    value: "${REQUIRE_SSL}"
+
+validate:
+  - path: "database.sslRequired"
+    rules:
+      type: "boolean"
+  
+  # Only validate SSL cert if required
+  - path: "database.sslCert"
+    rules:
+      required: false  # Handle conditionally in app logic
+      type: "string"
+```
+
+## Best Practices
+
+1. **Start Simple**: Begin with basic required/type validation
+2. **Gradual Enhancement**: Add constraints incrementally
+3. **Test Edge Cases**: Validate with invalid data to verify error handling
+4. **Document Constraints**: Explain validation rules in configuration templates
+5. **Environment Awareness**: Consider different validation needs per environment
+6. **Error Messages**: Validation errors include path and rule details
     *   **Example**: `min: 0`
 
 *   `max` (number):

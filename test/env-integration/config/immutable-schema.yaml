@@ -1,0 +1,23 @@
+apiVersion: "konfigo/v1alpha1"
+
+immutable:
+  - "app.name"
+  - "database.host"
+  - "security.enabled"
+
+transform:
+  - type: "setValue"
+    path: "runtime.override_test"
+    value: "set-by-schema"
+  - type: "setValue"  
+    path: "app.deployment_time"
+    value: "2025-06-26"
+
+validate:
+  - path: "app.name"
+    rules:
+      required: true
+  - path: "app.port"
+    rules:
+      type: "number"
+      min: 1000

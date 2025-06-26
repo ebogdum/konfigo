@@ -1,0 +1,16 @@
+# Test with complex variable interactions
+BASE_URL: "https://api.example.com"
+API_VERSION: "v1"
+
+konfigo_forEach:
+  items:
+    - SERVICE_NAME: "auth"
+      SUB_PATH: "authentication"
+      PORT: 8001
+    - SERVICE_NAME: "users"
+      SUB_PATH: "user-management"
+      PORT: 8002
+      BASE_URL: "https://internal-api.example.com"  # Override global
+  output:
+    filenamePattern: "output/complex/${SERVICE_NAME}-${SUB_PATH}-${ITEM_INDEX}.json"
+    format: "json"

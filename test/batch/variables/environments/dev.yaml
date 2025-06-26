@@ -1,0 +1,6 @@
+SERVICE_NAME: "dev-service"
+SERVICE_HOST: "dev.localhost"
+SERVICE_PORT: 3000
+REPLICAS: 1
+ENVIRONMENT: "development"
+DEBUG: true

@@ -1,0 +1,12 @@
+services:
+  cache:
+    redis:
+      host: "redis.example.com"
+      port: 6379
+      password: "redis-password"
+      database: 0
+      max_connections: 100
+    settings:
+      default_ttl: 3600
+      max_memory: "512mb"
+      eviction_policy: "allkeys-lru"

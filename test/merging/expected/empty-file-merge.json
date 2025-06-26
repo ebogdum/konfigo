@@ -1,0 +1,32 @@
+{
+  "application": {
+    "environment": "production",
+    "name": "my-app",
+    "port": 9090,
+    "version": "1.0.0"
+  },
+  "database": {
+    "host": "prod-db.example.com",
+    "pool": {
+      "max": 20,
+      "min": 5
+    },
+    "port": 5432,
+    "ssl": true,
+    "user": "app_user"
+  },
+  "features": {
+    "auth": true,
+    "cache": true,
+    "monitoring": true
+  },
+  "logging": {
+    "format": "json",
+    "level": "warn",
+    "output": "stdout"
+  },
+  "secrets": {
+    "api_key": "prod-key-123"
+  }
+}
+

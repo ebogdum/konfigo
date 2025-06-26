@@ -1,0 +1,24 @@
+validate:
+  # Test optional fields (should pass when missing)
+  - path: "optional.field1"
+    rules:
+      required: false
+      type: "string"
+      minLength: 5
+  
+  - path: "optional.field2"
+    rules:
+      type: "number"
+      min: 100
+  
+  # Test existing fields with validation
+  - path: "service.name"
+    rules:
+      type: "string"
+      minLength: 5
+      
+  - path: "service.port"
+    rules:
+      type: "number"
+      min: 8000
+      max: 9000

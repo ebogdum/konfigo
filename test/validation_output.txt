@@ -1,0 +1,48 @@
+[0;34m[1m=== Konfigo Main Validation Suite ===[0m
+[0;36mValidating all test outputs against expected results...[0m
+
+[1;33m[1m=== Validating batch Outputs ===[0m
+[0;34m[1m=== Batch Processing Validation ===[0m
+
+[0;32m✓ Batch Processing Outputs: All files match[0m
+
+[1m=== Validation Summary ===[0m
+Total validations: [0;34m1[0m
+Passed: [0;32m1[0m
+Failed: [0;31m0[0m
+[0;32m[1m🎉 All validations passed![0m
+[0;32mCurrent outputs match expected results exactly.[0m
+[0;32m✓ batch validation PASSED[0m
+
+[1;33m[1m=== Validating env integration Outputs ===[0m
+[0;34m[1m=== Environment Variable Integration Validation ===[0m
+
+[0;36mComparing output files with expected results...[0m
+
+[0;32m✓ env-override.json: Files match[0m
+[0;32m✓ array-overrides.yaml: Files match[0m
+[0;32m✓ basic-overrides.yaml: Files match[0m
+[0;32m✓ combined-env-vars.yaml: Files match[0m
+[0;32m✓ complex-keys.yaml: Files match[0m
+[0;32m✓ env-with-schema.yaml: Files match[0m
+[0;32m✓ immutable-override.yaml: Files match[0m
+[0;32m✓ multi-file-overrides.yaml: Files match[0m
+[0;31m✗ nested-overrides.yaml: Files differ[0m
+[1;33m  Expected: expected/nested-overrides.yaml[0m
+[1;33m  Actual:   output/nested-overrides.yaml[0m
+[0;36m  Differences:[0m
+--- Expected
++++ Actual
+@@ -4,8 +4,8 @@
+   version: 1.0.0
+ database:
+   connection:
+-    pool_size: "25"
+-    timeout: "60"
++    pool_size: 25
++    timeout: 60
+   host: localhost
+   name: myapp
+   port: 5432
+
+[0;31m✗ env integration validation FAILED[0m

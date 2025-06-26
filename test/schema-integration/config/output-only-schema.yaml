@@ -1,0 +1,19 @@
+apiVersion: "konfigo/v1alpha1"
+
+outputSchema:
+  path: "schemas/output-schema.json"
+
+vars:
+  - name: "API_VERSION"
+    value: "v2"
+
+generators:
+  - type: "concat"
+    targetPath: "service.url"
+    format: "https://${service.name}.api.com/${API_VERSION}"
+    sources: {}
+
+transform:
+  - type: "setValue"
+    path: "service.version"
+    value: "${API_VERSION}"

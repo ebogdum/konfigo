@@ -1,0 +1,6 @@
+konfigo_forEach:
+  item: service
+  itemFiles: 
+    - "nonexistent/file1.yaml"
+    - "nonexistent/file2.yaml"
+  output: "services-{service.name}.yaml"

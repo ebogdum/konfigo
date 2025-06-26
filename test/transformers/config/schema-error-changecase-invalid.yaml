@@ -1,0 +1,4 @@
+transform:
+  - type: "changeCase"
+    path: "user.name"
+    case: "invalid_case"

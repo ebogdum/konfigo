@@ -1,0 +1,4 @@
+transform:
+  - type: "renameKey"
+    from: "user.name"
+    to: "user.fullName"

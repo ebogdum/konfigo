@@ -1,0 +1,8 @@
+app:
+  environment: development
+  name: base-application
+  port: 8080
+  version: 1.0.0
+global:
+  debug: true
+  timezone: UTC

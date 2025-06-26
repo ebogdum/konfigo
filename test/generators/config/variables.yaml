@@ -1,0 +1,3 @@
+FQDN_VAR: "myapp.example.com"
+EXTERNAL_VAR: "external-from-file"
+OVERRIDE_VAR: "file-override"

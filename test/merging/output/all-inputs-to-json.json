@@ -1,0 +1,35 @@
+{
+  "APPLICATION_NAME": "my-app",
+  "APPLICATION_PORT": "8080",
+  "APPLICATION_VERSION": "1.0.0",
+  "DATABASE_HOST": "localhost",
+  "DATABASE_PORT": "5432",
+  "DATABASE_SSL": "false",
+  "DATABASE_USER": "app_user",
+  "FEATURES_AUTH": "true",
+  "FEATURES_CACHE": "false",
+  "LOGGING_FORMAT": "text",
+  "LOGGING_LEVEL": "info",
+  "LOGGING_OUTPUT": "stdout",
+  "application": {
+    "name": "my-app",
+    "port": 8080,
+    "version": "1.0.0"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "ssl": false,
+    "user": "app_user"
+  },
+  "features": {
+    "auth": true,
+    "cache": false
+  },
+  "logging": {
+    "format": "text",
+    "level": "info",
+    "output": "stdout"
+  }
+}
+
