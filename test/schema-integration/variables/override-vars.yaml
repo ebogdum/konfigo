@@ -1,0 +1,3 @@
+OVERRIDE_SERVICE_NAME: "integration-test-service"
+OVERRIDE_DB_HOST: "database.prod.com"
+OVERRIDE_PORT: 9090

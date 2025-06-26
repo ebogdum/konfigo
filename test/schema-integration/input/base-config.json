@@ -1,0 +1,27 @@
+{
+  "service": {
+    "name": "base-service",
+    "port": 8080.0,
+    "protocol": "http"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432.0,
+    "name": "myapp",
+    "ssl": true
+  },
+  "logging": {
+    "level": "info",
+    "format": "json"
+  },
+  "features": {
+    "cache": true,
+    "analytics": false,
+    "beta_ui": false
+  },
+  "internal": {
+    "secret_key": "internal-secret-value",
+    "debug_mode": true,
+    "temp_files": "/tmp/myapp"
+  }
+}

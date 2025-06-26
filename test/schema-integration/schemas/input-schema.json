@@ -1,0 +1,46 @@
+{
+  "service": {
+    "name": "",
+    "port": 0,
+    "protocol": "",
+    "environment": "",
+    "replicas": 0
+  },
+  "database": {
+    "host": "",
+    "port": 0,
+    "name": "",
+    "ssl": false,
+    "pool_size": 0,
+    "timeout": ""
+  },
+  "logging": {
+    "level": "",
+    "format": "",
+    "output": ""
+  },
+  "features": {
+    "cache": false,
+    "analytics": false,
+    "beta_ui": false,
+    "new_feature": false
+  },
+  "monitoring": {
+    "enabled": false,
+    "endpoint": "",
+    "interval": ""
+  },
+  "security": {
+    "tls_enabled": false,
+    "cert_path": ""
+  },
+  "performance": {
+    "max_connections": 0.0,
+    "request_timeout": ""
+  },
+  "internal": {
+    "secret_key": "",
+    "debug_mode": false,
+    "temp_files": ""
+  }
+}

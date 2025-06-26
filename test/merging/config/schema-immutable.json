@@ -1,0 +1,7 @@
+{
+  "immutable": [
+    "application.name",
+    "database.port",
+    "logging.level"
+  ]
+}

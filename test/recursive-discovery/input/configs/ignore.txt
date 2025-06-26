@@ -1,0 +1,2 @@
+This is not a config file.
+It should be ignored by konfigo.

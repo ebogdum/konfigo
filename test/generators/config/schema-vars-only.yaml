@@ -1,0 +1,14 @@
+vars:
+  - name: "VAR1"
+    value: "value1"
+  - name: "VAR2"
+    value: "value2"
+generators:
+  - type: "concat"
+    targetPath: "onlyVars.simple"
+    format: "${VAR1} and ${VAR2}"
+    sources: {}
+  - type: "concat"
+    targetPath: "onlyVars.complex"
+    format: "Prefix-${VAR1}-Middle-${VAR2}-Suffix"
+    sources: {}

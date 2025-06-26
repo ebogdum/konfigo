@@ -1,0 +1,30 @@
+[app]
+  format_test = "toml-output"
+  name = "base-app"
+  port = 8080.0
+  version = "1.0.0"
+
+[database]
+  host = "localhost"
+  name = "myapp"
+  port = 5432.0
+  ssl = false
+  [database.connection]
+    pool_size = 10.0
+    timeout = 30.0
+
+[features]
+  auth = true
+  cache = false
+  monitoring = true
+
+[logging]
+  format = "json"
+  level = "info"
+  outputs = ["stdout", "file"]
+
+[nested]
+  [nested.deep]
+    [nested.deep.very]
+      [nested.deep.very.deep]
+        value = "original"

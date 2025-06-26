@@ -1,0 +1,10 @@
+{
+  "myapp": {
+    "name": "lowercase-override",
+    "port": 9090
+  },
+  "database": {
+    "host": "remote-db.com",
+    "user": "service"
+  }
+}

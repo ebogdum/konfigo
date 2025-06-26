@@ -1,0 +1,19 @@
+api:
+  baseUrl: nested.api.com:443
+  retries: 3
+  timeout: 30s
+app:
+  environment: test
+  name: variable-test-app
+app_version: 2.0.0
+database:
+  host: localhost
+  name: testdb
+  port: 5432
+deployment:
+  namespace: production
+  replicas: ${REPLICA_COUNT}
+features_newFeature: true
+nested:
+  config:
+    setting: schema-default

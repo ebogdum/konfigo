@@ -1,0 +1,155 @@
+[0;34m[1m=== Konfigo Main Validation Suite ===[0m
+[0;36mValidating all test outputs against expected results...[0m
+
+[1;33m[1m=== Validating batch Outputs ===[0m
+[0;34m[1m=== Batch Processing Validation ===[0m
+
+[0;32m✓ Batch Processing Outputs: All files match[0m
+
+[1m=== Validation Summary ===[0m
+Total validations: [0;34m1[0m
+Passed: [0;32m1[0m
+Failed: [0;31m0[0m
+[0;32m[1m🎉 All validations passed![0m
+[0;32mCurrent outputs match expected results exactly.[0m
+[0;32m✓ batch validation PASSED[0m
+
+[1;33m[1m=== Validating env integration Outputs ===[0m
+[0;34m[1m=== Environment Variable Integration Validation ===[0m
+
+[0;36mComparing output files with expected results...[0m
+
+[0;32m✓ env-override.json: Files match[0m
+[0;32m✓ array-overrides.yaml: Files match[0m
+[0;32m✓ basic-overrides.yaml: Files match[0m
+[0;32m✓ combined-env-vars.yaml: Files match[0m
+[0;32m✓ complex-keys.yaml: Files match[0m
+[0;32m✓ env-with-schema.yaml: Files match[0m
+[0;32m✓ immutable-override.yaml: Files match[0m
+[0;32m✓ multi-file-overrides.yaml: Files match[0m
+[0;32m✓ nested-overrides.yaml: Files match[0m
+[0;32m✓ new-keys.yaml: Files match[0m
+[0;32m✓ precedence-test.yaml: Files match[0m
+[0;32m✓ type-conversion.yaml: Files match[0m
+[0;32m✓ var-integration.yaml: Files match[0m
+[0;32m✓ env-override.toml: Files match[0m
+[0;32m✓ env-override.env: Files match[0m
+
+[1m=== Validation Summary ===[0m
+Total validations: [0;34m15[0m
+Passed: [0;32m15[0m
+Failed: [0;31m0[0m
+[0;32m[1m🎉 All validations passed![0m
+[0;32mCurrent outputs match expected results exactly.[0m
+[0;32m✓ env integration validation PASSED[0m
+
+[1;33m[1m=== Validating format conversion Outputs ===[0m
+[0;34m[1m=== Format Conversion Validation ===[0m
+
+[0;36mComparing output files with expected results...[0m
+
+[0;32m✓ env-to-json.json: Files match[0m
+[0;32m✓ ini-to-json.json: Files match[0m
+[0;32m✓ json-to-json.json: Files match[0m
+[0;32m✓ toml-to-json.json: Files match[0m
+[0;32m✓ yaml-to-json.json: Files match[0m
+[0;32m✓ env-to-yaml.yaml: Files match[0m
+[0;32m✓ ini-to-yaml.yaml: Files match[0m
+[0;32m✓ json-to-yaml.yaml: Files match[0m
+[0;32m✓ toml-to-yaml.yaml: Files match[0m
+[0;32m✓ yaml-to-yaml.yaml: Files match[0m
+[0;32m✓ env-to-toml.toml: Files match[0m
+[0;32m✓ ini-to-toml.toml: Files match[0m
+[0;32m✓ json-to-toml.toml: Files match[0m
+[0;32m✓ toml-to-toml.toml: Files match[0m
+[0;32m✓ yaml-to-toml.toml: Files match[0m
+[0;32m✓ env-to-env.env: Files match[0m
+[0;32m✓ ini-to-env.env: Files match[0m
+[0;32m✓ json-to-env.env: Files match[0m
+[0;32m✓ toml-to-env.env: Files match[0m
+[0;32m✓ yaml-to-env.env: Files match[0m
+
+[1m=== Validation Summary ===[0m
+Total validations: [0;34m20[0m
+Passed: [0;32m20[0m
+Failed: [0;31m0[0m
+[0;32m[1m🎉 All validations passed![0m
+[0;32mCurrent outputs match expected results exactly.[0m
+[0;32m✓ format conversion validation PASSED[0m
+
+[1;33m[1m=== Validating generators Outputs ===[0m
+[0;34m[1m=== Konfigo Generators Validation Suite ===[0m
+
+[0;36mComparing output files with expected results...[0m
+
+[0;32m✓ basic-concat-json-json.json: Files match[0m
+[0;32m✓ basic-concat-yaml-json.json: Files match[0m
+[0;32m✓ cascading-json-json.json: Files match[0m
+[0;32m✓ cascading-yaml-json.json: Files match[0m
+[0;32m✓ external-vars-json-file-json.json: Files match[0m
+[0;32m✓ external-vars-yaml-file-json.json: Files match[0m
+[0;32m✓ mixed-content-json-json.json: Files match[0m
+[0;32m✓ mixed-content-toml-json.json: Files match[0m
+[0;32m✓ mixed-content-yaml-json.json: Files match[0m
+[0;32m✓ multiple-generators-json-json.json: Files match[0m
+[0;32m✓ multiple-generators-toml-json.json: Files match[0m
+[0;32m✓ multiple-generators-yaml-json.json: Files match[0m
+[0;32m✓ stdin-test.json: Files match[0m
+[0;32m✓ vars-only-json-json.json: Files match[0m
+[0;32m✓ vars-only-yaml-json.json: Files match[0m
+[0;32m✓ basic-concat-json-yaml.yaml: Files match[0m
+[0;32m✓ basic-concat-yaml-yaml.yaml: Files match[0m
+[0;32m✓ cascading-json-yaml.yaml: Files match[0m
+[0;32m✓ cascading-yaml-yaml.yaml: Files match[0m
+[0;32m✓ env-override-test.yaml: Files match[0m
+[0;32m✓ external-vars-json-file-yaml.yaml: Files match[0m
+[0;32m✓ external-vars-yaml-file-yaml.yaml: Files match[0m
+[0;32m✓ mixed-content-json-yaml.yaml: Files match[0m
+[0;32m✓ mixed-content-toml-yaml.yaml: Files match[0m
+[0;32m✓ mixed-content-yaml-yaml.yaml: Files match[0m
+[0;32m✓ multiple-generators-json-yaml.yaml: Files match[0m
+[0;32m✓ multiple-generators-toml-yaml.yaml: Files match[0m
+[0;32m✓ multiple-generators-yaml-yaml.yaml: Files match[0m
+[0;32m✓ vars-only-json-yaml.yaml: Files match[0m
+[0;32m✓ vars-only-yaml-yaml.yaml: Files match[0m
+[0;32m✓ basic-concat-json-toml.toml: Files match[0m
+[0;32m✓ basic-concat-yaml-toml.toml: Files match[0m
+[0;32m✓ cascading-json-toml.toml: Files match[0m
+[0;32m✓ cascading-yaml-toml.toml: Files match[0m
+[0;32m✓ external-vars-json-file-toml.toml: Files match[0m
+[0;32m✓ external-vars-yaml-file-toml.toml: Files match[0m
+[0;32m✓ mixed-content-json-toml.toml: Files match[0m
+[0;32m✓ mixed-content-toml-toml.toml: Files match[0m
+[0;32m✓ mixed-content-yaml-toml.toml: Files match[0m
+[0;32m✓ multiple-generators-json-toml.toml: Files match[0m
+[0;32m✓ multiple-generators-toml-toml.toml: Files match[0m
+[0;32m✓ multiple-generators-yaml-toml.toml: Files match[0m
+[0;32m✓ vars-only-json-toml.toml: Files match[0m
+[0;32m✓ vars-only-yaml-toml.toml: Files match[0m
+
+[1m=== Validation Summary ===[0m
+Total validations: [0;34m44[0m
+Passed: [0;32m44[0m
+Failed: [0;31m0[0m
+[0;32m[1m🎉 All validations passed![0m
+[0;32mCurrent outputs match expected results exactly.[0m
+[0;32m✓ generators validation PASSED[0m
+
+[1;33m[1m=== Validating merging Outputs ===[0m
+[0;34m[1m=== Configuration Merging Validation ===[0m
+
+[0;36mComparing output files with expected results...[0m
+
+[0;31m✗ all-formats-merge.json: Files differ[0m
+[1;33m  Expected: expected/all-formats-merge.json[0m
+[1;33m  Actual:   output/all-formats-merge.json[0m
+[0;36m  Differences:[0m
+--- Expected
++++ Actual
+@@ -40,3 +40,4 @@
+     "interval": 30
+   }
+ }
++
+
+[0;31m✗ merging validation FAILED[0m

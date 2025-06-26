@@ -1,0 +1,5 @@
+generators:
+  - type: "concat"
+    targetPath: "error.noSources"
+    format: "No sources test"
+    sources: {}

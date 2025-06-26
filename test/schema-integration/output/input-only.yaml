@@ -1,0 +1,17 @@
+database:
+  host: localhost
+  name: myapp
+  port: 5432
+  ssl: true
+features:
+  analytics: false
+  cache: true
+logging:
+  format: json
+  level: debug
+security:
+  api_key: generated-api-key
+service:
+  name: simple-service
+  port: 8080
+  protocol: http

@@ -1,0 +1,13 @@
+validate:
+  - path: "environment"
+    rules:
+      type: "string"
+      enum: ["dev", "staging", "prod"]
+  - path: "logLevel"
+    rules:
+      type: "string"
+      enum: ["debug", "info", "warn", "error"]
+  - path: "region"
+    rules:
+      type: "string"
+      enum: ["us-east-1", "us-west-2", "eu-west-1"]

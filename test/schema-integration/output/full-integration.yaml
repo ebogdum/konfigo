@@ -1,0 +1,11 @@
+database:
+  connection_string: postgresql://${database.host}:${database.port}/${database.name}
+  pool_size: 20
+features: {}
+monitoring:
+  enabled: true
+  endpoint: https://metrics.example.com
+service:
+  environment: production
+  name: BASE-SERVICE
+  url: ${service.protocol}://${service.name}:${service.port}

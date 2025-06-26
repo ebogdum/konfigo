@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "variable-test-app",
+    "environment": "test"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "testdb"
+  },
+  "api": {
+    "baseUrl": "${API_HOST}:${API_PORT}",
+    "timeout": "${TIMEOUT}",
+    "retries": 3
+  },
+  "deployment": {
+    "namespace": "production",
+    "replicas": "${REPLICA_COUNT}"
+  },
+  "nested": {
+    "config": {
+      "setting": "${NESTED_VAR}"
+    }
+  }
+}

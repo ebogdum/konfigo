@@ -1,0 +1,20 @@
+[application]
+port = 4000
+environment = "staging"
+
+[database]
+host = "staging-db.example.com"
+pool.min = 2
+pool.max = 10
+
+[logging]
+level = "info"
+format = "structured"
+
+[features]
+cache = true
+experimental = true
+
+[monitoring]
+enabled = true
+interval = 30

@@ -1,0 +1,7 @@
+{
+  "application": {
+    "name": "stdin-app",
+    "port": 5000
+  }
+}
+

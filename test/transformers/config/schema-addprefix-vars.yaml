@@ -1,0 +1,10 @@
+vars:
+  - name: "ENV_PREFIX"
+    value: "prod"
+transform:
+  - type: "addKeyPrefix"
+    path: "database"
+    prefix: "${ENV_PREFIX}_"
+  - type: "addKeyPrefix"
+    path: "serverConfig"
+    prefix: "server_"
