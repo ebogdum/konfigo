@@ -2,7 +2,24 @@
 
 ## [Latest Commit] - 2025-06-27
 
-This changelog documents changes to the `internal` and `test` folders between the previous and current commit.
+### 🔧 **Release Script Enhancement**
+
+#### **Modified Files**
+- **Enhanced**: `release.sh` - Integrated automatic changelog extraction for GitHub releases
+
+#### **New Features**
+- **Added**: `extract_changelog_for_version()` function to automatically extract release notes from `CHANGELOG.md`
+- **Enhanced**: Release creation process now automatically uses changelog content for GitHub releases
+- **Improved**: Fallback mechanism when version-specific content isn't found in changelog
+- **Added**: Automatic cleanup of temporary files during release process
+
+#### **Configuration Changes**
+- **Updated**: Default `notes_file` configuration to use `CHANGELOG.md`
+- **Enhanced**: Release notes extraction supports various changelog formats (with/without brackets, version prefixes)
+
+### 🏗️ **Internal Architecture Changes**
+
+This section documents changes to the `internal` and `test` folders between the previous and current commit.
 
 ### 🏗️ **Internal Architecture Changes**
 
