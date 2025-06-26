@@ -1,5 +1,5 @@
 api:
-  baseUrl: env-override.example.com:9090
+  baseUrl: env-override.example.com:8080
   retries: 3
   timeout: 30s
 app:
