@@ -1,0 +1,21 @@
+# Global deployment settings
+CLUSTER_NAME: "k8s-prod"
+NAMESPACE: "applications"
+
+konfigo_forEach:
+  items:
+    - SERVICE_NAME: "web-frontend"
+      IMAGE_NAME: "nginx"
+      IMAGE_TAG: "1.21"
+      REPLICAS: 2
+    - SERVICE_NAME: "api-backend"
+      IMAGE_NAME: "node"
+      IMAGE_TAG: "16-alpine"
+      REPLICAS: 4
+      NAMESPACE: "backend"  # Override global namespace
+    - SERVICE_NAME: "worker"
+      IMAGE_NAME: "python"
+      IMAGE_TAG: "3.9"
+      REPLICAS: 1
+  output:
+    filenamePattern: "output/deployments/${NAMESPACE}/${SERVICE_NAME}-deployment-${ITEM_INDEX}.yaml"

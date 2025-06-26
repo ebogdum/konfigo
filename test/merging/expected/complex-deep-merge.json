@@ -1,0 +1,47 @@
+{
+  "application": {
+    "environment": "production",
+    "name": "my-app",
+    "port": 9090,
+    "version": "1.0.0"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600
+  },
+  "database": {
+    "host": "prod-db.example.com",
+    "pool": {
+      "max": 20,
+      "min": 5
+    },
+    "port": 5432,
+    "ssl": true,
+    "timeout": 30,
+    "user": "app_user"
+  },
+  "features": {
+    "auth": true,
+    "cache": true,
+    "monitoring": true
+  },
+  "logging": {
+    "format": "json",
+    "level": "warn",
+    "output": "stdout"
+  },
+  "secrets": {
+    "api_key": "prod-key-123"
+  },
+  "services": {
+    "api": {
+      "port": 8002,
+      "replicas": 5
+    },
+    "auth": {
+      "port": 8001,
+      "replicas": 3
+    }
+  }
+}
+

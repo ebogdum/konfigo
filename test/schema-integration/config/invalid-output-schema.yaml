@@ -1,0 +1,25 @@
+apiVersion: "konfigo/v1alpha1"
+
+outputSchema:
+  path: "schemas/output-schema-strict.json"
+  strict: true
+
+transform:
+  - type: "setValue"
+    path: "service.name"
+    value: "test-service"
+  - type: "setValue"
+    path: "service.port"
+    value: 8080
+  - type: "setValue"
+    path: "database.host"
+    value: "localhost"
+  - type: "setValue"
+    path: "database.name"  
+    value: "myapp"
+  - type: "setValue"
+    path: "features.cache"
+    value: true
+  - type: "setValue"
+    path: "extra_field"
+    value: "not-in-output-schema"

@@ -1,0 +1,12 @@
+app:
+  environment: "production"
+  debug: false
+database:
+  pool_size: 20
+  ssl: true
+logging:
+  level: "warn"
+  format: "text"
+security:
+  enabled: true
+  tls_version: "1.3"

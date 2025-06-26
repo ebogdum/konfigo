@@ -1,0 +1,26 @@
+app:
+  name: base-app
+  port: 8080
+  version: 1.0.0
+database:
+  connection:
+    pool_size: 25
+    timeout: 60
+  host: localhost
+  name: myapp
+  port: 5432
+  ssl: false
+features:
+  auth: true
+  cache: false
+  monitoring: true
+logging:
+  format: json
+  level: info
+  outputs:
+    "0": syslog
+nested:
+  deep:
+    very:
+      deep:
+        value: env-modified

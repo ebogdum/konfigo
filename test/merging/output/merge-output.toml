@@ -1,0 +1,24 @@
+[application]
+  debug = true
+  environment = "development"
+  name = "my-app"
+  port = 3000
+  version = "1.0.0"
+
+[database]
+  host = "dev-db.local"
+  port = 5433
+  ssl = false
+  user = "app_user"
+
+[features]
+  auth = true
+  cache = false
+  profiling = true
+
+[logging]
+  file = "/tmp/app.log"
+  format = "text"
+  level = "debug"
+  output = "file"
+

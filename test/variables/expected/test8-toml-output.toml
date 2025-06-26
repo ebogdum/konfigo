@@ -1,0 +1,21 @@
+[api]
+  baseUrl = "env-override.example.com:9090"
+  retries = 3.0
+  timeout = "30s"
+
+[app]
+  environment = "test"
+  name = "variable-test-app"
+
+[database]
+  host = "localhost"
+  name = "testdb"
+  port = 5432.0
+
+[deployment]
+  namespace = "production"
+  replicas = "${REPLICA_COUNT}"
+
+[nested]
+  [nested.config]
+    setting = "from-environment"

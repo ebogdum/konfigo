@@ -1,0 +1,7 @@
+services:
+  auth:
+    port: 8001
+    replicas: 3
+  api:
+    port: 8002
+    replicas: 5

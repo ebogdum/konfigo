@@ -1,0 +1,8 @@
+{
+  "edgeCase1": 0.1,
+  "edgeCase2": 99.9,
+  "longString": "abcdefghijklmnopqrstuvwxyz",
+  "maxValue": 100,
+  "minValue": 0,
+  "shortString": "abc"
+}

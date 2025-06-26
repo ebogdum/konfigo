@@ -1,0 +1,34 @@
+app:
+  name: base-app
+  port: 8080
+  version: 1.0.0
+database:
+  connection:
+    pool_size: 10
+    timeout: 30
+  host: localhost
+  name: myapp
+  port: 5432
+  ssl: false
+features:
+  auth: true
+  cache: false
+  monitoring: true
+logging:
+  format: json
+  level: info
+  outputs:
+    - stdout
+    - file
+nested:
+  deep:
+    very:
+      deep:
+        value: original
+new_section:
+  config:
+    timeout: 45
+  enabled: true
+runtime:
+  deployment_id: deploy-123
+  environment: staging

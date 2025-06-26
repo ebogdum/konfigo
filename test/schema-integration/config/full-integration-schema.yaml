@@ -1,0 +1,57 @@
+apiVersion: "konfigo/v1alpha1"
+
+inputSchema:
+  path: "schemas/simple-input-schema.json"
+  strict: false
+
+outputSchema:
+  path: "schemas/output-schema.json"
+  strict: false
+
+vars:
+  - name: "ENVIRONMENT"
+    value: "production"
+  - name: "SERVICE_VERSION"
+    value: "1.0.0"
+  - name: "DB_PROTOCOL"
+    value: "postgresql"
+
+generators:
+  - type: "concat"
+    targetPath: "service.url"
+    format: "${service.protocol}://${service.name}:${service.port}"
+    sources: {}
+  - type: "concat"
+    targetPath: "database.connection_string"
+    format: "${DB_PROTOCOL}://${database.host}:${database.port}/${database.name}"
+    sources: {}
+
+transform:
+  - type: "setValue"
+    path: "service.environment"
+    value: "${ENVIRONMENT}"
+  - type: "setValue"
+    path: "service.instance_count"
+    value: "3"
+  - type: "changeCase"
+    path: "service.name"
+    case: "upper"
+  - type: "addKeyPrefix"
+    path: "features"
+    prefix: "feature_"
+
+validate:
+  - path: "service.name"
+    rules:
+      required: true
+      type: "string"
+  - path: "service.port"
+    rules:
+      type: "number"
+      min: 1024
+      max: 65535
+  - path: "database.pool_size"
+    rules:
+      type: "number"
+      min: 1
+      max: 100

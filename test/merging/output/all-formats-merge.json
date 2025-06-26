@@ -1,0 +1,43 @@
+{
+  "APPLICATION_ENVIRONMENT": "test",
+  "APPLICATION_PORT": "7000",
+  "DATABASE_HOST": "test-db.local",
+  "DATABASE_SSL": "false",
+  "FEATURES_AUTH": "false",
+  "FEATURES_TESTING": "true",
+  "LOGGING_LEVEL": "debug",
+  "application": {
+    "debug": true,
+    "environment": "staging",
+    "name": "my-app",
+    "port": 4000,
+    "version": "1.0.0"
+  },
+  "database": {
+    "host": "staging-db.example.com",
+    "pool": {
+      "max": 10,
+      "min": 2
+    },
+    "port": 5433,
+    "ssl": false,
+    "user": "app_user"
+  },
+  "features": {
+    "auth": true,
+    "cache": true,
+    "experimental": true,
+    "profiling": true
+  },
+  "logging": {
+    "file": "/tmp/app.log",
+    "format": "structured",
+    "level": "info",
+    "output": "file"
+  },
+  "monitoring": {
+    "enabled": true,
+    "interval": 30
+  }
+}
+

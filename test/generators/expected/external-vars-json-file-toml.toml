@@ -1,0 +1,32 @@
+arrays = ["item1", "item2", "item3"]
+environment = "production"
+region = "us-west-2"
+
+[booleans]
+  debug = false
+  enabled = true
+
+[cascading]
+  final = "Final: Base: data-processor-1.2.3, Region: us-west-2 + external-from-file"
+  step1 = "data-processor-1.2.3"
+  step2 = "Base: data-processor-1.2.3, Region: us-west-2"
+
+[database]
+  host = "db-server"
+  name = "app_db"
+  port = 5432.0
+
+[nested]
+  [nested.level1]
+    [nested.level1.level2]
+      value = "deep-value"
+
+[numbers]
+  float = 3.14
+  int = 42.0
+
+[service]
+  instanceId = "instance-007"
+  name = "data-processor"
+  port = 8080.0
+  version = "1.2.3"

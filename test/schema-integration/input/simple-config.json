@@ -1,0 +1,21 @@
+{
+  "service": {
+    "name": "simple-service",
+    "port": 8080.0,
+    "protocol": "http"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432.0,
+    "name": "myapp",
+    "ssl": true
+  },
+  "logging": {
+    "level": "info",
+    "format": "json"
+  },
+  "features": {
+    "cache": true,
+    "analytics": false
+  }
+}

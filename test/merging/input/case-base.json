@@ -1,0 +1,10 @@
+{
+  "MyApp": {
+    "Name": "Mixed-Case-App",
+    "PORT": 8080
+  },
+  "Database": {
+    "HOST": "localhost",
+    "User": "admin"
+  }
+}

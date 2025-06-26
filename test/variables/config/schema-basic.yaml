@@ -1,0 +1,44 @@
+vars:
+  # Test literal value
+  - name: "API_HOST"
+    value: "api.example.com"
+  
+  # Test fromEnv with default
+  - name: "API_PORT"
+    fromEnv: "SERVICE_PORT"
+    defaultValue: "8080"
+    
+  # Test fromPath
+  - name: "TARGET_NAMESPACE"
+    fromPath: "deployment.namespace"
+    
+  # Test fromEnv with default (won't fail if env var missing)
+  - name: "DATABASE_PASSWORD"
+    fromEnv: "DB_PASS"
+    defaultValue: "default-password"
+    
+  # Test simple default value
+  - name: "TIMEOUT"
+    defaultValue: "30s"
+    
+  # Test fromPath with default
+  - name: "REPLICA_COUNT"
+    fromPath: "deployment.replicas"
+    defaultValue: "2"
+    
+  # Test variable that should be overridden by -V file
+  - name: "NESTED_VAR"
+    value: "schema-default"
+
+config:
+  api:
+    host: "${API_HOST}"
+    port: "${API_PORT}"
+    endpoint: "${API_HOST}:${API_PORT}/api/v1"
+  database:
+    connectionString: "postgres://user:${DATABASE_PASSWORD}@${API_HOST}:5432/db"
+  settings:
+    timeout: "${TIMEOUT}"
+    namespace: "${TARGET_NAMESPACE}"
+    replicas: "${REPLICA_COUNT}"
+    nestedSetting: "${NESTED_VAR}"

@@ -1,0 +1,26 @@
+apiVersion: "konfigo/v1alpha1"
+
+vars:
+  - name: "ENVIRONMENT"
+    value: "development"
+  - name: "LOG_LEVEL"
+    value: "info"
+
+transform:
+  - type: "setValue"
+    path: "metadata.discovered_at"
+    value: "2025-06-26T20:45:00Z"
+  - type: "addKeyPrefix"
+    path: "services"
+    prefix: "svc_"
+
+validate:
+  - path: "app.name"
+    rules:
+      required: true
+      type: "string"
+  - path: "app.port"
+    rules:
+      type: "number"
+      min: 1000
+      max: 65535

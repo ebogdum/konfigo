@@ -1,0 +1,10 @@
+{
+  "database": {
+    "host": "env-specific-db.com",
+    "timeout": 30
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600
+  }
+}

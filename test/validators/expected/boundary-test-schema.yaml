@@ -1,0 +1,29 @@
+validate:
+  - path: "minValue"
+    rules:
+      type: "number"
+      min: 0
+      max: 100
+  - path: "maxValue"
+    rules:
+      type: "number"
+      min: 0
+      max: 100
+  - path: "edgeCase1"
+    rules:
+      type: "number"
+      min: 0.1
+      max: 100.0
+  - path: "edgeCase2"
+    rules:
+      type: "number"
+      min: 0.0
+      max: 99.9
+  - path: "shortString"
+    rules:
+      type: "string"
+      minLength: 3
+  - path: "longString"
+    rules:
+      type: "string"
+      minLength: 20

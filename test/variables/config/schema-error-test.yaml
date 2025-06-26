@@ -1,0 +1,12 @@
+vars:
+  # This will fail if MISSING_ENV is not set
+  - name: "REQUIRED_VAR"
+    fromEnv: "MISSING_ENV"
+  
+  # This will fail if path doesn't exist
+  - name: "NONEXISTENT_PATH"
+    fromPath: "nonexistent.path"
+
+config:
+  testValue: "${REQUIRED_VAR}"
+  anotherValue: "${NONEXISTENT_PATH}"

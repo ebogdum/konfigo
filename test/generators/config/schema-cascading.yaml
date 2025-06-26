@@ -1,0 +1,21 @@
+vars:
+  - name: "EXTERNAL_VAR"
+    value: "external-value"
+generators:
+  - type: "concat"
+    targetPath: "cascading.step1"
+    format: "{name}-{version}"
+    sources:
+      name: "service.name"
+      version: "service.version"
+  - type: "concat"
+    targetPath: "cascading.step2"
+    format: "Base: {step1}, Region: {region}"
+    sources:
+      step1: "cascading.step1"
+      region: "region"
+  - type: "concat"
+    targetPath: "cascading.final"
+    format: "Final: {step2} + ${EXTERNAL_VAR}"
+    sources:
+      step2: "cascading.step2"

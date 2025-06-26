@@ -1,0 +1,83 @@
+CACHE_BACKUP_ENABLED = "false"
+CACHE_CLUSTER_ENABLED = "true"
+CACHE_CLUSTER_NODES = "redis1.example.com,redis2.example.com,redis3.example.com"
+CACHE_FAILOVER_ENABLED = "true"
+DATABASE_AUTO_MIGRATE = "true"
+DATABASE_LOG_QUERIES = "false"
+DATABASE_MIGRATION_VERSION = "1.2.3"
+DATABASE_SLOW_QUERY_THRESHOLD = "1000"
+
+[app]
+  environment = "development"
+  features = ["authentication", "logging", "monitoring"]
+  name = "base-application"
+  port = 8080.0
+  version = "1.0.0"
+  [app.config]
+    max_connections = 1000
+    timeout = 30
+  [app.deployment]
+    region = "us-west-2"
+    replicas = 3
+    [app.deployment.resources]
+      cpu = "500m"
+      memory = "1Gi"
+
+[database]
+  host = "localhost"
+  name = "myapp_db"
+  port = 5432
+  ssl = true
+  [database.backup]
+    enabled = true
+    retention_days = 30
+    schedule = "0 2 * * *"
+  [database.connection]
+    pool_size = 20
+    retry_attempts = 3
+    timeout = 45
+
+[global]
+  debug = true
+  timezone = "UTC"
+
+[services]
+  [services.auth]
+    enabled = true
+    provider = "oauth2"
+    timeout = 10.0
+    [services.auth.jwt]
+      algorithm = "HS256"
+      expiration = 86400
+      secret_key = "super-secret-key"
+    [services.auth.oauth]
+      client_id = "auth-client-123"
+      client_secret = "auth-secret-456"
+      redirect_uri = "https://app.example.com/callback"
+    [services.auth.permissions]
+      admin = ["read", "write", "delete"]
+      guest = ["read:public"]
+      user = ["read"]
+    [services.auth.session]
+      cookie_name = "session_id"
+      http_only = true
+      same_site = "strict"
+      secure = true
+  [services.cache]
+    enabled = true
+    provider = "redis"
+    ttl = 3600.0
+    [services.cache.redis]
+      database = 0
+      host = "redis.example.com"
+      max_connections = 100
+      password = "redis-password"
+      port = 6379
+    [services.cache.settings]
+      default_ttl = 3600
+      eviction_policy = "allkeys-lru"
+      max_memory = "512mb"
+  [services.monitoring]
+    enabled = true
+    interval = 30.0
+    provider = "prometheus"

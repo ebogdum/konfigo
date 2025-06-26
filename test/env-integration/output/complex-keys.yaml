@@ -1,0 +1,32 @@
+123numeric:
+  start: numeric-key
+app:
+  name: base-app
+  port: 8080
+  version: 1.0.0
+complex-key-name:
+  with_underscore:
+    and-dash: complex-value
+database:
+  connection:
+    pool_size: 10
+    timeout: 30
+  host: localhost
+  name: myapp
+  port: 5432
+  ssl: false
+features:
+  auth: true
+  cache: false
+  monitoring: true
+logging:
+  format: json
+  level: info
+  outputs:
+    - stdout
+    - file
+nested:
+  deep:
+    very:
+      deep:
+        value: original

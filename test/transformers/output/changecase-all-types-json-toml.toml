@@ -1,0 +1,40 @@
+[apiSettings]
+  BaseURL = "HTTP://API.EXAMPLE.COM"
+  MaxRetries = "Five"
+  RequestTimeout = "ThirtySeconds"
+
+[database]
+  host = "localhost"
+  name = "myapp_db"
+  port = 5432.0
+
+[feature]
+  [feature.flags]
+    betaFeatures = true
+    newUI = false
+
+[legacy]
+  api_endpoint = "HTTP://OLD-DOMAIN.COM/api"
+  auth_token = "legacy-token-123"
+
+[serverConfig]
+  host = "0.0.0.0"
+  port = 8080.0
+  ssl = false
+
+[settings]
+  debug = true
+  retries = 3.0
+  timeout = 30.0
+
+[strings]
+  CamelCase = "TESTVALUE"
+  Mixed_Format = "mixed-format-string"
+  UPPER_CASE = "third_value"
+  kebab-case = "fourth_value"
+  snake_case = "AnotherValue"
+
+[user]
+  email = "alice@example.com"
+  id = 123.0
+  name = "Alice"

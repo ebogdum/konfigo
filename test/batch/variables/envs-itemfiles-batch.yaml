@@ -1,0 +1,12 @@
+# Global shared settings
+GLOBAL_API_KEY: "shared-api-key-123"
+MONITORING_ENABLED: true
+
+konfigo_forEach:
+  itemFiles:
+    - "environments/dev.yaml"
+    - "environments/staging.yaml"
+    - "environments/prod.json"
+  output:
+    filenamePattern: "output/envs/${ENVIRONMENT}-${ITEM_FILE_BASENAME}-config-${ITEM_INDEX}.yaml"
+    format: "yaml"

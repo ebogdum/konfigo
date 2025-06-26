@@ -1,0 +1,19 @@
+[application]
+name = "my-app"
+version = "1.0.0"
+port = 8080
+
+[database]
+host = "localhost"
+port = 5432
+user = "app_user"
+ssl = false
+
+[logging]
+level = "info"
+format = "text"
+output = "stdout"
+
+[features]
+auth = true
+cache = false

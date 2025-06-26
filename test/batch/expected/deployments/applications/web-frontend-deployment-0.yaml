@@ -1,0 +1,18 @@
+application:
+  name: base-app
+  version: 1.0.0
+database:
+  host: localhost
+  port: 5432
+  ssl: false
+logging:
+  format: text
+  level: info
+server:
+  host: localhost
+  port: 8080
+service:
+  environment: ${ENVIRONMENT}
+  name: web-frontend
+  replicas: "2"
+  url: http://${SERVICE_HOST}:${SERVICE_PORT}

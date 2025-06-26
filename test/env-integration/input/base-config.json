@@ -1,0 +1,36 @@
+{
+  "app": {
+    "name": "base-app",
+    "version": "1.0.0",
+    "port": 8080
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "myapp",
+    "ssl": false,
+    "connection": {
+      "timeout": 30,
+      "pool_size": 10
+    }
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "outputs": ["stdout", "file"]
+  },
+  "features": {
+    "auth": true,
+    "cache": false,
+    "monitoring": true
+  },
+  "nested": {
+    "deep": {
+      "very": {
+        "deep": {
+          "value": "original"
+        }
+      }
+    }
+  }
+}

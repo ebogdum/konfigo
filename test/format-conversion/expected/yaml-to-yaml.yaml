@@ -1,0 +1,23 @@
+app:
+  environment: test
+  name: format-test-app
+  version: 1.0.0
+database:
+  host: db.example.com
+  name: testdb
+  password: testpass
+  port: 5432
+  ssl_mode: prefer
+  username: testuser
+features:
+  caching: true
+  logging: true
+  metrics: false
+server:
+  host: localhost
+  port: 8080
+  ssl: false
+settings:
+  debug: false
+  max_connections: 100
+  timeout: 30

@@ -1,0 +1,24 @@
+apiVersion: "konfigo/v1alpha1"
+
+inputSchema:
+  path: "schemas/simple-input-schema.json"
+
+vars:
+  - name: "LOG_LEVEL"
+    value: "debug"
+
+transform:
+  - type: "setValue"
+    path: "logging.level"
+    value: "${LOG_LEVEL}"
+  - type: "setValue"
+    path: "security.api_key"
+    value: "generated-api-key"
+
+validate:
+  - path: "service.name"
+    rules:
+      required: true
+  - path: "logging.level"
+    rules:
+      enum: ["debug", "info", "warn", "error"]

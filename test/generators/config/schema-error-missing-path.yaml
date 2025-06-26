@@ -1,0 +1,6 @@
+generators:
+  - type: "concat"
+    targetPath: "error.missingPath"
+    format: "Value: {nonexistent}"
+    sources:
+      nonexistent: "path.that.does.not.exist"

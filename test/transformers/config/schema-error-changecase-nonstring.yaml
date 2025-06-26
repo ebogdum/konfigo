@@ -1,0 +1,4 @@
+transform:
+  - type: "changeCase"
+    path: "user.id"
+    case: "upper"

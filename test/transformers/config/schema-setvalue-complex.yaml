@@ -1,0 +1,15 @@
+transform:
+  - type: "setValue"
+    path: "feature.newFlags"
+    value:
+      advancedUI: true
+      betaAccess: false
+      experiments:
+        - "feature-a"
+        - "feature-b"
+  - type: "setValue"
+    path: "app.metadata"
+    value:
+      created: "2024-01-01"
+      authors: ["developer1", "developer2"]
+      license: "MIT"

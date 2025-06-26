@@ -1,0 +1,52 @@
+validate:
+  # String validations (work well across all formats)
+  - path: "service.name"
+    rules:
+      required: true
+      type: "string"
+      minLength: 3
+  
+  - path: "service.environment"
+    rules:
+      required: true
+      type: "string"
+      enum: ["dev", "staging", "prod"]
+  
+  - path: "service.apiKey"
+    rules:
+      required: false
+      type: "string"
+      regex: "^[a-f0-9]{32}$"
+  
+  - path: "service.version"
+    rules:
+      type: "string"
+      regex: "^\\d+\\.\\d+\\.\\d+$"
+  
+  # Boolean validations (work across formats)
+  - path: "service.debug"
+    rules:
+      type: "bool"
+  
+  - path: "database.ssl"
+    rules:
+      type: "bool"
+  
+  # Required field validation (works across formats)
+  - path: "database.host"
+    rules:
+      required: true
+      type: "string"
+      minLength: 1
+  
+  - path: "database.credentials.password"
+    rules:
+      required: true
+      type: "string"
+      minLength: 8
+  
+  # Type validation without min/max (avoids type issues)
+  - path: "cache.type"
+    rules:
+      type: "string"
+      enum: ["memory", "redis", "memcached"]

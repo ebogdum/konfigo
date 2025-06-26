@@ -1,0 +1,8 @@
+database:
+  connection_string: mysql://${database.host}:${database.port}/${database.name}
+  pool_size: 20
+features: {}
+service:
+  environment: staging
+  name: BASE-SERVICE
+  url: ${service.protocol}://${service.name}:${service.port}

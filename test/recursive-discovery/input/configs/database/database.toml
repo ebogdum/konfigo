@@ -1,0 +1,15 @@
+[database]
+host = "localhost"
+port = 5432
+name = "myapp_db"
+ssl = true
+
+[database.connection]
+pool_size = 20
+timeout = 45
+retry_attempts = 3
+
+[database.backup]
+enabled = true
+schedule = "0 2 * * *"
+retention_days = 30

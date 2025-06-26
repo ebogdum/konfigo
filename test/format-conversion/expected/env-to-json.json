@@ -1,0 +1,20 @@
+{
+  "APP_ENVIRONMENT": "test",
+  "APP_NAME": "format-test-app",
+  "APP_VERSION": "1.0.0",
+  "DATABASE_HOST": "db.example.com",
+  "DATABASE_NAME": "testdb",
+  "DATABASE_PASSWORD": "testpass",
+  "DATABASE_PORT": "5432",
+  "DATABASE_SSL_MODE": "prefer",
+  "DATABASE_USERNAME": "testuser",
+  "FEATURES_CACHING": "true",
+  "FEATURES_LOGGING": "true",
+  "FEATURES_METRICS": "false",
+  "SERVER_HOST": "localhost",
+  "SERVER_PORT": "8080",
+  "SERVER_SSL": "false",
+  "SETTINGS_DEBUG": "false",
+  "SETTINGS_MAX_CONNECTIONS": "100",
+  "SETTINGS_TIMEOUT": "30"
+}

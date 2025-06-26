@@ -1,0 +1,16 @@
+vars:
+  - name: "ENV_PREFIX"
+    value: "prod"
+transform:
+  - type: "renameKey"
+    from: "legacy.api_endpoint"
+    to: "service.url"
+  - type: "changeCase"
+    path: "service.url"
+    case: "lower"
+  - type: "setValue"
+    path: "service.environment"
+    value: "${ENV_PREFIX}"
+  - type: "addKeyPrefix"
+    path: "service"
+    prefix: "${ENV_PREFIX}_"

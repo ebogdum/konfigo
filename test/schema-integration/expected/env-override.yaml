@@ -1,0 +1,8 @@
+database: {}
+features:
+  analytics: false
+  cache: true
+service:
+  environment: development
+  name: ENV-OVERRIDE-SERVICE
+  url: ${service.protocol}://${service.name}:${service.port}

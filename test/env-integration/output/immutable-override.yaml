@@ -1,0 +1,36 @@
+app:
+  debug: false
+  deployment_time: "2025-06-26"
+  environment: production
+  name: base-app
+  port: 8080
+  version: 4.0.0
+database:
+  connection:
+    pool_size: 10
+    timeout: 30
+  host: localhost
+  name: myapp
+  pool_size: 20
+  port: 5432
+  ssl: true
+features:
+  auth: true
+  cache: false
+  monitoring: true
+logging:
+  format: text
+  level: warn
+  outputs:
+    - stdout
+    - file
+nested:
+  deep:
+    very:
+      deep:
+        value: original
+runtime:
+  override_test: set-by-schema
+security:
+  enabled: true
+  tls_version: "1.3"

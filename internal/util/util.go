@@ -1,7 +1,7 @@
 package util
 
 import (
-	"encoding/json" // For deep copy
+	"encoding/json" // For deep copy fallback
 	"fmt"
 	"strings"
 )
@@ -50,6 +50,9 @@ func SetNestedValue(data map[string]interface{}, path string, value interface{})
 // DeleteNestedValue deletes a key from a nested map.
 func DeleteNestedValue(data map[string]interface{}, path string) {
 	keys := strings.Split(path, ".")
+	if len(keys) == 0 {
+		return
+	}
 	if len(keys) == 1 {
 		delete(data, keys[0])
 		return
@@ -88,21 +91,114 @@ func WalkAndReplace(data interface{}, replacerFunc func(string) string) interfac
 }
 
 // DeepCopyMap creates a deep copy of a map[string]interface{}.
+// Uses optimized native copying for better performance, falls back to JSON for complex types.
 func DeepCopyMap(originalMap map[string]interface{}) (map[string]interface{}, error) {
 	if originalMap == nil {
 		return nil, nil
 	}
-	// A common way to deep copy arbitrary structures in Go is to marshal and unmarshal them,
-	// typically using JSON or another format like Gob if more Go-specific types are involved.
-	// JSON is suitable here as config data is generally JSON-compatible.
+	
+	// Try native deep copy first (much faster)
+	copiedMap, err := deepCopyMapNative(originalMap)
+	if err == nil {
+		return copiedMap, nil
+	}
+	
+	// Fallback to JSON-based copy for complex types
 	bytes, err := json.Marshal(originalMap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal map for deep copy: %w", err)
 	}
-	var copiedMap map[string]interface{}
-	err = json.Unmarshal(bytes, &copiedMap)
+	var jsonCopiedMap map[string]interface{}
+	err = json.Unmarshal(bytes, &jsonCopiedMap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal map for deep copy: %w", err)
 	}
+	return jsonCopiedMap, nil
+}
+
+// deepCopyMapNative performs native deep copy for common configuration data types.
+// Returns error if encounters unsupported types that require JSON fallback.
+func deepCopyMapNative(originalMap map[string]interface{}) (map[string]interface{}, error) {
+	copiedMap := make(map[string]interface{}, len(originalMap))
+	
+	for key, value := range originalMap {
+		copiedValue, err := deepCopyValue(value)
+		if err != nil {
+			return nil, err // Trigger JSON fallback
+		}
+		copiedMap[key] = copiedValue
+	}
+	
 	return copiedMap, nil
+}
+
+// deepCopyValue recursively copies a value, returning error for unsupported types
+func deepCopyValue(value interface{}) (interface{}, error) {
+	switch v := value.(type) {
+	case nil:
+		return nil, nil
+	case bool:
+		return v, nil
+	case int:
+		return v, nil
+	case int32:
+		return v, nil
+	case int64:
+		return v, nil
+	case float32:
+		return v, nil
+	case float64:
+		return v, nil
+	case string:
+		return v, nil
+	case map[string]interface{}:
+		copiedMap := make(map[string]interface{}, len(v))
+		for k, val := range v {
+			copiedVal, err := deepCopyValue(val)
+			if err != nil {
+				return nil, err
+			}
+			copiedMap[k] = copiedVal
+		}
+		return copiedMap, nil
+	case []interface{}:
+		copiedSlice := make([]interface{}, len(v))
+		for i, val := range v {
+			copiedVal, err := deepCopyValue(val)
+			if err != nil {
+				return nil, err
+			}
+			copiedSlice[i] = copiedVal
+		}
+		return copiedSlice, nil
+	default:
+		// Unsupported type, trigger JSON fallback
+		return nil, fmt.Errorf("unsupported type for native copy: %T", v)
+	}
+}
+
+// StringsPool provides a simple string pool to reduce memory allocations
+type StringsPool struct {
+	pool map[string]string
+}
+
+// NewStringsPool creates a new string pool
+func NewStringsPool() *StringsPool {
+	return &StringsPool{
+		pool: make(map[string]string),
+	}
+}
+
+// Get returns a pooled string, adding it if not present
+func (sp *StringsPool) Get(s string) string {
+	if pooled, exists := sp.pool[s]; exists {
+		return pooled
+	}
+	sp.pool[s] = s
+	return s
+}
+
+// Clear clears the pool to free memory
+func (sp *StringsPool) Clear() {
+	sp.pool = make(map[string]string)
 }

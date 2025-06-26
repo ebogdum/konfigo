@@ -1,0 +1,22 @@
+validate:
+  - path: "stringField"
+    rules:
+      type: "string"
+      minLength: 3
+      regex: "^[a-z]+$"
+  - path: "integerField"
+    rules:
+      type: "number"
+      min: 10
+      max: 100
+  - path: "numberField"
+    rules:
+      type: "number"
+      min: 0.0
+      max: 10.0
+  - path: "booleanField"
+    rules:
+      type: "bool"
+  - path: "arrayField"
+    rules:
+      type: "slice"

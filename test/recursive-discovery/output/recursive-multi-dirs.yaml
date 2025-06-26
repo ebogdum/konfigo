@@ -1,0 +1,33 @@
+DATABASE_AUTO_MIGRATE: "true"
+DATABASE_LOG_QUERIES: "false"
+DATABASE_MIGRATION_VERSION: 1.2.3
+DATABASE_SLOW_QUERY_THRESHOLD: "1000"
+app:
+  config:
+    max_connections: 1000
+    timeout: 30
+  deployment:
+    region: us-west-2
+    replicas: 3
+    resources:
+      cpu: 500m
+      memory: 1Gi
+  features:
+    - authentication
+    - logging
+    - monitoring
+  name: override-app-name
+  port: 9000
+database:
+  backup:
+    enabled: true
+    retention_days: 30
+    schedule: 0 2 * * *
+  connection:
+    pool_size: 20
+    retry_attempts: 3
+    timeout: 45
+  host: localhost
+  name: myapp_db
+  port: 5432
+  ssl: true

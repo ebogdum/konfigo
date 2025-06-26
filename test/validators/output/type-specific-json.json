@@ -1,0 +1,13 @@
+{
+  "arrayField": [
+    "item1",
+    "item2"
+  ],
+  "booleanField": true,
+  "integerField": 42,
+  "numberField": 3.14,
+  "objectField": {
+    "key": "value"
+  },
+  "stringField": "hello"
+}

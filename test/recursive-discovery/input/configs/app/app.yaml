@@ -1,0 +1,10 @@
+app:
+  name: "override-app-name"
+  port: 9000
+  features:
+    - "authentication"
+    - "logging"
+    - "monitoring"
+  config:
+    max_connections: 1000
+    timeout: 30

@@ -1,0 +1,39 @@
+additional:
+  experimental: false
+  feature_flags: true
+app:
+  debug: false
+  environment: development
+  name: base-app
+  port: 8080
+  version: 1.0.0
+database:
+  connection:
+    pool_size: 10
+    timeout: 30
+  host: localhost
+  name: myapp
+  pool_size: 20
+  port: 5432
+  ssl: true
+features:
+  auth: true
+  cache: false
+  monitoring: true
+logging:
+  format: text
+  level: warn
+  outputs:
+    - stdout
+    - file
+metrics:
+  enabled: false
+  endpoint: https://metrics.example.com
+nested:
+  deep:
+    very:
+      deep:
+        value: original
+security:
+  enabled: true
+  tls_version: 1.2

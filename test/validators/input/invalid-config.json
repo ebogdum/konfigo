@@ -1,0 +1,21 @@
+{
+  "service": {
+    "name": "us",
+    "port": "8080",
+    "environment": "production",
+    "debug": "false",
+    "version": "v1.2.3-beta"
+  },
+  "database": {
+    "host": "",
+    "port": 99999,
+    "timeout": -5.0,
+    "credentials": {
+      "username": "a",
+      "password": "weak"
+    }
+  },
+  "cache": {
+    "type": "unknown"
+  }
+}

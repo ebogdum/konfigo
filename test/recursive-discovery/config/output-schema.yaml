@@ -1,0 +1,16 @@
+apiVersion: "konfigo/v1alpha1"
+
+outputSchema:
+  properties:
+    app:
+      properties:
+        name: {}
+        port: {}
+        environment: {}
+        features: {}
+    database:
+      properties:
+        host: {}
+        port: {}
+        name: {}
+    services: {}

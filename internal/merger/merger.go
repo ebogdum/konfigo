@@ -1,3 +1,23 @@
+// Package merger provides configuration data merging capabilities with precedence rules.
+//
+// This package handles merging multiple configuration maps with support for:
+// - Case-sensitive and case-insensitive key merging
+// - Immutable path protection (prevents overwriting critical values)
+// - Deep recursive merging of nested maps and arrays
+// - Merge conflict detection and resolution
+//
+// Merge Rules:
+// - Later sources override earlier sources (left-to-right precedence)
+// - Immutable paths are protected from being overwritten
+// - Arrays are replaced entirely, not merged element by element
+// - Maps are merged recursively
+//
+// Usage:
+//
+//	base := map[string]interface{}{"db": map[string]interface{}{"host": "localhost"}}
+//	override := map[string]interface{}{"db": map[string]interface{}{"port": 5432}}
+//	merger.Merge(base, override, true, nil)
+//	// Result: {"db": {"host": "localhost", "port": 5432}}
 package merger
 
 import (

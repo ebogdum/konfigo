@@ -1,0 +1,5 @@
+settings:
+  timeout: 60
+user:
+  fullName: StdinUser
+  id: 999
