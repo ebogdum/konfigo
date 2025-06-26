@@ -58,6 +58,47 @@ extract_changelog_for_version() {
         tail -n +$start_line "$changelog_file"
     fi
 }
+
+reset_changelog() {
+    local changelog_file="$1"
+    
+    if [ ! -f "$changelog_file" ]; then
+        echo "Warning: Changelog file '$changelog_file' not found."
+        return 1
+    fi
+    
+    # Create a backup
+    cp "$changelog_file" "${changelog_file}.backup"
+    
+    # Reset to template
+    cat > "$changelog_file" << 'EOF'
+# Changelog
+
+## [Unreleased] - TBD
+
+### 🚀 **New Features**
+- _No new features yet_
+
+### 🔧 **Enhancements**
+- _No enhancements yet_
+
+### 🐛 **Bug Fixes**
+- _No bug fixes yet_
+
+### 🏗️ **Internal Changes**
+- _No internal changes yet_
+
+### 🧪 **Tests**
+- _No test changes yet_
+
+### 📚 **Documentation**
+- _No documentation changes yet_
+
+---
+EOF
+    
+    echo "Changelog reset to template. Backup saved as ${changelog_file}.backup"
+}
 get_latest_tag() {
     git fetch --tags "$remote_name" >/dev/null 2>&1
     # Get the latest semantic version tag (vX.Y.Z or X.Y.Z)
@@ -97,7 +138,19 @@ increment_version() {
 
 # --- Main Script ---
 
-# 0. Prerequisites check
+# 0. Build the project
+echo "Building the project..."
+if [ -f "./builds.sh" ]; then
+    if ! ./builds.sh; then
+        echo "Error: Build failed. Cannot proceed with release."
+        exit 1
+    fi
+    echo "Build completed successfully."
+else
+    echo "Warning: builds.sh not found. Skipping build step."
+fi
+
+# 1. Prerequisites check
 if ! command -v gh &> /dev/null; then
     echo "GitHub CLI 'gh' could not be found. Please install it."
     exit 1
@@ -117,7 +170,7 @@ if [ -z "$(ls -A "$build_dir")" ]; then
 fi
 
 
-# 1. Ensure we are on the default branch and it's clean
+# 2. Ensure we are on the default branch and it's clean
 echo "Checking Git status..."
 git checkout "$default_branch"
 if ! git diff --quiet HEAD || ! git diff --cached --quiet HEAD; then
@@ -127,7 +180,7 @@ fi
 echo "Pulling latest changes from $remote_name/$default_branch..."
 git pull "$remote_name" "$default_branch"
 
-# 2. Get the latest tag and determine the next version
+# 3. Get the latest tag and determine the next version
 latest_tag=$(get_latest_tag)
 new_version=""
 
@@ -170,7 +223,7 @@ if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     exit 0
 fi
 
-# 3. Create and push Git tag
+# 4. Create and push Git tag
 echo "Creating Git tag $new_version..."
 if git tag "$new_version"; then
     echo "Pushing tag $new_version to $remote_name..."
@@ -180,7 +233,7 @@ else
     exit 1
 fi
 
-# 4. Create GitHub Release and upload artifacts
+# 5. Create GitHub Release and upload artifacts
 echo "Creating GitHub Release for $new_version..."
 release_title="Release $new_version"
 release_options=()
@@ -246,6 +299,21 @@ if gh release create "$new_version" "${files_to_upload[@]}" --title "$release_ti
         rm -f "$temp_notes_file"
     fi
     gh release view "$new_version" --web # Open in browser
+    
+    # 6. Ask if changelog should be reset
+    echo ""
+    read -r -p "Would you like to reset the changelog to prepare for next development cycle? (y/N): " reset_confirm
+    if [[ "$reset_confirm" == "y" || "$reset_confirm" == "Y" ]]; then
+        if [ -n "$notes_file" ] && [ -f "$notes_file" ]; then
+            if reset_changelog "$notes_file"; then
+                echo "Changelog has been reset for next development cycle."
+            else
+                echo "Warning: Failed to reset changelog."
+            fi
+        else
+            echo "Warning: Changelog file not found or not configured."
+        fi
+    fi
 else
     echo "Error: Failed to create GitHub Release."
     echo "You might need to: "
