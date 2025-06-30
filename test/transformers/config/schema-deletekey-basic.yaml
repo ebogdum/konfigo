@@ -1,0 +1,5 @@
+transform:
+  - type: "deleteKey"
+    path: "user.password"
+  - type: "deleteKey"
+    path: "api.secret"

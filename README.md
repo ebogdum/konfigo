@@ -12,8 +12,8 @@ Whether you're managing simple settings or complex, multi-layered configurations
 *   **Flexible Merging**: Intelligently merges multiple configuration sources, respecting order and immutability rules.
 *   **Powerful Schema Processing**:
     *   **Variable Substitution**: Inject dynamic values from environment variables (`KONFIGO_VAR_...`), dedicated variable files (`-V`), or schema defaults.
-    *   **Data Generation**: Create new configuration values (e.g., `concat` strings).
-    *   **Data Transformation**: Modify keys and values (e.g., `renameKey`, `changeCase`, `addKeyPrefix`, `setValue`).
+    *   **Data Generation**: Create new configuration values (e.g., `concat`, `timestamp`, `random`, `id`).
+    *   **Data Transformation**: Modify keys and values (e.g., `renameKey`, `changeCase`, `addKeyPrefix`, `addKeySuffix`, `deleteKey`, `trim`, `replaceKey`, `setValue`).
     *   **Data Validation**: Enforce rules (`required`, `type`, `min`, `max`, `minLength`, `enum`, `regex`).
     *   **Input/Output Schemas**: Validate incoming data and filter outgoing data against defined structures.
 *   **Batch Processing**: Use the `konfigo_forEach` directive in a variables file to generate multiple tailored configuration outputs from a single schema and run.

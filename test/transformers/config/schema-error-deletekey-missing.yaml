@@ -1,0 +1,3 @@
+transform:
+  - type: "deleteKey"
+    path: "nonexistent.path"

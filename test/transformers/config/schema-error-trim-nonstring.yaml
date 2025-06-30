@@ -1,0 +1,3 @@
+transform:
+  - type: "trim"
+    path: "user.age"
