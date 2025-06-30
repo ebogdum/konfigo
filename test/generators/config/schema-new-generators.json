@@ -1,0 +1,40 @@
+{
+  "vars": [
+    {
+      "name": "ENV",
+      "value": "production"
+    }
+  ],
+  "generators": [
+    {
+      "type": "timestamp",
+      "targetPath": "metadata.createdAt",
+      "format": "iso8601"
+    },
+    {
+      "type": "random",
+      "targetPath": "config.randomFloat",
+      "format": "float:0.0:1.0"
+    },
+    {
+      "type": "random",
+      "targetPath": "config.randomBytes",
+      "format": "bytes:16"
+    },
+    {
+      "type": "id",
+      "targetPath": "instance.id",
+      "format": "simple:12"
+    },
+    {
+      "type": "id",
+      "targetPath": "order.number",
+      "format": "numeric:8"
+    },
+    {
+      "type": "id",
+      "targetPath": "code.alpha",
+      "format": "alpha:6"
+    }
+  ]
+}
