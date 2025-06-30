@@ -1,0 +1,32 @@
+environment = "testing"
+
+[_internal]
+  [_internal.sequentialCounters]
+    session_counter = 1
+
+[config]
+  enabled = true
+
+[metadata]
+  author = "konfigo-test"
+  buildTime = "2025-06-30 09:40:56"
+  createdAt = "2025-06-30T09:40:56+03:00"
+  unixTime = "1751265656"
+
+[request]
+  uuid = "38b23b0d-ed63-4ee3-a8c2-3ffdf2c1b1d5"
+
+[service]
+  name = "test-service"
+  port = "8076"
+  version = "2.1.0"
+
+[session]
+  counter = "1"
+  token = "Ak2TsBHc9i5pmPHwCGspNU1aS3UDniN5"
+
+[trace]
+  id = "1751265656RkUQ"
+
+[user]
+  id = "usr_n0lqURDn"

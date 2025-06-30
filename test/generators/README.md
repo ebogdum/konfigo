@@ -60,19 +60,36 @@ generators/
 - **Purpose**: Test `KONFIGO_VAR_*` environment variable integration
 - **Coverage**: Environment variable precedence over file variables
 
-### 9. Edge Case Tests
+### 9. New Generators Tests
+- **Purpose**: Test new generator types (timestamp, random, id)
+- **Files**: `schema-new-generators.yaml`, `schema-new-generators.json`
+- **Coverage**: 
+  - Timestamp generation in various formats
+  - Random value generation (integers, floats, strings, UUIDs)
+  - ID generation with different patterns
+
+### 10. Edge Case Tests
 - **Purpose**: Test special scenarios like stdin input
 - **Coverage**: Stdin processing with generators
 
 ## Generator Features Tested
 
 ### Core Functionality
-- ✅ `{placeholder}` substitution from config paths
-- ✅ `${VARIABLE}` substitution from variables
-- ✅ Static text concatenation
+- ✅ `{placeholder}` substitution from config paths (`concat`)
+- ✅ `${VARIABLE}` substitution from variables (`concat`)
+- ✅ Static text concatenation (`concat`)
 - ✅ Multiple generators in sequence
 - ✅ Deep nested path references
 - ✅ Variable precedence (env > file > schema)
+- ✅ Timestamp generation in various formats (`timestamp`)
+- ✅ Random value generation (`random`)
+- ✅ ID generation with patterns (`id`)
+
+### Generator Types
+- ✅ **`concat`**: String concatenation with placeholders and variables
+- ✅ **`timestamp`**: Current timestamp in multiple formats (unix, rfc3339, iso8601, custom)
+- ✅ **`random`**: Random values (int, float, string, bytes, uuid)
+- ✅ **`id`**: Various ID patterns (simple, prefix, numeric, alpha, sequential, timestamp-based)
 
 ### Data Type Handling
 - ✅ String values

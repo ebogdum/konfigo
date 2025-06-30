@@ -2,6 +2,15 @@
 
 Konfigo's schema allows you to define `generators` that create new data within your configuration. Generators construct values from existing configuration data and variables, enabling dynamic configuration composition.
 
+## Available Generators
+
+Konfigo provides several built-in generators:
+
+- **`concat`**: Combines configuration data, variables, and literal text
+- **`timestamp`**: Generates current timestamp in various formats
+- **`random`**: Generates random values (integers, floats, strings, UUIDs)
+- **`id`**: Generates various types of identifiers using alphanumeric characters
+
 ## `concat` Generator
 
 The `concat` generator creates string values by combining configuration data, variable substitutions, and literal text. It operates in two phases: first replacing `{placeholder}` tokens with values from configuration paths, then resolving `${VARIABLE}` references.
@@ -29,6 +38,130 @@ generators:
 1. Replace `{placeholder}` tokens using `sources` mapping
 2. Resolve `${VARIABLE}` references from vars and environment
 3. Insert result at `targetPath`
+
+## `timestamp` Generator
+
+The `timestamp` generator creates timestamp values in various formats.
+
+### Structure
+
+```yaml
+generators:
+  - type: "timestamp"
+    targetPath: "path.to.timestamp"
+    format: "rfc3339"  # Optional, defaults to "rfc3339"
+```
+
+### Fields
+
+- **`type`** (Required): Must be `"timestamp"`
+- **`targetPath`** (Required): Dot-separated path where the timestamp will be placed
+- **`format`** (Optional): Timestamp format (defaults to "rfc3339")
+
+### Supported Formats
+
+- **`unix`**: Unix timestamp (seconds since epoch) - e.g., `1640995200`
+- **`unixmilli`**: Unix timestamp in milliseconds - e.g., `1640995200000`
+- **`rfc3339`**: RFC3339 format - e.g., `2021-12-31T16:00:00Z`
+- **`iso8601`**: ISO8601 format - e.g., `2021-12-31T16:00:00Z`
+- **Custom**: Any Go time format string - e.g., `2006-01-02 15:04:05`
+
+### Example
+
+```yaml
+generators:
+  - type: "timestamp"
+    targetPath: "metadata.createdAt"
+    format: "rfc3339"
+  - type: "timestamp"
+    targetPath: "metadata.buildTime"
+    format: "2006-01-02 15:04:05"
+```
+
+## `random` Generator
+
+The `random` generator creates random values in various formats.
+
+### Structure
+
+```yaml
+generators:
+  - type: "random"
+    targetPath: "path.to.random.value"
+    format: "string:16"  # Required
+```
+
+### Fields
+
+- **`type`** (Required): Must be `"random"`
+- **`targetPath`** (Required): Dot-separated path where the random value will be placed
+- **`format`** (Required): Random value format specification
+
+### Supported Formats
+
+- **`int:min:max`**: Random integer between min and max (inclusive) - e.g., `int:1:100`
+- **`float:min:max`**: Random float between min and max - e.g., `float:0.0:1.0`
+- **`string:length`**: Random string using [a-zA-Z0-9] - e.g., `string:16`
+- **`bytes:length`**: Random bytes as hex string - e.g., `bytes:8`
+- **`uuid`**: UUID v4 format - e.g., `uuid`
+
+### Examples
+
+```yaml
+generators:
+  - type: "random"
+    targetPath: "service.port"
+    format: "int:8000:9000"
+  - type: "random"
+    targetPath: "session.id"
+    format: "string:32"
+  - type: "random"
+    targetPath: "request.uuid"
+    format: "uuid"
+```
+
+## `id` Generator
+
+The `id` generator creates various types of identifiers using alphanumeric characters.
+
+### Structure
+
+```yaml
+generators:
+  - type: "id"
+    targetPath: "path.to.id"
+    format: "simple:8"  # Optional, defaults to "simple:8"
+```
+
+### Fields
+
+- **`type`** (Required): Must be `"id"`
+- **`targetPath`** (Required): Dot-separated path where the ID will be placed
+- **`format`** (Optional): ID format specification (defaults to "simple:8")
+
+### Supported Formats
+
+- **`simple:length`**: Random ID using [a-zA-Z0-9] - e.g., `simple:12`
+- **`prefix:prefix:length`**: ID with prefix + random chars - e.g., `prefix:user_:8`
+- **`numeric:length`**: Numeric ID using [0-9] - e.g., `numeric:6`
+- **`alpha:length`**: Alphabetic ID using [a-zA-Z] - e.g., `alpha:10`
+- **`sequential`**: Sequential counter-based ID (starts from 1)
+- **`timestamp`**: Timestamp + random suffix - e.g., `1640995200abcd`
+
+### Examples
+
+```yaml
+generators:
+  - type: "id"
+    targetPath: "user.id"
+    format: "prefix:usr_:8"     # Results in: usr_A9Kx2mP1
+  - type: "id"
+    targetPath: "session.counter"
+    format: "sequential"        # Results in: 1, 2, 3, ...
+  - type: "id"
+    targetPath: "trace.id"
+    format: "timestamp"         # Results in: 1640995200A9Kx
+```
 
 ## Examples from Tests
 

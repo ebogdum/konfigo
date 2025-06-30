@@ -1,0 +1,35 @@
+{
+  "_internal": {
+    "sequentialCounters": {
+      "session_counter": 1
+    }
+  },
+  "config": {
+    "enabled": true
+  },
+  "environment": "testing",
+  "metadata": {
+    "author": "konfigo-test",
+    "buildTime": "2025-06-30 09:40:56",
+    "createdAt": "2025-06-30T09:40:56+03:00",
+    "unixTime": "1751265656"
+  },
+  "request": {
+    "uuid": "10e7a401-5546-4095-bb71-e76475a94907"
+  },
+  "service": {
+    "name": "test-service",
+    "port": "8217",
+    "version": "2.1.0"
+  },
+  "session": {
+    "counter": "1",
+    "token": "unTQXzJEdpNwBWOAXmRWgSi36Frslw7n"
+  },
+  "trace": {
+    "id": "1751265656pCQ5"
+  },
+  "user": {
+    "id": "usr_YXC3h2fU"
+  }
+}
