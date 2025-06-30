@@ -190,6 +190,12 @@ else
 fi
 echo
 
+# === NEW GENERATORS TESTS ===
+echo "--- New Generators Tests (timestamp, random, id) ---"
+
+run_test "new-generators-yaml" "new-generators-config.yaml" "schema-new-generators.yaml" "" "false"
+run_test "new-generators-json" "new-generators-config.json" "schema-new-generators.json" "" "false"
+
 # === RESULTS SUMMARY ===
 echo "=== Test Results Summary ==="
 echo "Total tests: $total_tests"
