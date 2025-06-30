@@ -1,6 +1,6 @@
 # Transformers & Data Transformation Tests
 
-This directory contains comprehensive tests for Konfigo's data transformation functionality, covering all transformer types: `renameKey`, `changeCase`, `addKeyPrefix`, and `setValue`.
+This directory contains comprehensive tests for Konfigo's data transformation functionality, covering all transformer types: `renameKey`, `changeCase`, `addKeyPrefix`, `addKeySuffix`, `deleteKey`, `trim`, `replaceKey`, and `setValue`.
 
 ## Overview
 
@@ -36,26 +36,46 @@ transformers/
 - **Files**: `schema-addprefix-basic.yaml`, `schema-addprefix-vars.yaml`
 - **Coverage**: Static prefixes, variable substitution in prefixes
 
-### 4. Set Value Tests (`setValue`)
+### 4. Add Key Suffix Tests (`addKeySuffix`)
+- **Purpose**: Test map key suffixing functionality
+- **Files**: `schema-addsuffix-basic.yaml`, `schema-addsuffix-vars.yaml`
+- **Coverage**: Static suffixes, variable substitution in suffixes
+
+### 5. Delete Key Tests (`deleteKey`)
+- **Purpose**: Test key deletion functionality
+- **Files**: `schema-deletekey-basic.yaml`
+- **Coverage**: Removing keys from configuration, error handling for missing paths
+
+### 6. Trim Tests (`trim`)
+- **Purpose**: Test string trimming functionality
+- **Files**: `schema-trim-basic.yaml`
+- **Coverage**: Whitespace trimming, custom pattern trimming, error handling for non-strings
+
+### 7. Replace Key Tests (`replaceKey`)
+- **Purpose**: Test key replacement functionality
+- **Files**: `schema-replacekey-basic.yaml`
+- **Coverage**: Value replacement from target paths, target deletion, error handling
+
+### 8. Set Value Tests (`setValue`)
 - **Purpose**: Test setting values at paths
 - **Files**: `schema-setvalue-basic.yaml`, `schema-setvalue-vars.yaml`, `schema-setvalue-complex.yaml`
 - **Coverage**: Simple values, variable substitution, complex nested structures
 
-### 5. Combined Transformations Tests
+### 9. Combined Transformations Tests
 - **Purpose**: Test multiple transformers working together
 - **Files**: `schema-combined.yaml`
 - **Coverage**: Sequential transformation pipeline, interdependencies
 
-### 6. Error Handling Tests
+### 10. Error Handling Tests
 - **Purpose**: Test proper error handling for invalid configurations
 - **Files**: `schema-error-*.yaml`
-- **Coverage**: Missing paths, type mismatches, invalid case types
+- **Coverage**: Missing paths, type mismatches, invalid case types, non-map targets
 
-### 7. Environment Variable Tests
+### 11. Environment Variable Tests
 - **Purpose**: Test `KONFIGO_VAR_*` environment variable substitution in transformers
 - **Coverage**: Variable substitution in transformer definitions
 
-### 8. Edge Case Tests
+### 12. Edge Case Tests
 - **Purpose**: Test special scenarios like stdin input
 - **Coverage**: Stdin processing with transformers
 
@@ -83,6 +103,30 @@ transformers/
 - ✅ Variable substitution in prefixes
 - ✅ Error handling for non-map values
 - ✅ Preserving nested map structures
+
+### addKeySuffix Transformer
+- ✅ Adding suffixes to map keys
+- ✅ Variable substitution in suffixes
+- ✅ Error handling for non-map values
+- ✅ Preserving nested map structures
+
+### deleteKey Transformer
+- ✅ Removing keys from configuration paths
+- ✅ Error handling for missing paths
+- ✅ Deep nested path deletion
+- ✅ Cross-format compatibility
+
+### trim Transformer
+- ✅ Default whitespace trimming
+- ✅ Custom pattern trimming
+- ✅ Error handling for non-string values
+- ✅ Preserving empty strings after trimming
+
+### replaceKey Transformer
+- ✅ Value replacement from target paths
+- ✅ Automatic target deletion after replacement
+- ✅ Error handling for missing target paths
+- ✅ Deep nested path operations
 
 ### setValue Transformer
 - ✅ Setting simple values (strings, numbers, booleans)

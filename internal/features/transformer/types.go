@@ -4,13 +4,16 @@ package transformer
 
 // Definition represents a transformation configuration.
 type Definition struct {
-	Type   string      `yaml:"type" json:"type"`
-	Path   string      `yaml:"path" json:"path"`
-	From   string      `yaml:"from" json:"from"`
-	To     string      `yaml:"to" json:"to"`
-	Case   string      `yaml:"case" json:"case"`
-	Prefix string      `yaml:"prefix" json:"prefix"`
-	Value  interface{} `yaml:"value" json:"value"`
+	Type    string      `yaml:"type" json:"type"`
+	Path    string      `yaml:"path" json:"path"`
+	From    string      `yaml:"from" json:"from"`
+	To      string      `yaml:"to" json:"to"`
+	Case    string      `yaml:"case" json:"case"`
+	Prefix  string      `yaml:"prefix" json:"prefix"`
+	Suffix  string      `yaml:"suffix" json:"suffix"`
+	Pattern string      `yaml:"pattern" json:"pattern"`
+	Target  string      `yaml:"target" json:"target"`
+	Value   interface{} `yaml:"value" json:"value"`
 }
 
 // Transformer represents a function that can transform configuration values.
@@ -39,6 +42,10 @@ func NewRegistry() Registry {
 	registry[RenameKeyType] = &RenameKeyTransformer{}
 	registry[ChangeCaseType] = &ChangeCaseTransformer{}
 	registry[AddKeyPrefixType] = &AddKeyPrefixTransformer{}
+	registry[AddKeySuffixType] = &AddKeySuffixTransformer{}
+	registry[DeleteKeyType] = &DeleteKeyTransformer{}
+	registry[TrimType] = &TrimTransformer{}
+	registry[ReplaceKeyType] = &ReplaceKeyTransformer{}
 	registry[SetValueType] = &SetValueTransformer{}
 	
 	return registry

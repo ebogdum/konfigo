@@ -1,0 +1,4 @@
+transform:
+  - type: "addKeySuffix"
+    path: "user.name"
+    suffix: "_test"
