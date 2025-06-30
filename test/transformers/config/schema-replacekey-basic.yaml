@@ -1,0 +1,7 @@
+transform:
+  - type: "replaceKey"
+    path: "api.endpoint"
+    target: "temp.newEndpoint"
+  - type: "replaceKey"
+    path: "database.port"
+    target: "config.newPort"

@@ -1,0 +1,26 @@
+user:
+  name: Alice
+  id: 123
+  email: alice@example.com
+  password: secret123
+api:
+  endpoint: https://api.example.com
+  secret: api_secret_key
+  token: bearer-token
+database:
+  host: localhost
+  port: 5432
+  name: myapp_db
+cache:
+  redis_host: localhost
+  redis_port: 6379
+service:
+  endpoint: https://service.com
+  timeout: 30
+temp:
+  newEndpoint: https://api.v2.example.com
+config:
+  newPort: 8080
+testing:
+  custom_trim: '***important***'
+  whitespace: test value

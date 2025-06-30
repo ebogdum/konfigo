@@ -1,0 +1,9 @@
+transform:
+  - type: "trim"
+    path: "api.endpoint"
+  - type: "trim"
+    path: "api.token"
+    pattern: "-"
+  - type: "trim"
+    path: "database.name"
+    pattern: "_'"
