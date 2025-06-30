@@ -14,7 +14,7 @@ type Definition struct {
 type Generator interface {
 	// Generate applies the generator logic to the configuration.
 	Generate(config map[string]interface{}, def Definition, resolver VariableResolver) error
-	
+
 	// Type returns the generator type name.
 	Type() string
 }
@@ -32,10 +32,13 @@ type Registry map[string]Generator
 // NewRegistry creates a new generator registry with default generators.
 func NewRegistry() Registry {
 	registry := make(Registry)
-	
+
 	// Register built-in generators
 	registry[ConcatGeneratorType] = &ConcatGenerator{}
-	
+	registry[TimestampGeneratorType] = &TimestampGenerator{}
+	registry[RandomGeneratorType] = &RandomGenerator{}
+	registry[IdGeneratorType] = &IdGenerator{}
+
 	return registry
 }
 

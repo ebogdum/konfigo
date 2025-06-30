@@ -1,0 +1,25 @@
+{
+  "code": {
+    "alpha": "wXlgGg"
+  },
+  "config": {
+    "enabled": true,
+    "randomBytes": "0a5e6c1df990c11ae7e9a9d729b21bbd",
+    "randomFloat": "0.767867"
+  },
+  "environment": "testing",
+  "instance": {
+    "id": "yukoxjmAIoEJ"
+  },
+  "metadata": {
+    "author": "konfigo-test",
+    "createdAt": "2025-06-30T06:40:56Z"
+  },
+  "order": {
+    "number": "41979948"
+  },
+  "service": {
+    "name": "test-service",
+    "version": "2.1.0"
+  }
+}

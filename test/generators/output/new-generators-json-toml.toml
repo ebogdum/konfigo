@@ -1,0 +1,23 @@
+environment = "testing"
+
+[code]
+  alpha = "CHnKhz"
+
+[config]
+  enabled = true
+  randomBytes = "b7d1ea11bf1af635a7f2d4a39a5947ed"
+  randomFloat = "0.596256"
+
+[instance]
+  id = "uXGLkRHoQ9F3"
+
+[metadata]
+  author = "konfigo-test"
+  createdAt = "2025-06-30T06:40:56Z"
+
+[order]
+  number = "17570154"
+
+[service]
+  name = "test-service"
+  version = "2.1.0"

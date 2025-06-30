@@ -1,0 +1,13 @@
+{
+  "service": {
+    "name": "test-service",
+    "version": "2.1.0"
+  },
+  "environment": "testing",
+  "config": {
+    "enabled": true
+  },
+  "metadata": {
+    "author": "konfigo-test"
+  }
+}

@@ -1,0 +1,17 @@
+code:
+  alpha: juxxIR
+config:
+  enabled: true
+  randomBytes: cdd1b2322c6bcc1ce8c5272d8cd49a4d
+  randomFloat: "0.881736"
+environment: testing
+instance:
+  id: PUIsDZVdXwi9
+metadata:
+  author: konfigo-test
+  createdAt: "2025-06-30T06:40:56Z"
+order:
+  number: "39609390"
+service:
+  name: test-service
+  version: 2.1.0
