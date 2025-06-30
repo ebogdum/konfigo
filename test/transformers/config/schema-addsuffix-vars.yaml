@@ -1,0 +1,7 @@
+vars:
+  - name: "ENV_SUFFIX"
+    value: "_prod"
+transform:
+  - type: "addKeySuffix"
+    path: "service"
+    suffix: "${ENV_SUFFIX}"

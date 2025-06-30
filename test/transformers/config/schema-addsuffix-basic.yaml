@@ -1,0 +1,7 @@
+transform:
+  - type: "addKeySuffix"
+    path: "database"
+    suffix: "_config"
+  - type: "addKeySuffix"
+    path: "cache"
+    suffix: "_settings"

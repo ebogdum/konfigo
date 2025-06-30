@@ -1,0 +1,4 @@
+transform:
+  - type: "replaceKey"
+    path: "api.endpoint"
+    target: "nonexistent.path"

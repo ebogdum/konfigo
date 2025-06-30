@@ -144,6 +144,27 @@ run_test "setvalue-complex-json" "base-config.json" "schema-setvalue-complex.yam
 run_test "setvalue-complex-yaml" "base-config.yaml" "schema-setvalue-complex.yaml" "" "false"
 run_test "setvalue-complex-toml" "base-config.toml" "schema-setvalue-complex.yaml" "" "false"
 
+# === ADD KEY SUFFIX TESTS ===
+echo "--- Add Key Suffix Tests ---"
+
+run_test "addsuffix-basic-yaml" "new-transformers-config.yaml" "schema-addsuffix-basic.yaml" "" "false"
+run_test "addsuffix-vars-yaml" "new-transformers-config.yaml" "schema-addsuffix-vars.yaml" "" "false"
+
+# === DELETE KEY TESTS ===
+echo "--- Delete Key Tests ---"
+
+run_test "deletekey-basic-yaml" "new-transformers-config.yaml" "schema-deletekey-basic.yaml" "" "false"
+
+# === TRIM TESTS ===
+echo "--- Trim Tests ---"
+
+run_test "trim-basic-yaml" "new-transformers-config.yaml" "schema-trim-basic.yaml" "" "false"
+
+# === REPLACE KEY TESTS ===
+echo "--- Replace Key Tests ---"
+
+run_test "replacekey-basic-yaml" "new-transformers-config.yaml" "schema-replacekey-basic.yaml" "" "false"
+
 # === COMBINED TRANSFORMATIONS TESTS ===
 echo "--- Combined Transformations Tests ---"
 
@@ -158,6 +179,11 @@ run_test "error-rename-missing" "base-config.json" "schema-error-rename-missing.
 run_test "error-changecase-nonstring" "base-config.json" "schema-error-changecase-nonstring.yaml" "" "true"
 run_test "error-changecase-invalid" "base-config.json" "schema-error-changecase-invalid.yaml" "" "true"
 run_test "error-addprefix-nonmap" "base-config.json" "schema-error-addprefix-nonmap.yaml" "" "true"
+run_test "error-addsuffix-missing" "base-config.json" "schema-error-addsuffix-missing.yaml" "" "true"
+run_test "error-addsuffix-nonmap" "base-config.json" "schema-error-addsuffix-nonmap.yaml" "" "true"
+run_test "error-deletekey-missing" "base-config.json" "schema-error-deletekey-missing.yaml" "" "true"
+run_test "error-trim-nonstring" "base-config.json" "schema-error-trim-nonstring.yaml" "" "true"
+run_test "error-replacekey-missing" "base-config.json" "schema-error-replacekey-missing.yaml" "" "true"
 
 # === ENVIRONMENT VARIABLE TESTS ===
 echo "--- Environment Variable Tests ---"

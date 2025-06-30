@@ -104,6 +104,9 @@ func substituteInDefinition(def Definition, resolver VariableResolver) Definitio
 	processed.From = resolver.SubstituteString(def.From)
 	processed.To = resolver.SubstituteString(def.To)
 	processed.Prefix = resolver.SubstituteString(def.Prefix)
+	processed.Suffix = resolver.SubstituteString(def.Suffix)
+	processed.Pattern = resolver.SubstituteString(def.Pattern)
+	processed.Target = resolver.SubstituteString(def.Target)
 	processed.Case = resolver.SubstituteString(def.Case)
 	
 	// Handle Value field if it's a string

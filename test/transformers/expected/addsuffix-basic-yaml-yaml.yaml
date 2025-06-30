@@ -1,0 +1,26 @@
+database:
+  host_config: localhost
+  name_config: "'myapp_db'"
+  port_config: 5432
+cache:
+  redis_host_settings: localhost
+  redis_port_settings: 6379
+service:
+  endpoint: https://service.com
+  timeout: 30
+user:
+  email: alice@example.com
+  id: 123
+  name: Alice
+  password: secret123
+api:
+  endpoint: "  https://api.example.com  "
+  secret: api_secret_key
+  token: ---bearer-token---
+temp:
+  newEndpoint: https://api.v2.example.com
+config:
+  newPort: 8080
+testing:
+  whitespace: "  test value  "
+  custom_trim: "***important***"

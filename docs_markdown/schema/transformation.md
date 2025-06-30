@@ -11,6 +11,17 @@ Konfigo's `transform` directives modify configuration structure and content afte
 
 ## Transformation Types
 
+Konfigo provides eight built-in transformer types:
+
+1. **`renameKey`** - Move values between configuration paths
+2. **`changeCase`** - Convert string values to different case formats
+3. **`addKeyPrefix`** - Add prefixes to all keys in a map
+4. **`setValue`** - Set values at configuration paths  
+5. **`addKeySuffix`** - Add suffixes to all keys in a map
+6. **`deleteKey`** - Remove keys from configuration
+7. **`trim`** - Trim whitespace or characters from strings
+8. **`replaceKey`** - Replace values using another configuration path
+
 ### 1. `renameKey` - Move Configuration Keys
 
 Moves a value from one path to another, creating nested structures as needed.
@@ -177,40 +188,220 @@ app:
     timeout: 30
 ```
 
+### 5. `addKeySuffix` - Suffix Map Keys
+
+Adds a suffix to all keys within a map object.
+
+**Structure:**
+```yaml
+transform:
+  - type: "addKeySuffix"
+    path: "path.to.map"
+    suffix: "_suffix"
+```
+
+**Fields:**
+- **`type`** (Required): `"addKeySuffix"`
+- **`path`** (Required): Path to map object
+- **`suffix`** (Required): String to append to keys
+
+**Example:**
+```yaml
+# Input config:
+database:
+  host: "localhost"
+  port: 5432
+
+# Transform:
+transform:
+  - type: "addKeySuffix"
+    path: "database"
+    suffix: "_prod"
+
+# Result:
+database:
+  host_prod: "localhost"
+  port_prod: 5432
+```
+
+### 6. `deleteKey` - Remove Configuration Keys
+
+Removes a key at the specified path from the configuration.
+
+**Structure:**
+```yaml
+transform:
+  - type: "deleteKey"
+    path: "path.to.key"
+```
+
+**Fields:**
+- **`type`** (Required): `"deleteKey"`
+- **`path`** (Required): Path to key to delete
+
+**Example:**
+```yaml
+# Input config:
+app:
+  secret: "sensitive_data"
+  name: "myapp"
+
+# Transform:
+transform:
+  - type: "deleteKey"
+    path: "app.secret"
+
+# Result:
+app:
+  name: "myapp"
+```
+
+### 7. `trim` - Trim String Values
+
+Trims whitespace or specified characters from string values.
+
+**Structure:**
+```yaml
+transform:
+  - type: "trim"
+    path: "path.to.string"
+    pattern: " \t\n"  # Optional, defaults to whitespace
+```
+
+**Fields:**
+- **`type`** (Required): `"trim"`
+- **`path`** (Required): Path to string value
+- **`pattern`** (Optional): Characters to trim (defaults to whitespace)
+
+**Examples:**
+
+**Default Whitespace Trimming:**
+```yaml
+# Input config:
+api:
+  endpoint: "  https://api.example.com  "
+
+# Transform:
+transform:
+  - type: "trim"
+    path: "api.endpoint"
+
+# Result:
+api:
+  endpoint: "https://api.example.com"
+```
+
+**Custom Pattern Trimming:**
+```yaml
+# Input config:
+token:
+  value: "---secret-token---"
+
+# Transform:
+transform:
+  - type: "trim"
+    path: "token.value"
+    pattern: "-"
+
+# Result:
+token:
+  value: "secret-token"
+```
+
+### 8. `replaceKey` - Replace with Target Value
+
+Replaces a value at one path with a value from another path, then deletes the source.
+
+**Structure:**
+```yaml
+transform:
+  - type: "replaceKey"
+    path: "destination.path"
+    target: "source.path"
+```
+
+**Fields:**
+- **`type`** (Required): `"replaceKey"`
+- **`path`** (Required): Destination path where value will be placed
+- **`target`** (Required): Source path to take value from (will be deleted)
+
+**Example:**
+```yaml
+# Input config:
+temp:
+  newEndpoint: "https://api.v2.example.com"
+api:
+  endpoint: "https://api.v1.example.com"
+
+# Transform:
+transform:
+  - type: "replaceKey"
+    path: "api.endpoint"
+    target: "temp.newEndpoint"
+
+# Result:
+api:
+  endpoint: "https://api.v2.example.com"
+# temp section is deleted
+```
+
 ## Combined Transformations
 
-**Complete Example from Tests:**
+**Complete Example with Multiple Transformers:**
 ```yaml
 # Input config:
 legacy:
-  api_endpoint: "HTTP://OLD-DOMAIN.COM/api"
+  api_endpoint: "  HTTP://OLD-DOMAIN.COM/api  "
+  api_key: "secret123"
 database:
   host: "db-server"
+temp:
+  newPort: 8080
 
 # Schema with transformations:
 vars:
   - name: "ENV_PREFIX"
     value: "prod"
 transform:
+  # Rename and clean up API endpoint
   - type: "renameKey"
     from: "legacy.api_endpoint"
     to: "service.url"
+  - type: "trim"
+    path: "service.url"
   - type: "changeCase"
     path: "service.url"
     case: "lower"
+  
+  # Add environment and prefix keys
   - type: "setValue"
     path: "service.environment"
     value: "${ENV_PREFIX}"
   - type: "addKeyPrefix"
     path: "service"
     prefix: "${ENV_PREFIX}_"
+  
+  # Replace port with new value and clean up
+  - type: "replaceKey"
+    path: "database.port"
+    target: "temp.newPort"
+  - type: "addKeySuffix"
+    path: "database"
+    suffix: "_config"
+    
+  # Remove sensitive data
+  - type: "deleteKey"
+    path: "legacy.api_key"
 
 # Final result:
 database:
-  host: "db-server"
+  host_config: "db-server"
+  port_config: 8080
 prod_service:
   prod_url: "http://old-domain.com/api"
   prod_environment: "prod"
+# legacy section cleaned up (api_key deleted)
+legacy: {}
 ```
 
 ## Advanced Transformation Patterns
