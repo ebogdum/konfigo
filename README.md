@@ -1,5 +1,9 @@
 # Konfigo: Versatile Configuration Management
 
+<p align="center">
+  <img src="konfigo_logo.png" alt="Konfigo Logo" width="200"/>
+</p>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Konfigo is a powerful command-line tool designed to streamline your configuration workflow. It excels at reading various configuration file formats (JSON, YAML, TOML, .env), merging them intelligently, and processing the combined data against a user-defined schema for validation, transformation, variable substitution, and even batch output generation.
