@@ -51,6 +51,242 @@ Merge `config.json`, process it with `schema.yml`, use variables from `staging-v
 konfigo -s config.json -S schema.yml -V staging-vars.yml -of staging_config.json
 ```
 
+## Feature Examples
+
+Here are minimal examples for each of Konfigo's key features.
+
+### Multi-Format Support
+
+Convert `config.json` to `config.yml`.
+
+**`config.json`**
+```json
+{
+  "key": "value"
+}
+```
+
+**Command**
+```bash
+konfigo -s config.json -of config.yml
+```
+
+**`config.yml` (Output)**
+```yaml
+key: value
+```
+
+### Flexible Merging
+
+Merge two JSON files, where keys in the second file override the first.
+
+**`config1.json`**
+```json
+{
+  "a": 1,
+  "b": 2
+}
+```
+
+**`config2.json`**
+```json
+{
+  "b": 3,
+  "c": 4
+}
+```
+
+**Command**
+```bash
+konfigo -s config1.json,config2.json
+```
+
+**Output (JSON)**
+```json
+{
+  "a": 1,
+  "b": 3,
+  "c": 4
+}
+```
+
+### Powerful Schema Processing
+
+#### Variable Substitution
+
+Substitute a variable from a file into the configuration.
+
+**`config.json`**
+```json
+{
+  "greeting": "Hello, ${user.name}"
+}
+```
+
+**`vars.yml`**
+```yaml
+user:
+  name: World
+```
+
+**Command**
+```bash
+konfigo -s config.json -V vars.yml
+```
+
+**Output (JSON)**
+```json
+{
+  "greeting": "Hello, World"
+}
+```
+
+#### Data Generation
+
+Generate a new value using a schema.
+
+**`schema.yml`**
+```yaml
+konfigo_schema:
+  properties:
+    request_id:
+      konfigo_generate:
+        type: id
+        id_type: uuid
+```
+
+**Command**
+```bash
+konfigo -S schema.yml
+```
+
+**Output (JSON)**
+```json
+{
+  "request_id": "...some generated uuid..."
+}
+```
+
+#### Data Transformation
+
+Rename a key using a schema.
+
+**`config.json`**
+```json
+{
+  "old_key": "value"
+}
+```
+
+**`schema.yml`**
+```yaml
+konfigo_schema:
+  properties:
+    old_key:
+      konfigo_transform:
+        - type: renameKey
+          new_key: new_key
+```
+
+**Command**
+```bash
+konfigo -s config.json -S schema.yml
+```
+
+**Output (JSON)**
+```json
+{
+  "new_key": "value"
+}
+```
+
+#### Data Validation
+
+Validate that a required key is present.
+
+**`config.json`**
+```json
+{
+  "other_key": "value"
+}
+```
+
+**`schema.yml`**
+```yaml
+konfigo_schema:
+  properties:
+    required_key:
+      konfigo_validate:
+        - type: required
+```
+
+**Command**
+```bash
+konfigo -s config.json -S schema.yml
+```
+
+**Output**
+```
+Error: Validation failed: required_key is required
+```
+
+### Batch Processing
+
+Generate multiple output files from a list of variables.
+
+**`vars.yml`**
+```yaml
+konfigo_forEach:
+  - user: alice
+  - user: bob
+```
+
+**`schema.yml`**
+```yaml
+konfigo_schema:
+  properties:
+    username:
+      konfigo_set:
+        value: ${user}
+```
+
+**Command**
+```bash
+konfigo -S schema.yml -V vars.yml -of output/${user}.json
+```
+
+**Output**
+*   `output/alice.json` with `{"username": "alice"}`
+*   `output/bob.json` with `{"username": "bob"}`
+
+### Environment Variable Integration
+
+Override a configuration value from an environment variable.
+
+**`config.json`**
+```json
+{
+  "database": {
+    "host": "localhost"
+  }
+}
+```
+
+**Command**
+```bash
+export KONFIGO_KEY_database.host=prod.db.server
+konfigo -s config.json
+```
+
+**Output (JSON)**
+```json
+{
+  "database": {
+    "host": "prod.db.server"
+  }
+}
+```
+
 ## Command-Line Options
 
 Below is a summary of the available command-line options. For more details, run `konfigo -h`.
