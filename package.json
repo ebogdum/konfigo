@@ -6,6 +6,6 @@
   },
   "devDependencies": {
     "esbuild": "^0.25.5",
-    "vitepress": "^1.6.3"
+    "vitepress": "^1.6.4"
   }
 }
