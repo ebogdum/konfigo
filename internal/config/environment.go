@@ -46,17 +46,17 @@ func (e *Environment) Load() *LoadResult {
 		if len(parts) != 2 {
 			continue
 		}
-		
+
 		key, value := parts[0], parts[1]
 
 		if strings.HasPrefix(key, e.keyPrefix) {
 			configKey := strings.TrimPrefix(key, e.keyPrefix)
 			logger.Debug("  - Loading from env config: %s -> %s", key, configKey)
-			
+
 			// Apply type inference to the environment variable value
 			typedValue := util.InferType(value)
 			logger.Debug("    Type inference: '%s' (%T) -> %v (%T)", value, value, typedValue, typedValue)
-			
+
 			util.SetNestedValue(config.Data, configKey, typedValue)
 			config.Sources[configKey] = "environment:" + key
 		} else if strings.HasPrefix(key, e.varPrefix) {

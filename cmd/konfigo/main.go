@@ -18,12 +18,12 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	
+
 	// If config is nil, help was shown and we should exit successfully
 	if config == nil {
 		return nil
 	}
-	
+
 	// Run the processing pipeline
 	return pipeline.Run(config)
 }

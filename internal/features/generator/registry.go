@@ -33,6 +33,8 @@ func Apply(config map[string]interface{}, definitions []Definition, resolver Var
 		}
 	}
 
+	delete(config, "_internal")
+
 	logger.Debug("All generators applied successfully")
 	return nil
 }

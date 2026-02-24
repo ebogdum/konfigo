@@ -12,7 +12,7 @@ func InferType(value string) interface{} {
 	if value == "" {
 		return ""
 	}
-	
+
 	// Check for boolean values (case-insensitive)
 	lowerValue := strings.ToLower(value)
 	if lowerValue == "true" {
@@ -21,7 +21,7 @@ func InferType(value string) interface{} {
 	if lowerValue == "false" {
 		return false
 	}
-	
+
 	// Try to parse as integer
 	if intVal, err := strconv.ParseInt(value, 10, 64); err == nil {
 		// If it fits in a regular int, return that, otherwise int64
@@ -30,12 +30,12 @@ func InferType(value string) interface{} {
 		}
 		return intVal
 	}
-	
+
 	// Try to parse as float
 	if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
 		return floatVal
 	}
-	
+
 	// Return as string if no other type matches
 	return value
 }
@@ -53,7 +53,7 @@ func TryConvertType(value string, targetType string) (interface{}, bool) {
 			return false, true
 		}
 		return nil, false
-		
+
 	case "number", "int", "integer":
 		if intVal, err := strconv.ParseInt(value, 10, 64); err == nil {
 			if intVal >= -2147483648 && intVal <= 2147483647 {
@@ -62,16 +62,16 @@ func TryConvertType(value string, targetType string) (interface{}, bool) {
 			return intVal, true
 		}
 		return nil, false
-		
+
 	case "float", "float64", "double":
 		if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
 			return floatVal, true
 		}
 		return nil, false
-		
+
 	case "string":
 		return value, true
-		
+
 	default:
 		// Unknown target type, try automatic inference
 		return InferType(value), true

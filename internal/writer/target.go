@@ -15,14 +15,14 @@ type OutputTarget struct {
 // DetermineOutputTargets determines the output targets based on flags and file specifications.
 func DetermineOutputTargets(outputFile string, outJSON bool, outYAML bool, outTOML bool, outENV bool) []OutputTarget {
 	var targets []OutputTarget
-	
+
 	// If output file is specified with extension, use that format
 	if outputFile != "" && filepath.Ext(outputFile) != "" {
 		format := strings.TrimPrefix(filepath.Ext(outputFile), ".")
 		targets = append(targets, OutputTarget{Format: format, Filename: outputFile})
 		return targets
 	}
-	
+
 	// Add targets based on format flags
 	if outJSON {
 		targets = append(targets, OutputTarget{Format: "json"})
@@ -36,12 +36,12 @@ func DetermineOutputTargets(outputFile string, outJSON bool, outYAML bool, outTO
 	if outENV {
 		targets = append(targets, OutputTarget{Format: "env"})
 	}
-	
+
 	// Default to JSON if no format specified
 	if len(targets) == 0 {
 		targets = append(targets, OutputTarget{Format: "json"})
 	}
-	
+
 	// If output file is specified without extension, create filenames for each format
 	if outputFile != "" {
 		baseName := outputFile
@@ -49,7 +49,7 @@ func DetermineOutputTargets(outputFile string, outJSON bool, outYAML bool, outTO
 			targets[i].Filename = fmt.Sprintf("%s.%s", baseName, targets[i].Format)
 		}
 	}
-	
+
 	return targets
 }
 

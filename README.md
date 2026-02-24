@@ -301,7 +301,6 @@ Below is a summary of the available command-line options. For more details, run 
 | `-sy`                   | Force input to be parsed as YAML (required for stdin).                      |
 | `-st`                   | Force input to be parsed as TOML (required for stdin).                      |
 | `-se`                   | Force input to be parsed as ENV (required for stdin).                       |
-| `-si`                   | Force input to be parsed as INI (required for stdin).                       |
 
 **Schema & Variables**
 
@@ -319,7 +318,6 @@ Below is a summary of the available command-line options. For more details, run 
 | `-oy`                   | Output in YAML format.                                                      |
 | `-ot`                   | Output in TOML format.                                                      |
 | `-oe`                   | Output in ENV format.                                                       |
-| `-oi`                   | Output in INI format.                                                       |
 
 **Behavior & Logging**
 

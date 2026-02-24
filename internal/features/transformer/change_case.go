@@ -24,28 +24,28 @@ func (t *ChangeCaseTransformer) Type() string {
 // It changes the case of a string value at the specified path.
 func (t *ChangeCaseTransformer) Transform(config map[string]interface{}, def Definition) error {
 	logger.Debug("  - Applying changeCase transform at path '%s' to case '%s'", def.Path, def.Case)
-	
+
 	// Get the value from the specified path
 	value, found := util.GetNestedValue(config, def.Path)
 	if !found {
 		return fmt.Errorf("changeCase: path '%s' not found", def.Path)
 	}
-	
+
 	// Ensure the value is a string
 	strValue, ok := value.(string)
 	if !ok {
 		return fmt.Errorf("changeCase: value at path '%s' is not a string (got %T)", def.Path, value)
 	}
-	
+
 	// Apply the case transformation
 	newValue, err := t.applyCase(strValue, def.Case)
 	if err != nil {
 		return fmt.Errorf("changeCase: %w", err)
 	}
-	
+
 	// Set the transformed value
 	util.SetNestedValue(config, def.Path, newValue)
-	
+
 	logger.Debug("    Changed case from '%s' to '%s'", strValue, newValue)
 	return nil
 }
@@ -75,16 +75,16 @@ func (t *ChangeCaseTransformer) ValidateDefinition(def Definition) error {
 	if def.Path == "" {
 		return fmt.Errorf("changeCase transformer: 'path' is required")
 	}
-	
+
 	if def.Case == "" {
 		return fmt.Errorf("changeCase transformer: 'case' is required")
 	}
-	
+
 	// Validate case type
 	_, err := t.applyCase("test", def.Case)
 	if err != nil {
 		return fmt.Errorf("changeCase transformer: %w", err)
 	}
-	
+
 	return nil
 }

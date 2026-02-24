@@ -17,7 +17,7 @@ func (ip *INIParser) Parse(content []byte) (map[string]interface{}, error) {
 	}
 
 	data := make(map[string]interface{})
-	
+
 	// Handle default section
 	defaultSection := cfg.Section(ini.DefaultSection)
 	for _, key := range defaultSection.Keys() {

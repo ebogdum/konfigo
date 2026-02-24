@@ -4,7 +4,7 @@ package parser
 type Parser interface {
 	// Parse parses content and returns the resulting map.
 	Parse(content []byte) (map[string]interface{}, error)
-	
+
 	// Format returns the format name this parser handles.
 	Format() string
 }
@@ -19,14 +19,14 @@ func NewRegistry() *Registry {
 	registry := &Registry{
 		parsers: make(map[string]Parser),
 	}
-	
+
 	// Register all built-in parsers
 	registry.Register(&JSONParser{})
 	registry.Register(&YAMLParser{})
 	registry.Register(&TOMLParser{})
 	registry.Register(&INIParser{})
 	registry.Register(&ENVParser{})
-	
+
 	return registry
 }
 

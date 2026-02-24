@@ -35,7 +35,7 @@ func (bp *BatchProcessor) Process(
 	varsFromFile map[string]interface{},
 	envVarsForSchema map[string]string,
 ) (*ProcessResult, error) {
-	
+
 	if forEachConfig == nil {
 		return nil, errors.New("konfigo_forEach configuration is nil")
 	}
@@ -77,7 +77,7 @@ func (bp *BatchProcessor) validateForEachConfig(forEachConfig *schema.KonfigoFor
 	if forEachConfig.Output.FilenamePattern == "" {
 		return errors.New("konfigo_forEach.output.filenamePattern is required")
 	}
-	
+
 	return nil
 }
 
@@ -148,13 +148,13 @@ func (bp *BatchProcessor) processIteration(
 	// 3. Merge iteration variables
 	// 4. Apply schema processing
 	// 5. Write the output file
-	
+
 	logger.Debug("Processing iteration %d", index)
-	
+
 	// For now, just track that we processed this iteration
 	// The actual implementation would need to be integrated with
 	// the existing processing logic from main.go
-	
+
 	return nil
 }
 
@@ -175,12 +175,12 @@ func ExtractForEachFromVars(varsFromFile map[string]interface{}) (*schema.Konfig
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to marshal konfigo_forEach directive: %w", err)
 			}
-			
+
 			forEachConfig = &schema.KonfigoForEach{}
 			if err := yaml.Unmarshal(yamlBytes, forEachConfig); err != nil {
 				return nil, nil, fmt.Errorf("failed to unmarshal konfigo_forEach directive: %w", err)
 			}
-			
+
 			logger.Debug("Found konfigo_forEach directive.")
 		} else {
 			globalVars[k] = v

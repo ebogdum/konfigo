@@ -1,0 +1,32 @@
+{
+  "api": {
+    "endpoint": "https://api.v2.example.com",
+    "secret": "api_secret_key",
+    "token": "---bearer-token---"
+  },
+  "cache": {
+    "redis_host": "localhost",
+    "redis_port": 6379
+  },
+  "config": {},
+  "database": {
+    "host": "localhost",
+    "name": "'myapp_db'",
+    "port": 8080
+  },
+  "service": {
+    "endpoint": "https://service.com",
+    "timeout": 30
+  },
+  "temp": {},
+  "testing": {
+    "custom_trim": "***important***",
+    "whitespace": "  test value  "
+  },
+  "user": {
+    "email": "alice@example.com",
+    "id": 123,
+    "name": "Alice",
+    "password": "secret123"
+  }
+}

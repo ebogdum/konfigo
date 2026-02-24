@@ -75,7 +75,7 @@ func (em *ENVMarshaller) needsQuoting(s string) bool {
 	if s == "" {
 		return true
 	}
-	
+
 	// Check for characters that require quoting
 	requiresQuoting := []string{" ", "\t", "\n", "\r", "#", "\"", "'", "\\", "="}
 	for _, char := range requiresQuoting {
@@ -83,6 +83,6 @@ func (em *ENVMarshaller) needsQuoting(s string) bool {
 			return true
 		}
 	}
-	
+
 	return false
 }
