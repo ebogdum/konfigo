@@ -21,16 +21,16 @@ func (t *DeleteKeyTransformer) Type() string {
 // It removes a key from the configuration.
 func (t *DeleteKeyTransformer) Transform(config map[string]interface{}, def Definition) error {
 	logger.Debug("  - Applying deleteKey transform at path '%s'", def.Path)
-	
+
 	// Check if the path exists
 	_, found := util.GetNestedValue(config, def.Path)
 	if !found {
 		return fmt.Errorf("deleteKey: path '%s' not found", def.Path)
 	}
-	
+
 	// Delete the value at the path
 	util.DeleteNestedValue(config, def.Path)
-	
+
 	logger.Debug("    Deleted key at path '%s'", def.Path)
 	return nil
 }
@@ -40,6 +40,6 @@ func (t *DeleteKeyTransformer) ValidateDefinition(def Definition) error {
 	if def.Path == "" {
 		return fmt.Errorf("deleteKey transformer: 'path' is required")
 	}
-	
+
 	return nil
 }

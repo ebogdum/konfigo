@@ -21,19 +21,19 @@ func (t *RenameKeyTransformer) Type() string {
 // It moves a value from the 'From' path to the 'To' path and removes the original.
 func (t *RenameKeyTransformer) Transform(config map[string]interface{}, def Definition) error {
 	logger.Debug("  - Applying renameKey transform from '%s' to '%s'", def.From, def.To)
-	
+
 	// Get the value from the source path
 	value, found := util.GetNestedValue(config, def.From)
 	if !found {
 		return fmt.Errorf("renameKey: source path '%s' not found", def.From)
 	}
-	
+
 	// Set the value at the destination path
 	util.SetNestedValue(config, def.To, value)
-	
+
 	// Remove the value from the source path
 	util.DeleteNestedValue(config, def.From)
-	
+
 	logger.Debug("    Renamed key from '%s' to '%s'", def.From, def.To)
 	return nil
 }
@@ -43,14 +43,14 @@ func (t *RenameKeyTransformer) ValidateDefinition(def Definition) error {
 	if def.From == "" {
 		return fmt.Errorf("renameKey transformer: 'from' path is required")
 	}
-	
+
 	if def.To == "" {
 		return fmt.Errorf("renameKey transformer: 'to' path is required")
 	}
-	
+
 	if def.From == def.To {
 		return fmt.Errorf("renameKey transformer: 'from' and 'to' paths cannot be the same")
 	}
-	
+
 	return nil
 }

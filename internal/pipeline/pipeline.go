@@ -41,7 +41,6 @@ import (
 	"konfigo/internal/reader"
 	"konfigo/internal/schema"
 	"konfigo/internal/writer"
-	"sort"
 	"strings"
 )
 
@@ -171,7 +170,7 @@ func (p *Pipeline) processBasicVariableSubstitution(baseConfig map[string]interf
 	if err != nil {
 		return nil, errors.WrapError(errors.ErrorTypeVarResolution, "failed to create variable resolver without schema", err)
 	}
-	
+
 	return variables.Substitute(baseConfig, resolver), nil
 }
 
@@ -200,7 +199,7 @@ func (p *Pipeline) generateOutputs(finalConfig map[string]interface{}) error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -209,18 +208,30 @@ type parseResult struct {
 	FilePath string
 	Data     map[string]interface{}
 	Err      error
+	Index    int
+}
+
+// sourceEntry represents a discovered source in its original CLI order.
+// It can be either a file (with a path) or stdin data.
+type sourceEntry struct {
+	Index    int
+	FilePath string // empty for stdin
+	IsStdin  bool
+	Data     []byte // raw stdin data, nil for file entries
 }
 
 // processSources handles discovery, parsing, and merging of source files
 func (p *Pipeline) processSources(immutablePaths map[string]struct{}, envConfig map[string]interface{}) (map[string]interface{}, error) {
-	var allFiles []string
-	var stdinData []byte
 	sourcePaths := p.Config.GetSourcePaths()
 	inputFormatOverride := p.Config.GetInputFormat()
-	
+
 	sources := strings.Split(sourcePaths, ",")
 	logger.Log("Discovering configuration files...")
-	
+
+	// Build an ordered list of source entries preserving CLI order
+	var orderedSources []sourceEntry
+	globalIndex := 0
+
 	for _, source := range sources {
 		source = strings.TrimSpace(source)
 		if source == "" {
@@ -231,11 +242,16 @@ func (p *Pipeline) processSources(immutablePaths map[string]struct{}, envConfig 
 			if err := reader.ValidateStdinFormat(inputFormatOverride); err != nil {
 				return nil, err
 			}
-			var err error
-			stdinData, err = reader.ReadStdin()
+			stdinData, err := reader.ReadStdin()
 			if err != nil {
 				return nil, err
 			}
+			orderedSources = append(orderedSources, sourceEntry{
+				Index:   globalIndex,
+				IsStdin: true,
+				Data:    stdinData,
+			})
+			globalIndex++
 			continue
 		}
 		files, err := reader.DiscoverFiles(source, p.Config.Recursive)
@@ -243,29 +259,57 @@ func (p *Pipeline) processSources(immutablePaths map[string]struct{}, envConfig 
 			return nil, errors.WrapError(errors.ErrorTypeFileRead, "error loading from source", err).WithContext("source", source)
 		}
 		logger.Debug("Found %d file(s) in source: %s", len(files), source)
-		allFiles = append(allFiles, files...)
+		for _, f := range files {
+			orderedSources = append(orderedSources, sourceEntry{
+				Index:    globalIndex,
+				FilePath: f,
+			})
+			globalIndex++
+		}
 	}
 
-	results := p.parseFilesParallel(allFiles, inputFormatOverride)
-	sort.Slice(results, func(i, j int) bool { return results[i].FilePath < results[j].FilePath })
+	// Collect file entries for parallel parsing
+	var fileEntries []sourceEntry
+	for _, se := range orderedSources {
+		if !se.IsStdin {
+			fileEntries = append(fileEntries, se)
+		}
+	}
 
+	// Parse files in parallel, preserving original indices
+	fileResults := p.parseFilesParallel(fileEntries, inputFormatOverride)
+
+	// Build a map from index to parse result for ordered merging
+	resultsByIndex := make(map[int]parseResult, len(fileResults))
+	for _, res := range fileResults {
+		resultsByIndex[res.Index] = res
+	}
+
+	// Merge everything in original source order
 	finalConfig := make(map[string]interface{})
-	logger.Log("Merging %d configuration file(s)...", len(results))
-	for _, res := range results {
-		if res.Err != nil {
-			logger.Log("  - Warning: Skipping file %s due to parse error: %v", res.FilePath, res.Err)
-			continue
-		}
-		merger.Merge(finalConfig, res.Data, p.Config.CaseSensitive, immutablePaths)
-	}
+	var parseErrors []string
+	logger.Log("Merging %d configuration source(s)...", len(orderedSources))
 
-	if len(stdinData) > 0 {
-		logger.Log("Merging configuration from stdin...")
-		data, err := parser.Parse("stdin", stdinData, inputFormatOverride)
-		if err != nil {
-			return nil, errors.WrapError(errors.ErrorTypeStdinRead, "failed to parse stdin", err)
+	for _, se := range orderedSources {
+		if se.IsStdin {
+			logger.Log("Merging configuration from stdin...")
+			data, err := parser.Parse("stdin", se.Data, inputFormatOverride)
+			if err != nil {
+				return nil, errors.WrapError(errors.ErrorTypeStdinRead, "failed to parse stdin", err)
+			}
+			merger.Merge(finalConfig, data, p.Config.CaseSensitive, immutablePaths)
+		} else {
+			res := resultsByIndex[se.Index]
+			if res.Err != nil {
+				parseErrors = append(parseErrors, fmt.Sprintf("%s: %v", res.FilePath, res.Err))
+				continue
+			}
+			merger.Merge(finalConfig, res.Data, p.Config.CaseSensitive, immutablePaths)
 		}
-		merger.Merge(finalConfig, data, p.Config.CaseSensitive, immutablePaths)
+	}
+	if len(parseErrors) > 0 {
+		return nil, errors.NewErrorf(errors.ErrorTypeParsing,
+			"failed to parse %d file(s): %s", len(parseErrors), strings.Join(parseErrors, "; "))
 	}
 
 	if len(envConfig) > 0 {
@@ -277,12 +321,12 @@ func (p *Pipeline) processSources(immutablePaths map[string]struct{}, envConfig 
 }
 
 // parseFilesParallel parses multiple files in parallel using optimized processing
-func (p *Pipeline) parseFilesParallel(files []string, formatOverride string) []parseResult {
-	if len(files) == 0 {
+func (p *Pipeline) parseFilesParallel(entries []sourceEntry, formatOverride string) []parseResult {
+	if len(entries) == 0 {
 		return nil
 	}
-	
+
 	// Use optimized file processor for better performance
 	processor := NewOptimizedFileProcessor()
-	return processor.ProcessFiles(files, formatOverride)
+	return processor.ProcessFiles(entries, formatOverride)
 }

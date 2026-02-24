@@ -1,24 +1,24 @@
-user:
-  email: alice@example.com
-  id: 123
-  name: Alice
 api:
-  endpoint: "  https://api.example.com  "
-  token: ---bearer-token---
-database:
-  host: localhost
-  port: 5432
-  name: "'myapp_db'"
+  endpoint: '  https://api.example.com  '
+  token: '---bearer-token---'
 cache:
   redis_host: localhost
   redis_port: 6379
+config:
+  newPort: 8080
+database:
+  host: localhost
+  name: '''myapp_db'''
+  port: 5432
 service:
   endpoint: https://service.com
   timeout: 30
 temp:
   newEndpoint: https://api.v2.example.com
-config:
-  newPort: 8080
 testing:
-  whitespace: "  test value  "
-  custom_trim: "***important***"
+  custom_trim: '***important***'
+  whitespace: '  test value  '
+user:
+  email: alice@example.com
+  id: 123
+  name: Alice

@@ -35,13 +35,13 @@ func Parse(filePath string, content []byte, formatOverride string) (map[string]i
 	if format == "" {
 		format = DetectFormat(filePath)
 	}
-	
+
 	format = NormalizeFormat(format)
-	
+
 	parser, exists := defaultRegistry.Get(format)
 	if !exists {
 		return nil, errors.NewErrorf(errors.ErrorTypeInvalidFormat, "unsupported file format: %s for file %s", format, filePath)
 	}
-	
+
 	return parser.Parse(content)
 }

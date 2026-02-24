@@ -11,57 +11,57 @@ type ErrorType string
 
 const (
 	// Input/Output errors
-	ErrorTypeFileRead       ErrorType = "FILE_READ"
-	ErrorTypeFileWrite      ErrorType = "FILE_WRITE"
-	ErrorTypeStdinRead      ErrorType = "STDIN_READ"
-	
+	ErrorTypeFileRead  ErrorType = "FILE_READ"
+	ErrorTypeFileWrite ErrorType = "FILE_WRITE"
+	ErrorTypeStdinRead ErrorType = "STDIN_READ"
+
 	// Parsing errors
-	ErrorTypeParsing        ErrorType = "PARSING"
-	ErrorTypeFormatDetect   ErrorType = "FORMAT_DETECT"
-	ErrorTypeInvalidFormat  ErrorType = "INVALID_FORMAT"
-	
+	ErrorTypeParsing       ErrorType = "PARSING"
+	ErrorTypeFormatDetect  ErrorType = "FORMAT_DETECT"
+	ErrorTypeInvalidFormat ErrorType = "INVALID_FORMAT"
+
 	// Schema errors
-	ErrorTypeSchemaLoad     ErrorType = "SCHEMA_LOAD"
-	ErrorTypeSchemaProcess  ErrorType = "SCHEMA_PROCESS"
-	ErrorTypeValidation     ErrorType = "VALIDATION"
-	
+	ErrorTypeSchemaLoad    ErrorType = "SCHEMA_LOAD"
+	ErrorTypeSchemaProcess ErrorType = "SCHEMA_PROCESS"
+	ErrorTypeValidation    ErrorType = "VALIDATION"
+
 	// Variable errors
-	ErrorTypeVarResolution  ErrorType = "VAR_RESOLUTION"
-	ErrorTypeVarSubstitute  ErrorType = "VAR_SUBSTITUTE"
-	
+	ErrorTypeVarResolution ErrorType = "VAR_RESOLUTION"
+	ErrorTypeVarSubstitute ErrorType = "VAR_SUBSTITUTE"
+
 	// Configuration errors
 	ErrorTypeConfigMerge    ErrorType = "CONFIG_MERGE"
 	ErrorTypeImmutableField ErrorType = "IMMUTABLE_FIELD"
-	
+
 	// CLI errors
-	ErrorTypeCLIFlag        ErrorType = "CLI_FLAG"
-	ErrorTypeCLIValidation  ErrorType = "CLI_VALIDATION"
-	
+	ErrorTypeCLIFlag       ErrorType = "CLI_FLAG"
+	ErrorTypeCLIValidation ErrorType = "CLI_VALIDATION"
+
 	// Internal errors
-	ErrorTypeInternal       ErrorType = "INTERNAL"
-	ErrorTypeDeepCopy       ErrorType = "DEEP_COPY"
+	ErrorTypeInternal ErrorType = "INTERNAL"
+	ErrorTypeDeepCopy ErrorType = "DEEP_COPY"
 )
 
 // KonfigoError represents a structured error with context
 type KonfigoError struct {
-	Type        ErrorType
-	Message     string
-	Path        string    // Configuration path (e.g., "database.host")
-	FilePath    string    // File path where error occurred
-	Line        int       // Line number (if applicable)
-	Column      int       // Column number (if applicable)
-	Cause       error     // Underlying error
-	StackTrace  []string  // Stack trace
-	Context     map[string]interface{} // Additional context
+	Type       ErrorType
+	Message    string
+	Path       string                 // Configuration path (e.g., "database.host")
+	FilePath   string                 // File path where error occurred
+	Line       int                    // Line number (if applicable)
+	Column     int                    // Column number (if applicable)
+	Cause      error                  // Underlying error
+	StackTrace []string               // Stack trace
+	Context    map[string]interface{} // Additional context
 }
 
 // Error implements the error interface
 func (e *KonfigoError) Error() string {
 	var parts []string
-	
+
 	// Add error type
 	parts = append(parts, fmt.Sprintf("[%s]", e.Type))
-	
+
 	// Add file context if available
 	if e.FilePath != "" {
 		if e.Line > 0 {
@@ -70,23 +70,23 @@ func (e *KonfigoError) Error() string {
 			parts = append(parts, e.FilePath)
 		}
 	}
-	
+
 	// Add config path if available
 	if e.Path != "" {
 		parts = append(parts, fmt.Sprintf("path:%s", e.Path))
 	}
-	
+
 	// Add main message
 	parts = append(parts, e.Message)
-	
+
 	// Join all parts
 	result := strings.Join(parts, " ")
-	
+
 	// Add cause if present
 	if e.Cause != nil {
 		result += fmt.Sprintf(" (caused by: %v)", e.Cause)
 	}
-	
+
 	return result
 }
 
@@ -209,7 +209,7 @@ func captureStackTrace(skip int) []string {
 	pc := make([]uintptr, 10)
 	n := runtime.Callers(skip+1, pc)
 	frames := runtime.CallersFrames(pc[:n])
-	
+
 	for {
 		frame, more := frames.Next()
 		if !strings.Contains(frame.File, "runtime/") {
@@ -219,7 +219,7 @@ func captureStackTrace(skip int) []string {
 			break
 		}
 	}
-	
+
 	return trace
 }
 
@@ -245,7 +245,7 @@ func FormatUserFriendly(err error) string {
 	if !ok {
 		return err.Error()
 	}
-	
+
 	switch kErr.Type {
 	case ErrorTypeFileRead:
 		return fmt.Sprintf("Cannot read file '%s': %s", kErr.FilePath, kErr.Message)

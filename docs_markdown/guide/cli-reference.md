@@ -12,24 +12,22 @@ graph TD
     A --> C[Merge Files]
     A --> D[Apply Schema]
     A --> E[Batch Generate]
-    
+
     B --> B1[konfigo -s file.yaml -oj]
     B --> B2[konfigo -s file.json -ot]
     B --> B3[konfigo -s file.toml -oy]
-    
+
     C --> C1{Runtime overrides?}
     C1 -->|No| C2[konfigo -s base.yaml,prod.yaml]
     C1 -->|Yes| C3[KONFIGO_KEY_*=value konfigo -s files...]
-    
-    D --> D1{Validate only?}
-    D1 -->|Yes| D2[konfigo -s config.yaml -S schema.yaml --validate-only]
-    D1 -->|No| D3[konfigo -s config.yaml -S schema.yaml]
-    
+
+    D --> D1[konfigo -s config.yaml -S schema.yaml]
+
     E --> E1[konfigo -S schema.yaml -V variables.yaml]
-    
+
     style B1 fill:#e8f5e8
     style C2 fill:#fff3e0
-    style D3 fill:#f3e5f5
+    style D1 fill:#f3e5f5
     style E1 fill:#e1f5fe
 ```
 
@@ -68,7 +66,6 @@ konfigo -s base.yaml -S schema.yaml -V variables.yaml
 | **Environment override** | `KONFIGO_KEY_app.port=8080 konfigo -s config.yaml` | Override any value |
 | **Schema processing** | `konfigo -s config.yaml -S schema.yaml` | Apply schema |
 | **Batch generation** | `konfigo -s base.yaml -V vars.yaml` | Generate multiple outputs |
-| **Validation only** | `konfigo -s config.yaml -S schema.yaml --validate-only` | Check without output |
 | **Debug output** | `konfigo -v -s config.yaml` | See what's happening |
 
 ---
@@ -76,7 +73,13 @@ konfigo -s base.yaml -S schema.yaml -V variables.yaml
 ## Command Structure
 
 ```bash
-konfigo [global-flags] -s <sources> [processing-flags] [output-flags]
+konfigo [flags] -s <sources> [output-flags]
+```
+
+Positional arguments are also supported:
+
+```bash
+konfigo file1.yaml file2.json
 ```
 
 ### Examples by Use Case
@@ -92,19 +95,19 @@ konfigo -s base.yaml,prod.yaml -of production.json
 # Recursive directory merge
 konfigo -r -s configs/ -of merged.yaml
 
-# Case-insensitive merging
+# Case-sensitive merging
 konfigo -c -s config1.yaml,config2.yaml
 ```
 
 #### **Format Conversion**
 ```bash
 # Single format output
-konfigo -s config.yaml -oj                    # → JSON
-konfigo -s config.json -oy                    # → YAML
-konfigo -s config.toml -oe                    # → ENV
+konfigo -s config.yaml -oj                    # -> JSON
+konfigo -s config.json -oy                    # -> YAML
+konfigo -s config.toml -oe                    # -> ENV
 
 # Multiple format output
-konfigo -s config.yaml -oj -oy -ot -of base   # → base.json, base.yaml, base.toml
+konfigo -s config.yaml -oj -oy -ot -of base   # -> base.json, base.yaml, base.toml
 ```
 
 #### **Environment Integration**
@@ -127,23 +130,19 @@ konfigo -s config.yaml -S schema.yaml
 # With variables
 konfigo -s config.yaml -S schema.yaml -V variables.yaml
 
-# Validation only
-konfigo -s config.yaml -S schema.yaml --validate-only
-
 # Batch processing
 konfigo -s template.yaml -S schema.yaml -V batch-vars.yaml
 ```
 
 ---
 
-## Input Sources (`-s, --sources`)
+## Input Sources (`-s`)
 
 Specify configuration sources to merge.
 
 ### Syntax
 ```bash
 -s <source1>[,<source2>,...]
---sources <source1>[,<source2>,...]
 ```
 
 ### Source Types
@@ -160,38 +159,33 @@ Specify configuration sources to merge.
 
 Konfigo automatically detects formats by extension:
 
-| Extension | Format | Alternative Extensions |
-|-----------|--------|----------------------|
-| `.json`, `.jsonc` | JSON | Comments supported in `.jsonc` |
-| `.yaml`, `.yml` | YAML | Both extensions supported |
-| `.toml` | TOML | TOML v1.0.0 |
-| `.env`, `.envrc` | ENV | Key=value pairs |
+| Extension | Format |
+|-----------|--------|
+| `.json` | JSON |
+| `.yaml`, `.yml` | YAML |
+| `.toml` | TOML |
+| `.env` | ENV |
+| `.ini` | INI (input only) |
 
 ### Explicit Format Flags
 
-Override automatic detection:
+Override automatic detection (required for stdin):
 
 ```bash
 konfigo -sj -s data.txt      # Treat as JSON
-konfigo -sy -s config.conf   # Treat as YAML  
+konfigo -sy -s config.conf   # Treat as YAML
 konfigo -st -s settings.txt  # Treat as TOML
 konfigo -se -s vars.txt      # Treat as ENV
 ```
 
-### Advanced Source Options
+### Source Options
 
 ```bash
 # Recursive directory processing
 konfigo -r -s configs/
 
-# Case-insensitive key merging
+# Case-sensitive key merging
 konfigo -c -s config1.yaml,config2.yaml
-
-# Include hidden files
-konfigo --include-hidden -s configs/
-
-# File pattern matching
-konfigo -s "configs/*.{yaml,json}"
 ```
 
 ---
@@ -212,7 +206,7 @@ konfigo -s config.yaml -S schema.yaml
 | **Validation** | Enforce data constraints | Required fields, type checking |
 | **Variables** | Template substitution | `${DATABASE_HOST}` |
 | **Transformation** | Modify data structure | Rename keys, change values |
-| **Generation** | Create new data | UUIDs, timestamps |
+| **Generation** | Create new data | IDs, timestamps |
 | **Batch processing** | Multiple outputs | Environment-specific configs |
 
 ### Schema with Variables
@@ -224,18 +218,6 @@ konfigo -s config.yaml -S schema.yaml -V variables.yaml
 KONFIGO_VAR_ENV=prod konfigo -s config.yaml -S schema.yaml
 ```
 
-### Validation Options
-```bash
-# Validate configuration without output
-konfigo -s config.yaml -S schema.yaml --validate-only
-
-# Strict validation mode
-konfigo -s config.yaml -S schema.yaml --strict
-
-# Skip validation errors
-konfigo -s config.yaml -S schema.yaml --skip-validation
-```
-
 ---
 
 ## Output Control
@@ -244,20 +226,17 @@ konfigo -s config.yaml -S schema.yaml --skip-validation
 
 ```bash
 # Format flags (can combine multiple)
--oj, --output-json         # JSON output
--oy, --output-yaml         # YAML output  
--ot, --output-toml         # TOML output
--oe, --output-env          # ENV output
+-oj         # JSON output
+-oy         # YAML output
+-ot         # TOML output
+-oe         # ENV output
 ```
 
 ### Output Destinations
 
 ```bash
 # Output to file
--of <filename>, --output-file <filename>
-
-# Output to directory (for batch processing)
--od <directory>, --output-dir <directory>
+-of <filename>
 
 # Output to stdout (default)
 # No flag needed
@@ -271,32 +250,6 @@ konfigo -s config.yaml -oj -of result.json
 # Multiple formats with base name
 konfigo -s config.yaml -oj -oy -ot -of config
 # Creates: config.json, config.yaml, config.toml
-
-# Directory output for batch processing
-konfigo -s template.yaml -S schema.yaml -V vars.yaml -od outputs/
-```
-
-### Format-Specific Options
-
-#### JSON Options
-```bash
---json-indent <n>          # Indentation spaces (default: 2)
---json-compact             # Compact output (no whitespace)
---json-escape-html         # Escape HTML characters
-```
-
-#### YAML Options
-```bash
---yaml-indent <n>          # Indentation spaces (default: 2)
---yaml-flow               # Use flow style
---yaml-fold               # Fold long lines
-```
-
-#### ENV Options
-```bash
---env-prefix <prefix>      # Add prefix to all keys
---env-quote               # Quote all values
---env-uppercase           # Convert keys to uppercase
 ```
 
 ---
@@ -315,9 +268,6 @@ KONFIGO_KEY_database.host=localhost
 # Nested structures
 KONFIGO_KEY_database.connection.pool_size=20
 KONFIGO_KEY_features.auth.enabled=true
-
-# Array elements (if supported)
-KONFIGO_KEY_servers.0.host=server1.com
 ```
 
 ### Schema Variables (`KONFIGO_VAR_*`)
@@ -328,282 +278,11 @@ Supply variables for schema processing:
 # Set variables for schema substitution
 KONFIGO_VAR_ENVIRONMENT=production
 KONFIGO_VAR_DATABASE_HOST=prod-db.company.com
-KONFIGO_VAR_API_KEY=secret123
 
 konfigo -s config.yaml -S schema.yaml
 ```
 
-### System Variables
-
-Control Konfigo behavior:
-
-```bash
-KONFIGO_LOG_LEVEL=debug        # Set log level
-KONFIGO_NO_COLOR=1            # Disable colored output
-KONFIGO_CONFIG_FILE=~/.konfigo # Custom config file location
-```
-
 ---
-
-## Global Flags
-
-### Logging and Output
-```bash
--v, --verbose              # Verbose output
--q, --quiet               # Quiet mode (errors only)
--d, --debug               # Debug output
---no-color                # Disable colored output
---log-format <format>     # json, text (default: text)
-```
-
-### Behavior Control
-```bash
--r, --recursive           # Process directories recursively
--c, --case-insensitive    # Case-insensitive key merging
---dry-run                 # Show what would be done
---fail-fast               # Stop on first error
-```
-
-### Performance
-```bash
---parallel <n>            # Parallel processing (default: CPU count)
---memory-limit <size>     # Memory limit (e.g., 1GB)
---timeout <duration>      # Processing timeout (e.g., 30s)
-```
-
----
-
-## Advanced Usage Patterns
-
-### Piping and Streams
-
-```bash
-# Read from stdin
-echo '{"key": "value"}' | konfigo -s - -oy
-
-# Chain with other tools
-curl -s api.com/config | konfigo -s - -S schema.yaml | jq '.app'
-
-# Process multiple streams
-cat config1.json | konfigo -s -,config2.yaml -of merged.yaml
-```
-
-### Batch Processing
-
-```bash
-# Generate multiple environment configs
-konfigo -s base.yaml -S schema.yaml -V environments.yaml -od configs/
-
-# Process multiple templates
-for template in templates/*.yaml; do
-  name=$(basename "$template" .yaml)
-  konfigo -s "$template" -S schema.yaml -V "vars/$name.yaml" -of "output/$name.json"
-done
-```
-
-### Conditional Processing
-
-```bash
-# Only process if schema exists
-[[ -f schema.yaml ]] && konfigo -s config.yaml -S schema.yaml || konfigo -s config.yaml
-
-# Environment-specific processing
-if [[ "$ENVIRONMENT" == "production" ]]; then
-  konfigo -s base.yaml,prod.yaml -S prod-schema.yaml -of prod.json
-else
-  konfigo -s base.yaml,dev.yaml -of dev.json
-fi
-```
-
-### Integration with Build Tools
-
-#### Make
-```makefile
-configs/%.json: configs/%.yaml schema.yaml
-	konfigo -s $< -S schema.yaml -of $@
-
-all-configs: configs/dev.json configs/staging.json configs/prod.json
-```
-
-#### Docker
-```dockerfile
-# Multi-stage build with configuration generation
-FROM konfigo:latest AS config-builder
-COPY configs/ /configs/
-COPY schema.yaml /schema.yaml
-RUN konfigo -s /configs/base.yaml,/configs/prod.yaml -S /schema.yaml -of /app-config.json
-
-FROM alpine:latest
-COPY --from=config-builder /app-config.json /etc/app/config.json
-```
-
----
-
-## Error Handling and Debugging
-
-### Debug Output
-```bash
-# Verbose mode - see processing steps
-konfigo -v -s config.yaml -S schema.yaml
-
-# Debug mode - detailed internal information
-konfigo -d -s config.yaml -S schema.yaml
-
-# Trace mode - maximum detail
-KONFIGO_LOG_LEVEL=trace konfigo -s config.yaml -S schema.yaml
-```
-
-### Common Error Scenarios
-
-#### File Not Found
-```bash
-# Error: source file not found
-konfigo -s nonexistent.yaml
-# Solution: Check file paths and permissions
-```
-
-#### Invalid Format
-```bash
-# Error: YAML parsing failed
-konfigo -s invalid.yaml
-# Solution: Validate YAML syntax, use explicit format flags
-```
-
-#### Schema Validation Failed
-```bash
-# Error: validation failed
-konfigo -s config.yaml -S strict-schema.yaml
-# Solution: Check validation rules, use --validate-only for testing
-```
-
-#### Environment Variable Issues
-```bash
-# Error: variable not found
-KONFIGO_VAR_MISSING=value konfigo -s config.yaml -S schema.yaml
-# Solution: Check variable names and schema requirements
-```
-
-### Validation and Testing
-
-```bash
-# Test configuration without output
-konfigo -s config.yaml -S schema.yaml --validate-only
-
-# Dry run to see what would happen
-konfigo --dry-run -s config.yaml -S schema.yaml -V vars.yaml
-
-# Check syntax only
-konfigo --syntax-only -s config.yaml
-```
-
----
-
-## Performance Considerations
-
-### Large Files
-```bash
-# Streaming mode for large files
-konfigo --stream -s large-config.json -oy
-
-# Memory limit
-konfigo --memory-limit 512MB -s huge-config.yaml
-
-# Parallel processing
-konfigo --parallel 4 -r -s configs/
-```
-
-### Optimization Tips
-
-1. **Use specific formats**: Avoid auto-detection for better performance
-2. **Limit recursion depth**: Use `--max-depth` for deep directory structures
-3. **Enable parallel processing**: Use `--parallel` for multiple files
-4. **Stream large files**: Use `--stream` for files > 100MB
-
----
-
-## Exit Codes
-
-| Code | Meaning | Description |
-|------|---------|-------------|
-| `0` | Success | Operation completed successfully |
-| `1` | General error | Command failed |
-| `2` | Invalid arguments | Bad command line arguments |
-| `3` | File not found | Source file doesn't exist |
-| `4` | Parse error | Invalid file format |
-| `5` | Schema error | Schema validation failed |
-| `6` | Write error | Cannot write output file |
-| `130` | Interrupted | Process interrupted (Ctrl+C) |
-
-### Using Exit Codes
-
-```bash
-# Check if command succeeded
-if konfigo -s config.yaml -S schema.yaml; then
-  echo "Configuration valid"
-else
-  echo "Configuration failed validation"
-  exit 1
-fi
-
-# Save exit code
-konfigo -s config.yaml -S schema.yaml
-EXIT_CODE=$?
-if [[ $EXIT_CODE -eq 5 ]]; then
-  echo "Schema validation failed"
-fi
-```
-
----
-
-## Configuration File
-
-Create `~/.konfigo/config.yaml` for default settings:
-
-```yaml
-# Default configuration file
-defaults:
-  output_format: "yaml"
-  indent: 2
-  case_sensitive: true
-  recursive: false
-  
-logging:
-  level: "info"
-  format: "text"
-  
-performance:
-  parallel: 4
-  memory_limit: "1GB"
-  timeout: "30s"
-```
-
-### Environment Override
-```bash
-# Use custom config file
-KONFIGO_CONFIG_FILE=/path/to/config.yaml konfigo -s input.yaml
-```
-
----
-
-## Quick Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| **Command not found** | Check installation and PATH |
-| **Permission denied** | Check file permissions |
-| **Invalid YAML** | Validate syntax with `yamllint` |
-| **Schema errors** | Use `--validate-only` to debug |
-| **Memory issues** | Use `--memory-limit` and `--stream` |
-| **Slow performance** | Enable `--parallel` processing |
-
-## Next Steps
-
-- **[User Guide](./index.md)** - Task-oriented guides
-- **[Recipes & Examples](./recipes.md)** - Real-world patterns
-- **[Schema Guide](../schema/)** - Advanced processing
-- **[Troubleshooting](../reference/troubleshooting.md)** - Detailed problem solving
-
-This CLI reference covers all Konfigo capabilities. Start with the essentials and gradually explore advanced features as your needs grow!
 
 ## Flags
 
@@ -611,17 +290,15 @@ Flags are used to control Konfigo's behavior, from specifying input sources and 
 
 ### Input & Sources
 
-These flags control how Konfigo discovers and parses your input configuration files.
-
 *   `-s <paths>`:
-    *   **Description**: A comma-separated list of source files or directories. Konfigo will read and merge these sources in the order they are provided.
+    *   **Description**: A comma-separated list of source files or directories. Konfigo will read and merge these sources in the order they are provided (last source wins for overlapping keys).
     *   Use `-` to specify reading from standard input (stdin). When using stdin, you **must** also specify the input format using one of the `-s<format>` flags (e.g., `-sy` for YAML).
     *   **Example**: `konfigo -s base.json,env/dev.yml,secrets.env`
     *   **Example (stdin)**: `cat my_config.json | konfigo -s - -sj`
 
 *   `-r`:
     *   **Description**: Recursively search for configuration files in subdirectories of any directories specified in `-s`.
-    *   Konfigo identifies files by common configuration extensions (e.g., `.json`, `.yaml`, `.yml`, `.toml`, `.env`).
+    *   Konfigo identifies files by common configuration extensions (`.json`, `.yaml`, `.yml`, `.toml`, `.env`, `.ini`).
     *   **Example**: `konfigo -s ./configs -r`
 
 *   `-sj`:
@@ -646,8 +323,6 @@ These flags control how Konfigo discovers and parses your input configuration fi
 
 ### Schema & Variables
 
-These flags enable Konfigo's powerful schema-driven processing and variable substitution features.
-
 *   `-S, --schema <path>`:
     *   **Description**: Path to a schema file (must be YAML, JSON, or TOML). This schema defines how the merged configuration should be processed, including variable resolution, data generation, transformations, and validation.
     *   Refer to the [Schema Documentation](../schema/index.md) for details on schema structure and capabilities.
@@ -670,8 +345,6 @@ Konfigo resolves variables used in `${VAR_NAME}` substitutions with the followin
 3.  **Schema `vars` Block**: Variables defined within the `vars:` section of the schema file specified by `-S`.
 
 ### Output & Formatting
-
-These flags control the format and destination of Konfigo's output.
 
 *   `-of <path>`:
     *   **Description**: Write the final processed configuration to the specified file path.
@@ -699,25 +372,20 @@ These flags control the format and destination of Konfigo's output.
 
 ### Behavior & Logging
 
-These flags adjust Konfigo's operational behavior and the verbosity of its logging.
-
 *   `-c`:
     *   **Description**: Use case-sensitive key matching during merging.
     *   By default, Konfigo performs case-insensitive key matching (e.g., `key` and `Key` would be treated as the same key, with the latter overriding the former if it appears later in the merge sequence).
     *   **Example**: `konfigo -s config.json -c`
-    *   **Use case**: When working with configurations that intentionally use different cases for similar keys
 
 *   `-v`:
     *   **Description**: Enable verbose (INFO) logging. Shows processing steps and decision points.
     *   Overrides default quiet behavior but is overridden by `-d`.
     *   **Example**: `konfigo -s config.json -v`
-    *   **Output includes**: File discovery, merge operations, schema processing steps
 
 *   `-d`:
     *   **Description**: Enable debug (DEBUG + INFO) logging. Shows detailed internal processing information.
     *   Most verbose logging level, overrides both `-v` and default quiet behavior.
     *   **Example**: `konfigo -s config.json -d`
-    *   **Output includes**: Variable resolution, transformation details, validation steps
 
 *   `-h`:
     *   **Description**: Show the help message with a summary of all available flags and basic usage instructions.
@@ -750,9 +418,6 @@ konfigo -s config.yaml -oj -oy -ot -oe
 # File output with stdout
 konfigo -s config.yaml -of final.json -oy
 
-# Different file formats
-konfigo -s config.yaml -of app.json -of settings.toml
-
 # Conditional output based on extension
 konfigo -s config.yaml -of final.json    # JSON format (from extension)
 konfigo -s config.yaml -of final -oj     # JSON format (from flag)
@@ -761,7 +426,7 @@ konfigo -s config.yaml -of final -oj     # JSON format (from flag)
 ### Schema and Variable Combinations
 
 ```bash
-# Schema validation only
+# Schema processing
 konfigo -s config.yaml -S validation-schema.yaml
 
 # Variables without schema
@@ -827,31 +492,17 @@ fi
 konfigo -s base.yaml,prod.yaml -S prod-schema.yaml -of prod-config.yaml
 ```
 
-## Performance Considerations
-
-### Large Configuration Files
-
-For large configuration files or complex processing:
+## Piping and Streams
 
 ```bash
-# Use streaming for very large files
-cat large-config.yaml | konfigo -sy -S schema.yaml
+# Read from stdin
+echo '{"key": "value"}' | konfigo -s - -sj -oy
 
-# Process in parallel (automatic for multiple sources)
-konfigo -s dir1/,dir2/,dir3/ -r
+# Chain with other tools
+curl -s api.com/config | konfigo -s - -sj -S schema.yaml | jq '.app'
 
-# Limit memory usage in containers
-docker run --memory=512m myapp konfigo -s config.yaml
-```
-
-### Debugging Performance
-
-```bash
-# Time operations
-time konfigo -s large-config.yaml -S complex-schema.yaml
-
-# Profile with debug output
-konfigo -d -s config.yaml -S schema.yaml 2>&1 | grep -E "(Processing|Timing)"
+# Process multiple streams
+cat config1.json | konfigo -s -,config2.yaml -sj -of merged.yaml
 ```
 
 ## Integration Examples
@@ -889,7 +540,7 @@ konfigo -s base.yaml,k8s-overrides.yaml -S k8s-schema.yaml | \
     kubectl create configmap app-config --from-file=/dev/stdin --dry-run=client -o yaml
 ```
 
-## Common Troubleshooting
+## Debugging
 
 ### Debug Mode Usage
 
@@ -922,4 +573,20 @@ echo "KONFIGO_KEY_app.port=$KONFIGO_KEY_app.port"
 echo "KONFIGO_VAR_ENV=$KONFIGO_VAR_ENV"
 ```
 
-For more detailed troubleshooting guidance, see the [Troubleshooting Guide](../advanced/troubleshooting.md). For environment variable specifics, refer to [Environment Variables](./environment-variables.md). For comprehensive schema information, see the [Schema Guide](../schema/index.md).
+## Quick Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| **Command not found** | Check installation and PATH |
+| **Permission denied** | Check file permissions |
+| **Invalid YAML** | Validate syntax with `yamllint` |
+| **Schema errors** | Use `-v` or `-d` to debug |
+
+## Next Steps
+
+- **[User Guide](./index.md)** - Task-oriented guides
+- **[Recipes & Examples](./recipes.md)** - Real-world patterns
+- **[Schema Guide](../schema/)** - Advanced processing
+- **[Troubleshooting](../reference/troubleshooting.md)** - Detailed problem solving
+
+This CLI reference covers all Konfigo capabilities. Start with the essentials and gradually explore advanced features as your needs grow!

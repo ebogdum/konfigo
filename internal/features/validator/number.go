@@ -7,8 +7,8 @@ type Number interface {
 
 // NumberValue represents a numeric value that can be either integer or float
 type NumberValue struct {
-	IsFloat bool
-	IntVal  int64
+	IsFloat  bool
+	IntVal   int64
 	FloatVal float64
 }
 

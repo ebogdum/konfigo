@@ -26,20 +26,21 @@ func NewOptimizedFileProcessor() *OptimizedFileProcessor {
 	}
 }
 
-// ProcessFiles processes files in parallel with optimized memory usage
-func (ofp *OptimizedFileProcessor) ProcessFiles(files []string, formatOverride string) []parseResult {
-	if len(files) == 0 {
+// ProcessFiles processes files in parallel with optimized memory usage.
+// It preserves the original source index from each entry for ordered merging.
+func (ofp *OptimizedFileProcessor) ProcessFiles(entries []sourceEntry, formatOverride string) []parseResult {
+	if len(entries) == 0 {
 		return nil
 	}
 
 	// Limit workers for memory efficiency
 	maxWorkers := ofp.numWorkers
-	if len(files) < maxWorkers {
-		maxWorkers = len(files)
+	if len(entries) < maxWorkers {
+		maxWorkers = len(entries)
 	}
 
-	jobs := make(chan string, len(files))
-	results := make(chan parseResult, len(files))
+	jobs := make(chan sourceEntry, len(entries))
+	results := make(chan parseResult, len(entries))
 	var wg sync.WaitGroup
 
 	// Start workers
@@ -47,16 +48,17 @@ func (ofp *OptimizedFileProcessor) ProcessFiles(files []string, formatOverride s
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for path := range jobs {
-				result := ofp.processFile(path, formatOverride)
+			for entry := range jobs {
+				result := ofp.processFile(entry.FilePath, formatOverride)
+				result.Index = entry.Index
 				results <- result
 			}
 		}()
 	}
 
 	// Send jobs
-	for _, file := range files {
-		jobs <- file
+	for _, entry := range entries {
+		jobs <- entry
 	}
 	close(jobs)
 
@@ -65,7 +67,7 @@ func (ofp *OptimizedFileProcessor) ProcessFiles(files []string, formatOverride s
 	close(results)
 
 	// Collect results
-	var parsedResults []parseResult
+	parsedResults := make([]parseResult, 0, len(entries))
 	for res := range results {
 		parsedResults = append(parsedResults, res)
 	}
@@ -111,27 +113,27 @@ func NewBatchProcessor() *BatchProcessor {
 // ProcessInBatches processes items in memory-efficient batches
 func (bp *BatchProcessor) ProcessInBatches(items []interface{}, processor func(item interface{}) error) error {
 	batchSize := bp.maxBatchSize
-	
+
 	for i := 0; i < len(items); i += batchSize {
 		end := i + batchSize
 		if end > len(items) {
 			end = len(items)
 		}
-		
+
 		batch := items[i:end]
-		
+
 		// Process batch
 		for _, item := range batch {
 			if err := processor(item); err != nil {
 				return err
 			}
 		}
-		
+
 		// Force garbage collection between batches for memory management
 		if i%bp.maxBatchSize == 0 {
 			runtime.GC()
 		}
 	}
-	
+
 	return nil
 }

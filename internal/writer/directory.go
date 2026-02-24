@@ -13,7 +13,7 @@ func EnsureDirectory(filePath string) error {
 	if dir == "." || dir == "/" {
 		return nil // No directory to create
 	}
-	
+
 	// Check if directory already exists
 	if info, err := os.Stat(dir); err == nil {
 		if info.IsDir() {
@@ -21,12 +21,12 @@ func EnsureDirectory(filePath string) error {
 		}
 		return errors.NewErrorf(errors.ErrorTypeFileWrite, "path %s exists but is not a directory", dir)
 	}
-	
+
 	// Create directory recursively
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return errors.WrapError(errors.ErrorTypeFileWrite, "failed to create directory", err).WithContext("directory", dir)
 	}
-	
+
 	return nil
 }
 
