@@ -6,7 +6,7 @@
 // - Configuration merging with precedence rules
 // - Feature processing (generators, transformers, validators, variables)
 // - Output generation in multiple formats
-// - Batch processing with konfigo_forEach
+// - Batch processing with forEach
 //
 // The pipeline package follows a modular architecture:
 // - coordinator.go: Processing mode coordination
@@ -75,7 +75,7 @@ func (p *Pipeline) Run() error {
 		return err
 	}
 
-	// Load variables file and check for konfigo_forEach
+	// Load variables file and check for forEach
 	varsFromFileGlobal, forEachDirective, err := p.loadVariablesFile()
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (p *Pipeline) Run() error {
 			}
 		}
 	} else if forEachDirective != nil {
-		return errors.NewError(errors.ErrorTypeSchemaLoad, "konfigo_forEach directive found, but no schema file (-S) was provided for processing")
+		return errors.NewError(errors.ErrorTypeSchemaLoad, "forEach directive found, but no schema file (-S) was provided for processing")
 	} else {
 		// No schema provided - perform basic variable substitution
 		baseFinalConfig, err = p.processBasicVariableSubstitution(baseFinalConfig, envVarsForSchema, varsFromFileGlobal)
@@ -148,10 +148,10 @@ func (p *Pipeline) loadVariablesFile() (map[string]interface{}, *schema.KonfigoF
 			return nil, nil, errors.WrapError(errors.ErrorTypeParsing, "failed to parse vars file", err).WithContext("file", p.Config.VarsFile)
 		}
 
-		// Separate konfigo_forEach from other global vars using config package
+		// Separate forEach from other global vars using config package
 		forEachDirective, varsFromFileGlobal, err = config.ExtractForEachFromVars(rawVarsFromFile)
 		if err != nil {
-			return nil, nil, errors.WrapError(errors.ErrorTypeSchemaProcess, "failed to extract konfigo_forEach directive", err)
+			return nil, nil, errors.WrapError(errors.ErrorTypeSchemaProcess, "failed to extract forEach directive", err)
 		}
 		if forEachDirective != nil {
 			forEachDirective.GlobalVars = varsFromFileGlobal // Store global vars for resolver

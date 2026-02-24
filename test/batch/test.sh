@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Batch Processing Test Suite
-# Tests konfigo_forEach functionality across all supported formats
+# Tests forEach functionality across all supported formats
 
 set -e
 
@@ -57,7 +57,7 @@ run_test "Multiple variable files" \
 
 # Test 10: Error Case - Missing itemFiles (should fail)
 # Create a batch config with invalid itemFiles reference
-echo 'konfigo_forEach:
+echo 'forEach:
   item: service
   itemFiles: 
     - "nonexistent/file1.yaml"

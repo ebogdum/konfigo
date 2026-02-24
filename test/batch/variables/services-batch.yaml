@@ -2,7 +2,7 @@
 GLOBAL_API_KEY: "shared-api-key"
 ENVIRONMENT: "production"
 
-konfigo_forEach:
+forEach:
   items:
     - SERVICE_NAME: "frontend"
       SERVICE_HOST: "frontend.example.com"
