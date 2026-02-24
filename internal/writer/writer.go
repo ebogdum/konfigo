@@ -14,12 +14,12 @@ func WriteFile(filePath string, content []byte) error {
 	if err := EnsureDirectory(filePath); err != nil {
 		return errors.WrapError(errors.ErrorTypeFileWrite, "failed to ensure directory for file", err).WithContext("file", filePath)
 	}
-	
+
 	// Write the file
 	if err := os.WriteFile(filePath, content, 0644); err != nil {
 		return errors.WrapError(errors.ErrorTypeFileWrite, "failed to write file", err).WithContext("file", filePath)
 	}
-	
+
 	return nil
 }
 

@@ -10,11 +10,11 @@ func (p *Pipeline) processSingle(baseConfig map[string]interface{}, loadedSchema
 	if varsToProcess == nil {
 		varsToProcess = make(map[string]interface{}) // Ensure not nil for schema.Process
 	}
-	
+
 	processedConfig, err := schema.Process(baseConfig, loadedSchema, varsToProcess, envVarsForSchema)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return processedConfig, nil
 }

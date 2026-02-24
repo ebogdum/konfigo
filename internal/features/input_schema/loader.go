@@ -20,12 +20,12 @@ func LoadSchemaMap(ref *Ref) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read input schema file %s: %w", ref.Path, err)
 	}
-	
+
 	schemaMap, err := parser.Parse(ref.Path, content, "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse input schema file %s: %w", ref.Path, err)
 	}
-	
+
 	return schemaMap, nil
 }
 
@@ -34,7 +34,7 @@ func ValidateFormatSupport(filePath string) error {
 	if !reader.IsSupported(filePath) {
 		return fmt.Errorf("unsupported file format for schema: %s", filePath)
 	}
-	
+
 	// Additional validation for schema-specific format restrictions can be added here
 	// For now, all supported formats are allowed for input schemas
 	return nil

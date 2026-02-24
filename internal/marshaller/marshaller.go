@@ -34,11 +34,11 @@ func Marshal(data map[string]interface{}, format string) ([]byte, error) {
 	if normalizedFormat == "yml" {
 		normalizedFormat = "yaml"
 	}
-	
+
 	marshaller, exists := defaultRegistry.Get(normalizedFormat)
 	if !exists {
 		return nil, errors.NewErrorf(errors.ErrorTypeInvalidFormat, "unsupported output format: %s", format)
 	}
-	
+
 	return marshaller.Marshal(data)
 }

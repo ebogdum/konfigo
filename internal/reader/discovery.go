@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 // supportedExtensions is a set of file extensions the tool can parse.
@@ -32,7 +33,7 @@ func DiscoverFiles(rootPath string, recursive bool) ([]string, error) {
 
 	// If the path is a single file, the recursive flag has no effect.
 	if !info.IsDir() {
-		if _, ok := supportedExtensions[filepath.Ext(rootPath)]; ok {
+		if _, ok := supportedExtensions[strings.ToLower(filepath.Ext(rootPath))]; ok {
 			return []string{rootPath}, nil
 		}
 		return nil, fmt.Errorf("unsupported file type for single file input: %s", rootPath)
@@ -48,7 +49,7 @@ func DiscoverFiles(rootPath string, recursive bool) ([]string, error) {
 			if d.IsDir() {
 				return nil
 			}
-			if _, ok := supportedExtensions[filepath.Ext(path)]; ok {
+			if _, ok := supportedExtensions[strings.ToLower(filepath.Ext(path))]; ok {
 				files = append(files, path)
 			}
 			return nil
@@ -64,7 +65,7 @@ func DiscoverFiles(rootPath string, recursive bool) ([]string, error) {
 			if entry.IsDir() {
 				continue
 			}
-			if _, ok := supportedExtensions[filepath.Ext(entry.Name())]; ok {
+			if _, ok := supportedExtensions[strings.ToLower(filepath.Ext(entry.Name()))]; ok {
 				fullPath := filepath.Join(rootPath, entry.Name())
 				files = append(files, fullPath)
 			}
@@ -84,7 +85,7 @@ func DiscoverFiles(rootPath string, recursive bool) ([]string, error) {
 
 // IsSupported checks if a file extension is supported for configuration parsing.
 func IsSupported(filePath string) bool {
-	ext := filepath.Ext(filePath)
+	ext := strings.ToLower(filepath.Ext(filePath))
 	_, ok := supportedExtensions[ext]
 	return ok
 }

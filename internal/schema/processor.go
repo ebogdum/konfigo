@@ -10,6 +10,7 @@ import (
 	"konfigo/internal/logger"
 	"konfigo/internal/parser"
 	"konfigo/internal/reader"
+	"path/filepath"
 )
 
 // Processor handles the orchestration of schema-driven configuration processing.
@@ -25,7 +26,8 @@ func (p *Processor) Process(config map[string]interface{}, schema *Schema, varsF
 	logger.Log("Applying schema...")
 
 	if schema.InputSchema != nil {
-		if err := input_schema.Validate(config, (*input_schema.Ref)(schema.InputSchema)); err != nil {
+		resolvedRef := resolveRefPath(schema.BaseDir, schema.InputSchema)
+		if err := input_schema.Validate(config, (*input_schema.Ref)(resolvedRef)); err != nil {
 			return nil, errors.WrapError(errors.ErrorTypeValidation, "input schema validation failed", err)
 		}
 	}
@@ -55,8 +57,9 @@ func (p *Processor) Process(config map[string]interface{}, schema *Schema, varsF
 	}
 
 	if schema.OutputSchema != nil {
-		logger.Log("Filtering output against output schema: %s", schema.OutputSchema.Path)
-		processedConfig, err = p.filterOutputSchema(processedConfig, schema.OutputSchema)
+		resolvedOutRef := resolveRefPath(schema.BaseDir, schema.OutputSchema)
+		logger.Log("Filtering output against output schema: %s", resolvedOutRef.Path)
+		processedConfig, err = p.filterOutputSchema(processedConfig, resolvedOutRef)
 		if err != nil {
 			return nil, errors.WrapError(errors.ErrorTypeValidation, "output schema filtering failed", err)
 		}
@@ -130,4 +133,16 @@ func (p *Processor) projectMap(data, schema map[string]interface{}, path string,
 		}
 	}
 	return result, nil
+}
+
+// resolveRefPath resolves a Ref's path relative to the schema's base directory.
+// If the path is already absolute, it is returned as-is.
+func resolveRefPath(baseDir string, ref *Ref) *Ref {
+	if ref == nil || ref.Path == "" || filepath.IsAbs(ref.Path) || baseDir == "" {
+		return ref
+	}
+	return &Ref{
+		Path:   filepath.Join(baseDir, ref.Path),
+		Strict: ref.Strict,
+	}
 }

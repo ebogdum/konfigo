@@ -8,7 +8,7 @@ import (
 type Marshaller interface {
 	// Marshal marshals data to the format-specific byte representation.
 	Marshal(data map[string]interface{}) ([]byte, error)
-	
+
 	// Format returns the format name this marshaller handles.
 	Format() string
 }
@@ -23,13 +23,13 @@ func NewRegistry() *Registry {
 	registry := &Registry{
 		marshallers: make(map[string]Marshaller),
 	}
-	
+
 	// Register all built-in marshallers
 	registry.Register(&JSONMarshaller{})
 	registry.Register(&YAMLMarshaller{})
 	registry.Register(&TOMLMarshaller{})
 	registry.Register(&ENVMarshaller{})
-	
+
 	return registry
 }
 

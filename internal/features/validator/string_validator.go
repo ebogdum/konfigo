@@ -14,7 +14,7 @@ func (sv *StringValidator) Validate(value interface{}, path string, rule Rule) e
 	if rule.MinLength == nil && len(rule.Enum) == 0 && rule.Regex == "" {
 		return nil
 	}
-	
+
 	str, ok := value.(string)
 	if !ok {
 		if rule.MinLength != nil {
@@ -28,14 +28,14 @@ func (sv *StringValidator) Validate(value interface{}, path string, rule Rule) e
 		}
 		return nil
 	}
-	
+
 	// MinLength validation
 	if rule.MinLength != nil {
 		if len(str) < *rule.MinLength {
 			return fmt.Errorf("path '%s': length %d is less than minimum length %d", path, len(str), *rule.MinLength)
 		}
 	}
-	
+
 	// Enum validation
 	if len(rule.Enum) > 0 {
 		match := false
@@ -49,7 +49,7 @@ func (sv *StringValidator) Validate(value interface{}, path string, rule Rule) e
 			return fmt.Errorf("path '%s': value '%s' is not in the allowed list %v", path, str, rule.Enum)
 		}
 	}
-	
+
 	// Regex validation
 	if rule.Regex != "" {
 		compiledRegex, err := regexp.Compile(rule.Regex)
@@ -60,6 +60,6 @@ func (sv *StringValidator) Validate(value interface{}, path string, rule Rule) e
 			return fmt.Errorf("path '%s': value '%s' does not match regex pattern '%s'", path, str, rule.Regex)
 		}
 	}
-	
+
 	return nil
 }

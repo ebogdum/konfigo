@@ -30,6 +30,7 @@ import (
 	"konfigo/internal/features/variables"
 	"konfigo/internal/parser"
 	"konfigo/internal/reader"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -54,14 +55,15 @@ type KonfigoForEach struct {
 
 // Schema represents the entire Konfigo schema structure.
 type Schema struct {
-	APIVersion   string            `yaml:"apiVersion"`
-	InputSchema  *Ref              `yaml:"inputSchema"`
-	OutputSchema *Ref              `yaml:"outputSchema"`
-	Immutable    []string          `yaml:"immutable"`
-	Vars         []variables.Definition `yaml:"vars"`
-	Generators   []generator.Definition `yaml:"generators"`
+	APIVersion   string                   `yaml:"apiVersion"`
+	InputSchema  *Ref                     `yaml:"inputSchema"`
+	OutputSchema *Ref                     `yaml:"outputSchema"`
+	Immutable    []string                 `yaml:"immutable"`
+	Vars         []variables.Definition   `yaml:"vars"`
+	Generators   []generator.Definition   `yaml:"generators"`
 	Transforms   []transformer.Definition `yaml:"transform"`
-	Validate     []validator.Group `yaml:"validate"`
+	Validate     []validator.Group        `yaml:"validate"`
+	BaseDir      string                   `yaml:"-"`
 }
 
 // Ref represents a reference to another schema file.
@@ -73,7 +75,7 @@ type Ref struct {
 // Load loads and parses a schema file from the given path.
 func Load(path string) (*Schema, error) {
 	format := parser.DetectFormat(path)
-	
+
 	// Validate that the format is suitable for schema files
 	if err := parser.ValidateSchemaFormat(format); err != nil {
 		return nil, err
@@ -98,6 +100,13 @@ func Load(path string) (*Schema, error) {
 	if err := yaml.Unmarshal(yamlBytes, &schema); err != nil {
 		return nil, errors.WrapError(errors.ErrorTypeSchemaLoad, "failed to decode schema structure", err).WithContext("file", path)
 	}
+
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, errors.WrapError(errors.ErrorTypeSchemaLoad, "failed to resolve schema file path", err).WithContext("file", path)
+	}
+	schema.BaseDir = filepath.Dir(absPath)
+
 	return &schema, nil
 }
 
