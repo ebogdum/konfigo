@@ -313,7 +313,7 @@ validate:
 **Step 3: Create batch variables file**
 ```yaml
 # batch-vars.yaml
-konfigo_forEach:
+forEach:
   items:
     - metadata:
         name: "user-service"

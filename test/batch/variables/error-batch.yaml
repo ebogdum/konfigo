@@ -1,4 +1,4 @@
-konfigo_forEach:
+forEach:
   item: service
   itemFiles: 
     - "nonexistent/file1.yaml"

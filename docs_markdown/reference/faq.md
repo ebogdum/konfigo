@@ -293,7 +293,7 @@ konfigo -s base.yaml,environments/prod.yaml -of prod-config.json
 **A:** Use batch processing with schemas:
 ```yaml
 # services.yaml
-konfigo_forEach:
+forEach:
   - name: "user-service"
     vars: {SERVICE_PORT: 8001, DB_NAME: "users"}
   - name: "order-service"  

@@ -1,6 +1,6 @@
 # Batch Processing
 
-Konfigo's batch processing feature using `konfigo_forEach` enables generating multiple configuration outputs from a single template. This is particularly powerful for creating deployment configurations, environment-specific files, or any scenario requiring multiple similar outputs with variations.
+Konfigo's batch processing feature using `forEach` enables generating multiple configuration outputs from a single template. This is particularly powerful for creating deployment configurations, environment-specific files, or any scenario requiring multiple similar outputs with variations.
 
 ## Overview
 
@@ -11,13 +11,13 @@ Batch processing allows you to:
 - Create structured output hierarchies
 - Automate configuration generation for multiple environments/services
 
-## `konfigo_forEach` Structure
+## `forEach` Structure
 
-The `konfigo_forEach` directive is defined in the variables file (`-V` flag):
+The `forEach` directive is defined in the variables file (`-V` flag):
 
 ```yaml
 # variables.yml
-konfigo_forEach:
+forEach:
   # Data source (choose one)
   items: [...]          # Inline array of objects
   itemFiles: [...]      # Array of file paths to load
@@ -39,7 +39,7 @@ Define iteration data directly in the variables file:
 
 ```yaml
 # batch-vars.yml
-konfigo_forEach:
+forEach:
   items:
     - name: web-frontend
       image: nginx:1.21
@@ -65,7 +65,7 @@ Load iteration data from separate files:
 
 ```yaml
 # batch-vars.yml
-konfigo_forEach:
+forEach:
   itemFiles:
     - "items/web-frontend.yml"
     - "items/api-backend.yml" 
@@ -149,7 +149,7 @@ transform:
 **Batch Variables**:
 ```yaml
 # deployments-batch.yml
-konfigo_forEach:
+forEach:
   items:
     - SERVICE_NAME: web-frontend
       IMAGE_NAME: nginx
@@ -226,7 +226,7 @@ server:
 ### Environment Matrix Generation
 ```yaml
 # environment-matrix.yml
-konfigo_forEach:
+forEach:
   items:
     - environment: development
       database_host: dev-db.internal
@@ -251,7 +251,7 @@ konfigo_forEach:
 ### Service Configuration Generation
 ```yaml
 # services-batch.yml  
-konfigo_forEach:
+forEach:
   itemFiles:
     - "services/user-service.yml"
     - "services/order-service.yml"
@@ -269,7 +269,7 @@ monitoring_enabled: true
 ### Multi-Environment Deployment
 ```yaml
 # multi-env-batch.yml
-konfigo_forEach:
+forEach:
   items:
     - env: dev
       cluster: dev-cluster
@@ -348,14 +348,14 @@ output:
 
 ### Invalid Batch Configuration
 ```yaml
-konfigo_forEach:
+forEach:
   items: [...]
   itemFiles: [...]  # Error: cannot have both items and itemFiles
 ```
 
 ### Missing Required Fields
 ```yaml
-konfigo_forEach:
+forEach:
   items: [...]
   # Error: output.filenamePattern is required
 ```
@@ -363,12 +363,12 @@ konfigo_forEach:
 ### File Processing Errors
 ```bash
 # Item file not found
-konfigo_forEach:
+forEach:
   itemFiles:
     - "missing-file.yml"  # Error: file not found
 
 # Invalid item file format
-konfigo_forEach:
+forEach:
   itemFiles:
     - "invalid.yml"       # Warning: skipped due to parse error
 ```
@@ -411,7 +411,7 @@ done
 ### Terraform Configuration
 ```yaml
 # terraform-batch.yml
-konfigo_forEach:
+forEach:
   items:
     - region: us-east-1
       instance_type: t3.medium
@@ -427,7 +427,7 @@ konfigo_forEach:
 ### Docker Compose Services
 ```yaml
 # services-batch.yml
-konfigo_forEach:
+forEach:
   itemFiles:
     - "services/web.yml"
     - "services/api.yml"

@@ -2,7 +2,7 @@
 GLOBAL_API_KEY: "shared-api-key-123"
 MONITORING_ENABLED: true
 
-konfigo_forEach:
+forEach:
   itemFiles:
     - "environments/dev.yaml"
     - "environments/staging.yaml"

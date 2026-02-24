@@ -1,0 +1,1006 @@
+# Konfigo - Configuration Management Tool
+
+> Konfigo is a CLI tool written in Go for merging, transforming, validating, and converting configuration files across multiple formats. It uses a schema-driven processing pipeline with support for variables, generators, transformers, validators, batch processing, and environment variable integration.
+
+## Installation
+
+Konfigo is a standalone Go binary. Build from source:
+
+```bash
+go build -o konfigo cmd/konfigo/main.go
+```
+
+Pre-built binaries are available for Linux (amd64/arm64), macOS (amd64/arm64), Windows (amd64/arm64), FreeBSD (amd64/arm64), and more via GitHub Releases.
+
+---
+
+## CLI Reference
+
+### Usage
+
+```
+konfigo [flags]
+```
+
+### Flags
+
+| Flag | Long Form | Description |
+|------|-----------|-------------|
+| `-s` | | Source file/directory paths (comma-separated). Use `-` for stdin |
+| `-r` | | Recursive directory discovery |
+| `-c` | | Case-sensitive key matching (default: case-insensitive) |
+| `-S` | `--schema` | Path to schema file (JSON, YAML, or TOML only) |
+| `-V` | `--vars-file` | Path to variables file (high-priority variables) |
+| `-sj` | | Force input format: JSON |
+| `-sy` | | Force input format: YAML |
+| `-st` | | Force input format: TOML |
+| `-se` | | Force input format: ENV |
+| `-of` | | Output file path (format inferred from extension) |
+| `-oj` | | Output format: JSON |
+| `-oy` | | Output format: YAML |
+| `-ot` | | Output format: TOML |
+| `-oe` | | Output format: ENV |
+| `-v` | | Verbose logging (INFO level to stderr) |
+| `-d` | | Debug logging (DEBUG+INFO level to stderr, overrides -v) |
+| `-h` | | Show help |
+
+### Output Behavior
+
+- **File with extension** (`-of config.yaml`): Format inferred from extension
+- **File without extension + format flags** (`-of config -oj -oy`): Creates `config.json` and `config.yaml`
+- **Format flags only** (`-oj`): Writes to stdout in that format
+- **No output flags**: Defaults to JSON on stdout
+- **Multiple stdout formats**: Separated by `---`
+
+### Exit Codes
+
+- `0` - Success
+- `1` - Error (any fatal error)
+
+---
+
+## Supported Formats
+
+### Input Formats (Parsers)
+
+| Format | Extensions | Notes |
+|--------|-----------|-------|
+| JSON | `.json` | Standard JSON |
+| YAML | `.yaml`, `.yml` | Full YAML v3 support |
+| TOML | `.toml` | Full TOML support |
+| ENV | `.env` | `KEY=value` format, supports dot notation for nesting, `#` comments |
+| INI | `.ini` | Sections become nested maps, supports comments |
+
+### Output Formats (Marshallers)
+
+| Format | Notes |
+|--------|-------|
+| JSON | Pretty-printed with 2-space indentation, trailing newline |
+| YAML | 2-space indentation |
+| TOML | Standard TOML with sections |
+| ENV | Flattened to `UPPERCASE_UNDERSCORE=value`, sorted keys, auto-quoting for special chars |
+
+INI is input-only; it cannot be used as an output format.
+
+### Schema File Formats
+
+Only JSON, YAML, and TOML are supported for schema files (they require complex nested structures that ENV and INI cannot represent).
+
+---
+
+## Processing Pipeline
+
+The pipeline processes configuration in this exact order:
+
+```
+1. Load Schema & Extract Immutable Paths
+2. Load Environment Variables (KONFIGO_KEY_*, KONFIGO_VAR_*)
+3. Discover & Parse Source Files (parallel with worker pool)
+4. Merge Configurations (in CLI-specified order, respecting immutables)
+5. Apply Environment Variable Overrides (KONFIGO_KEY_* merged last = highest precedence)
+6. Load Variables File (-V flag)
+7. Extract forEach directive (if present)
+8. Process Schema (if schema provided):
+   a. Input Schema Validation (optional)
+   b. Variable Resolution (3-tier precedence)
+   c. Generator Execution
+   d. Transformer Execution
+   e. Global Variable Substitution (${VAR_NAME} replacement throughout config)
+   f. Validator Execution
+   g. Output Schema Filtering (optional)
+9. Marshal & Write Output
+```
+
+If no schema is provided, only merging and basic variable substitution are performed.
+
+---
+
+## Merging
+
+### Merge Rules
+
+- **Precedence**: Later sources override earlier sources (left-to-right in `-s` flag order)
+- **Deep merge**: Nested maps are merged recursively
+- **Arrays**: Replaced entirely (NOT merged element-by-element)
+- **Immutable paths**: Protected from being overwritten (only if key already exists)
+- **Environment overrides** (KONFIGO_KEY_*): Always merged last, giving them highest precedence
+
+### Precedence Order (lowest to highest)
+
+```
+1. First source file (lowest)
+2. Second source file
+3. ... (later files override earlier)
+4. Last source file
+5. Environment variable overrides (KONFIGO_KEY_*) (highest)
+```
+
+### Case Sensitivity
+
+By default, merging is **case-insensitive**. Keys like `Database`, `database`, and `DATABASE` are treated as the same key. The source key's casing takes precedence (original key is deleted and replaced).
+
+Use `-c` flag to enable case-sensitive matching where `Database` and `database` are distinct keys.
+
+### Stdin Support
+
+Read from stdin by passing `-` as the source path. A format flag (`-sj`, `-sy`, `-st`, or `-se`) is required when reading from stdin since the format cannot be inferred from a file extension.
+
+```bash
+cat config.json | konfigo -s - -sj -S schema.yaml
+echo '{"key": "value"}' | konfigo -s -,defaults.yaml -sj
+```
+
+Stdin is validated to be a pipe (not an interactive terminal).
+
+---
+
+## File Discovery
+
+### Single Files
+
+When `-s` points to a file, that file is used directly. Supported extensions: `.json`, `.yaml`, `.yml`, `.toml`, `.ini`, `.env`.
+
+### Directory Discovery
+
+When `-s` points to a directory:
+- **Without `-r`**: Only top-level files in that directory
+- **With `-r`**: Full recursive tree walk
+
+### File Ordering
+
+Files are always sorted **lexicographically** (alphabetical order). This ensures deterministic merge precedence. Name files with numeric prefixes to control order:
+
+```
+01-defaults.yaml
+02-overrides.yaml
+03-secrets.yaml
+```
+
+### Multiple Sources
+
+Comma-separated paths are processed left to right:
+
+```bash
+konfigo -s defaults/,overrides/,secrets.yaml
+```
+
+---
+
+## Environment Variables
+
+### KONFIGO_KEY_* (Configuration Overrides)
+
+Set configuration values directly with the highest precedence. Dot notation maps to nested paths.
+
+```bash
+export KONFIGO_KEY_database.host=prod-db.example.com
+export KONFIGO_KEY_database.port=5432
+export KONFIGO_KEY_server.debug=false
+```
+
+These are merged last, overriding all file-based sources. Type inference is applied:
+- `true`/`false` (case-insensitive) -> boolean
+- Valid integer strings -> integer
+- Valid float strings -> float
+- Everything else -> string
+
+### KONFIGO_VAR_* (Schema Variable Overrides)
+
+Set schema variable values with the highest precedence. These override variables from both the schema file and the vars file.
+
+```bash
+export KONFIGO_VAR_ENVIRONMENT=production
+export KONFIGO_VAR_RELEASE_VERSION=2.1.0
+```
+
+These are used during variable substitution (step 8e of the pipeline).
+
+---
+
+## Schema System
+
+### Schema File Structure
+
+```yaml
+apiVersion: v1
+
+# Optional: Validate input config structure before processing
+inputSchema:
+  path: input-schema.yaml
+  strict: true  # reject unexpected keys
+
+# Optional: Filter output config structure after processing
+outputSchema:
+  path: output-schema.yaml
+  strict: true  # require all schema keys exist in data
+
+# Optional: Protect paths from being overwritten during merge
+immutable:
+  - database.host
+  - security.apiKey
+
+# Optional: Define variables for substitution
+vars:
+  - name: ENVIRONMENT
+    fromEnv: NODE_ENV
+    defaultValue: development
+  - name: DB_HOST
+    fromPath: database.host
+  - name: VERSION
+    value: "1.0.0"
+  - name: API_KEY
+    fromEnv: API_KEY
+
+# Optional: Generate computed values
+generators:
+  - type: concat
+    targetPath: deployment.url
+    format: "https://{host}:{port}/{path}"
+    sources:
+      host: server.host
+      port: server.port
+      path: api.basePath
+  - type: timestamp
+    targetPath: metadata.createdAt
+    format: rfc3339
+  - type: id
+    targetPath: deployment.id
+    format: "simple:12"
+  - type: random
+    targetPath: security.token
+    format: uuid
+
+# Optional: Transform configuration structure
+transform:
+  - type: renameKey
+    from: oldKey
+    to: newKey
+  - type: changeCase
+    path: service.name
+    case: snake
+  - type: addKeyPrefix
+    path: env
+    prefix: APP_
+  - type: addKeySuffix
+    path: ports
+    suffix: _PORT
+  - type: deleteKey
+    path: internal.temp
+  - type: setValue
+    path: version
+    value: "2.0"
+  - type: trim
+    path: description
+  - type: replaceKey
+    path: services
+    pattern: "^test-"
+    target: "prod-"
+
+# Optional: Validate final configuration values
+validate:
+  - path: database.port
+    rules:
+      required: true
+      type: number
+      min: 1
+      max: 65535
+  - path: api.key
+    rules:
+      required: true
+      type: string
+      minLength: 10
+      regex: "^[A-Za-z0-9]+$"
+  - path: environment
+    rules:
+      enum: [development, staging, production]
+```
+
+---
+
+## Variables
+
+### Variable Definition
+
+Variables are defined in the schema's `vars` section. Each variable has a `name` and one or more value sources:
+
+| Field | Description |
+|-------|-------------|
+| `name` | Variable name (used as `${NAME}` in substitution). Must be uppercase, digits, underscores only. |
+| `value` | Static value |
+| `fromEnv` | Read from OS environment variable |
+| `fromPath` | Read from a path in the merged configuration |
+| `defaultValue` | Fallback if no other source provides a value |
+
+### Variable Resolution Precedence (highest to lowest)
+
+1. **KONFIGO_VAR_* environment variables** (always wins)
+2. **Variables file** (`-V` flag)
+3. **Schema `vars` section** (resolved in this order: `fromEnv` > `fromPath` > `value` > `defaultValue`)
+
+### Variable Substitution
+
+After resolution, all `${VAR_NAME}` placeholders throughout the configuration are replaced with their resolved values. The regex pattern is `${[A-Z0-9_]+}`.
+
+Variable substitution is also applied to transformer and generator definitions before they execute.
+
+### Variables File
+
+A separate YAML/JSON/TOML file passed via `-V` flag containing key-value pairs:
+
+```yaml
+ENVIRONMENT: production
+VERSION: "2.1.0"
+DB_HOST: prod-db.example.com
+```
+
+---
+
+## Generators
+
+Generators create computed values and insert them into the configuration at `targetPath`.
+
+### concat
+
+Concatenates values from configuration paths using a format template.
+
+```yaml
+- type: concat
+  targetPath: connection.url
+  format: "{protocol}://{host}:{port}/{database}"
+  sources:
+    protocol: database.protocol
+    host: database.host
+    port: database.port
+    database: database.name
+```
+
+The `{placeholder}` syntax references keys in the `sources` map. Each source value is a dot-path into the config. Variable substitution (`${VAR}`) is applied to the result.
+
+### timestamp
+
+Generates a timestamp at the time of processing.
+
+```yaml
+- type: timestamp
+  targetPath: metadata.buildTime
+  format: rfc3339  # or: unix, unixmilli, iso8601, or custom Go time format
+```
+
+| Format | Example Output |
+|--------|---------------|
+| `rfc3339` (default) | `2024-01-15T10:30:00Z` |
+| `iso8601` | `2024-01-15T10:30:00Z` |
+| `unix` | `1705312200` |
+| `unixmilli` | `1705312200000` |
+| Custom Go format | e.g., `2006-01-02` |
+
+### id
+
+Generates various ID formats.
+
+```yaml
+- type: id
+  targetPath: deployment.id
+  format: "simple:12"
+```
+
+| Format | Description | Example |
+|--------|-------------|---------|
+| `simple:N` | Random alphanumeric [a-zA-Z0-9] of length N | `aB3kF9mP2xQ1` |
+| `prefix:PREFIX:N` | Prefixed random alphanumeric | `svc-aB3kF9mP` |
+| `numeric:N` | Random digits [0-9] only | `847293615028` |
+| `alpha:N` | Random letters [a-zA-Z] only | `kFmPxQaBcDeF` |
+| `sequential` | Counter starting at 1, increments per call | `1`, `2`, `3` |
+| `timestamp` | Unix timestamp + 4-char random suffix | `1705312200-aB3k` |
+
+### random
+
+Generates random values.
+
+```yaml
+- type: random
+  targetPath: security.token
+  format: uuid
+```
+
+| Format | Description | Example |
+|--------|-------------|---------|
+| `int:MIN:MAX` | Random integer in range | `42` |
+| `float:MIN:MAX` | Random float in range | `3.14159` |
+| `string:N` | Random alphanumeric string of length N | `aB3kF9mP2xQ1` |
+| `bytes:N` | Random bytes as hex string | `a1b2c3d4e5f6` |
+| `uuid` | UUID v4 format | `550e8400-e29b-41d4-a716-446655440000` |
+
+---
+
+## Transformers
+
+Transformers modify the configuration structure. They execute in the order defined in the schema. Variable substitution is applied to transformer definitions before execution.
+
+### renameKey
+
+Moves a value from one path to another. The source path is deleted.
+
+```yaml
+- type: renameKey
+  from: old.path.to.key
+  to: new.path.to.key
+```
+
+### changeCase
+
+Changes the case of a string value at the specified path.
+
+```yaml
+- type: changeCase
+  path: service.name
+  case: snake  # or: upper, lower, camel, kebab, pascal
+```
+
+| Case | Input | Output |
+|------|-------|--------|
+| `upper` | `myServiceName` | `MYSERVICENAME` |
+| `lower` | `MyServiceName` | `myservicename` |
+| `snake` | `myServiceName` | `my_service_name` |
+| `camel` | `my_service_name` | `myServiceName` |
+| `kebab` | `myServiceName` | `my-service-name` |
+| `pascal` | `my_service_name` | `MyServiceName` |
+
+Uses the `github.com/iancoleman/strcase` library for conversions.
+
+### addKeyPrefix
+
+Adds a prefix string to all keys in a map at the specified path.
+
+```yaml
+- type: addKeyPrefix
+  path: environment
+  prefix: APP_
+```
+
+Before: `{environment: {host: "...", port: 8080}}` -> After: `{environment: {APP_host: "...", APP_port: 8080}}`
+
+### addKeySuffix
+
+Adds a suffix string to all keys in a map at the specified path.
+
+```yaml
+- type: addKeySuffix
+  path: ports
+  suffix: _PORT
+```
+
+### deleteKey
+
+Removes a key from the configuration.
+
+```yaml
+- type: deleteKey
+  path: internal.tempData
+```
+
+Returns an error if the path does not exist.
+
+### setValue
+
+Sets a specific value at a path, creating intermediate maps as needed.
+
+```yaml
+- type: setValue
+  path: metadata.version
+  value: "2.0.0"
+```
+
+The `value` field accepts any type (string, number, boolean, map, array).
+
+### trim
+
+Trims leading and trailing whitespace from a string value.
+
+```yaml
+- type: trim
+  path: description
+```
+
+Returns an error if the value at path is not a string.
+
+### replaceKey
+
+Replaces key names matching a regex pattern within a map at the specified path.
+
+```yaml
+- type: replaceKey
+  path: services
+  pattern: "^test-"
+  target: "prod-"
+```
+
+Before: `{services: {test-api: ..., test-db: ...}}` -> After: `{services: {prod-api: ..., prod-db: ...}}`
+
+---
+
+## Validators
+
+Validators check the final configuration values and return errors if validation fails. All validators for a path are defined under a `rules` object.
+
+### Validation Rules
+
+| Rule | Type | Description |
+|------|------|-------------|
+| `required` | boolean | Field must exist (not nil) |
+| `type` | string | Type check: `string`, `number`, `bool`, `int`, `float` |
+| `min` | number | Minimum numeric value |
+| `max` | number | Maximum numeric value |
+| `minLength` | number | Minimum string length |
+| `enum` | array | Value must be one of the listed values |
+| `regex` | string | String must match the regular expression |
+
+### Example
+
+```yaml
+validate:
+  - path: database.port
+    rules:
+      required: true
+      type: number
+      min: 1
+      max: 65535
+  - path: api.key
+    rules:
+      required: true
+      type: string
+      minLength: 32
+      regex: "^[A-Za-z0-9]+$"
+  - path: log.level
+    rules:
+      required: true
+      enum: [debug, info, warn, error]
+  - path: server.ssl
+    rules:
+      type: bool
+```
+
+### Type Validation Details
+
+- `string`: Must be a Go string type
+- `number`: Accepts any Go numeric type (int, int8-64, uint, uint8-64, float32, float64)
+- `int`: Accepts Go integer types only
+- `float`: Accepts Go float types only
+- `bool`: Must be a Go boolean type
+
+---
+
+## Input/Output Schema Validation
+
+### Input Schema
+
+Validates the merged configuration before any schema processing occurs.
+
+```yaml
+inputSchema:
+  path: input-schema.yaml
+  strict: true
+```
+
+The input schema file defines the expected structure. In strict mode, any keys present in the config but not in the schema cause validation failure.
+
+### Output Schema
+
+Filters the processed configuration after all transformations, keeping only keys defined in the output schema.
+
+```yaml
+outputSchema:
+  path: output-schema.yaml
+  strict: true
+```
+
+In strict mode:
+- All keys in the schema must exist in the processed data
+- Keys in the data but not in the schema are rejected
+
+In non-strict mode, the output schema acts as a projection - only schema-defined keys are included in output, extra keys are silently dropped.
+
+---
+
+## Immutable Paths
+
+Paths listed in the `immutable` section are protected from being overwritten during merging. If a key already exists and a later source tries to override it, the override is silently ignored.
+
+```yaml
+immutable:
+  - database.host
+  - security.apiKey
+  - deployment.region
+```
+
+Important: Immutability only applies during the merge phase. If the key does not yet exist, it can be set. Once set, subsequent sources cannot change it.
+
+---
+
+## Batch Processing (forEach)
+
+Batch processing generates multiple output files from a single configuration by iterating over a set of variable combinations.
+
+### Configuration (in vars file, passed via -V)
+
+```yaml
+# Regular variables (applied to all iterations)
+COMMON_VAR: shared-value
+
+# Batch directive
+forEach:
+  items:
+    - ENV: dev
+      REGION: us-east-1
+      DB_HOST: dev-db.example.com
+    - ENV: staging
+      REGION: us-west-2
+      DB_HOST: staging-db.example.com
+    - ENV: prod
+      REGION: eu-west-1
+      DB_HOST: prod-db.example.com
+  output:
+    filenamePattern: "output/config-${ENV}-${REGION}.yaml"
+    format: yaml  # optional if extension in filenamePattern is clear
+```
+
+### Alternative: itemFiles
+
+Instead of inline items, load variables from files:
+
+```yaml
+forEach:
+  itemFiles:
+    - vars/dev.yaml
+    - vars/staging.yaml
+    - vars/prod.yaml
+  output:
+    filenamePattern: "output/config-${ITEM_FILE_BASENAME}.yaml"
+```
+
+### Special Batch Variables
+
+| Variable | Description |
+|----------|-------------|
+| `${ITEM_INDEX}` | Zero-based iteration index (0, 1, 2, ...) |
+| `${ITEM_FILE_BASENAME}` | Base filename without extension (when using `itemFiles`) |
+
+### Batch Processing Flow
+
+For each iteration:
+1. Deep copy the base merged configuration
+2. Merge global vars + iteration-specific vars
+3. Add special variables (ITEM_INDEX, ITEM_FILE_BASENAME)
+4. Run full schema processing pipeline
+5. Resolve filename pattern with variables
+6. Write output file
+
+---
+
+## ENV Format Details
+
+### ENV Input Parsing
+
+```env
+# Comments are supported
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+API_KEY="value with spaces"
+NESTED.KEY=value
+```
+
+- Lines starting with `#` are comments
+- Dot notation (`NESTED.KEY`) creates nested maps: `{NESTED: {KEY: "value"}}`
+- Quoted values have quotes stripped
+- Empty lines are ignored
+
+### ENV Output Marshalling
+
+When outputting to ENV format:
+- Nested keys are flattened: `database.host` becomes `DATABASE_HOST`
+- All keys are converted to UPPERCASE
+- Nesting separator is underscore `_`
+- Values containing spaces, tabs, newlines, `#`, `"`, `'`, `\`, or `=` are automatically quoted
+- Empty string values are quoted
+- Keys are sorted alphabetically for deterministic output
+- Header comment `# Environment variables generated by Konfigo` is added
+
+---
+
+## INI Format Details
+
+### INI Input Parsing
+
+```ini
+; Comment
+# Also a comment
+
+[database]
+host = localhost
+port = 5432
+
+[server]
+debug = true
+```
+
+- Sections become top-level map keys
+- Keys within sections become nested values
+- Both `;` and `#` comments are supported
+- Uses `gopkg.in/ini.v1` library
+
+INI is supported for input only. There is no INI output marshaller.
+
+---
+
+## Error Handling
+
+### Structured Error Types
+
+Konfigo uses a structured error system. Each error includes:
+- **Type**: Classification of the error
+- **Message**: Human-readable description
+- **File path**: Source file (if applicable)
+- **Line/Column**: Position in file (for parsing errors)
+- **Config path**: Configuration key path (for validation errors)
+- **Cause**: Wrapped underlying error
+- **Context**: Additional key-value metadata
+
+### Error Types
+
+| Error Type | Description |
+|------------|-------------|
+| `FILE_READ` | Cannot read input file |
+| `FILE_WRITE` | Cannot write output file |
+| `STDIN_READ` | Cannot read from stdin |
+| `PARSING` | Parse error in input file |
+| `FORMAT_DETECT` | Cannot determine file format |
+| `INVALID_FORMAT` | Unsupported format |
+| `SCHEMA_LOAD` | Cannot load schema file |
+| `SCHEMA_PROCESS` | Error during schema processing |
+| `VALIDATION` | Validation rule failure |
+| `VAR_RESOLUTION` | Cannot resolve variable |
+| `VAR_SUBSTITUTE` | Cannot substitute variable |
+| `CONFIG_MERGE` | Error during merge |
+| `IMMUTABLE_FIELD` | Attempted to modify immutable path |
+| `CLI_FLAG` | Invalid CLI flag |
+| `CLI_VALIDATION` | CLI validation failure |
+| `INTERNAL` | Internal error |
+| `DEEP_COPY` | Error deep copying configuration |
+
+---
+
+## Performance
+
+### Parallel File Parsing
+
+Source files are parsed concurrently using a worker pool sized to the number of CPU cores. Results are collected and merged in the original CLI-specified order to maintain deterministic precedence.
+
+### Memory Optimizations
+
+- **Buffer pooling**: `sync.Pool` with 64KB buffers for file reads
+- **Buffered reading**: Direct read for files < 1MB, buffered for larger files
+- **Native deep copy**: Optimized copying for common types (maps, slices, primitives) with JSON-based fallback
+- **String pooling**: Deduplication of repeated string values
+
+---
+
+## Logging
+
+- **Default**: No output (quiet mode)
+- **`-v` flag**: INFO level - standard operational messages
+- **`-d` flag**: DEBUG level - detailed processing steps (overrides `-v`)
+- **Errors**: Always printed regardless of log level
+- **Warnings**: Only shown in verbose mode (`-v` or `-d`)
+- **Output**: All logs go to stderr (stdout is reserved for config output)
+
+---
+
+## Common Examples
+
+### Basic merge with JSON output
+
+```bash
+konfigo -s defaults.yaml,overrides.yaml -oj
+```
+
+### Multi-format output to files
+
+```bash
+konfigo -s config/ -of output/config -oj -oy -ot
+# Creates: output/config.json, output/config.yaml, output/config.toml
+```
+
+### Schema-driven processing
+
+```bash
+konfigo -s base.yaml,env-specific.yaml -S schema.yaml -of config.yaml
+```
+
+### With variables file
+
+```bash
+konfigo -s templates/ -S schema.yaml -V vars/production.yaml -of config.json
+```
+
+### Environment variable overrides
+
+```bash
+export KONFIGO_KEY_database.host=prod-db.example.com
+export KONFIGO_VAR_ENVIRONMENT=production
+konfigo -s config/ -S schema.yaml -of output.yaml
+```
+
+### Recursive directory discovery
+
+```bash
+konfigo -s config/ -r -S schema.yaml -oy
+```
+
+### Reading from stdin
+
+```bash
+curl -s https://api.example.com/config | konfigo -s - -sj -S schema.yaml -oy
+```
+
+### Batch processing for multiple environments
+
+```bash
+konfigo -s base-config.yaml -S schema.yaml -V batch-vars.yaml
+# Generates multiple files based on forEach directive
+```
+
+### Format conversion (YAML to JSON)
+
+```bash
+konfigo -s input.yaml -oj > output.json
+```
+
+### Format conversion (JSON to ENV)
+
+```bash
+konfigo -s config.json -oe > config.env
+```
+
+### Merge with case sensitivity
+
+```bash
+konfigo -s file1.yaml,file2.yaml -c -oy
+```
+
+---
+
+## Architecture (Source Code)
+
+### Package Structure
+
+```
+cmd/konfigo/           - Entry point (main.go)
+internal/
+  cli/                 - CLI flag parsing, help text, runner
+  pipeline/            - Processing orchestration, batch mode, parallel parsing
+  schema/              - Schema loading, processing coordinator
+  config/              - Configuration management, batch config
+  errors/              - Structured error types with context
+  logger/              - Log levels (DEBUG, INFO, WARN, ERROR)
+  parser/              - Format parsers: JSON, YAML, TOML, ENV, INI + registry
+  marshaller/          - Format marshallers: JSON, YAML, TOML, ENV + registry
+  reader/              - File reading, stdin, directory discovery
+  writer/              - File writing, stdout, output targeting, directory creation
+  merger/              - Deep merge with case sensitivity and immutable paths
+  features/
+    variables/         - Variable resolution (3-tier) and substitution
+    generator/         - Value generators: concat, timestamp, id, random
+    transformer/       - Config transformers: renameKey, changeCase, addKeyPrefix,
+                         addKeySuffix, deleteKey, setValue, trim, replaceKey
+    validator/         - Validation: required, type, min, max, minLength, enum, regex
+    input_schema/      - Input schema validation
+  util/                - Nested value ops, deep copy, type inference, string pooling
+```
+
+### Execution Flow
+
+```
+main() -> run() -> cli.Run() -> pipeline.Run(config)
+```
+
+`pipeline.Run` orchestrates the full pipeline: discovery, parsing, merging, schema processing, and output writing. If `forEach` is detected in the variables file, batch mode is activated.
+
+### Registry Pattern
+
+Parsers, marshallers, generators, transformers, and validators all use a registry pattern for extensibility. Each type is registered by name and looked up dynamically during processing.
+
+### Go Dependencies
+
+- `github.com/BurntSushi/toml` v1.6.0 - TOML support
+- `github.com/iancoleman/strcase` v0.3.0 - Case conversion (snake, camel, kebab, pascal)
+- `gopkg.in/ini.v1` v1.67.1 - INI file parsing
+- `gopkg.in/yaml.v3` v3.0.1 - YAML support
+
+---
+
+## Real-World Recipes
+
+### Multi-Environment Deployment
+
+```
+config/
+  01-defaults.yaml      # Base settings
+  02-database.yaml      # Database config
+  03-api.yaml           # API settings
+vars/
+  development.yaml      # Dev-specific vars
+  staging.yaml          # Staging vars
+  production.yaml       # Production vars
+schema.yaml             # Transformations & validation
+```
+
+```bash
+konfigo -s config/ -S schema.yaml -V vars/production.yaml -of deploy/config.yaml
+```
+
+### Docker/Kubernetes Configuration
+
+```bash
+export KONFIGO_KEY_image.tag=${DOCKER_TAG}
+export KONFIGO_KEY_replicas=3
+export KONFIGO_VAR_NAMESPACE=production
+konfigo -s k8s/base/,k8s/overlays/prod/ -S k8s/schema.yaml -oy > k8s/deployment.yaml
+```
+
+### CI/CD Pipeline Config Validation
+
+```bash
+konfigo -s config/ -S schema-with-validators.yaml -of /dev/null
+# Exit code 0 = valid, 1 = validation errors
+```
+
+### Legacy Format Migration
+
+```bash
+# Convert INI to YAML
+konfigo -s legacy-config.ini -oy > modern-config.yaml
+
+# Convert ENV to JSON
+konfigo -s .env -oj > config.json
+```
+
+### Multi-Service Configuration (Batch)
+
+```yaml
+# batch-vars.yaml
+forEach:
+  items:
+    - SERVICE: api
+      PORT: 8080
+    - SERVICE: worker
+      PORT: 8081
+    - SERVICE: scheduler
+      PORT: 8082
+  output:
+    filenamePattern: "output/${SERVICE}-config.yaml"
+```
+
+```bash
+konfigo -s base-service.yaml -S schema.yaml -V batch-vars.yaml
+# Generates: output/api-config.yaml, output/worker-config.yaml, output/scheduler-config.yaml
+```

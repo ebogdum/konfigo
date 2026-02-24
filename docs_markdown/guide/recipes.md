@@ -391,7 +391,7 @@ resources:
 
 **`services.yaml`** - Service definitions:
 ```yaml
-konfigo_forEach:
+forEach:
   - name: "user-service"
     vars:
       SERVICE_NAME: "user-service"
@@ -517,7 +517,7 @@ features:
 
 **`features/rollout.yaml`** - Gradual rollout configuration:
 ```yaml
-konfigo_forEach:
+forEach:
   - name: "canary"
     vars:
       ROLLOUT_PERCENTAGE: 5

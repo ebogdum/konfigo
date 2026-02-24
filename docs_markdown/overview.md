@@ -48,7 +48,7 @@ Comprehensive guide covering all Konfigo features, from basic usage to advanced 
 
 #### **[Batch Processing](./features/batch-processing.md)**
 - Multi-environment configuration generation
-- `konfigo_forEach` directive usage
+- `forEach` directive usage
 - Template-based deployment configurations
 - Advanced batch processing patterns
 
@@ -253,7 +253,7 @@ This documentation is organized to support both learning Konfigo from scratch an
 - **[Validators](./schema/validation.md)** - Configuration validation rules
 
 ### Advanced Features
-- **[Batch Processing](./features/batch-processing.md)** - Multi-output generation with `konfigo_forEach`
+- **[Batch Processing](./features/batch-processing.md)** - Multi-output generation with `forEach`
 - **[Advanced Schema Features](./advanced/schema-features)** - Advanced schema patterns
 - **[Use Cases](./guide/use-cases.md)** - Real-world examples and patterns
 

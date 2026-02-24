@@ -5,7 +5,7 @@
 // - Configuration validation against schema rules
 // - Variable resolution and substitution
 // - Configuration generation and transformation
-// - Batch processing directives (konfigo_forEach)
+// - Batch processing directives (forEach)
 //
 // Schema Structure:
 //
@@ -49,7 +49,7 @@ type KonfigoForEach struct {
 	Items     []map[string]interface{} `yaml:"items,omitempty" json:"items,omitempty"`
 	ItemFiles []string                 `yaml:"itemFiles,omitempty" json:"itemFiles,omitempty"`
 	Output    KonfigoForEachOutput     `yaml:"output" json:"output"`
-	// GlobalVars will hold variables defined outside konfigo_forEach in the main vars file
+	// GlobalVars will hold variables defined outside forEach in the main vars file
 	GlobalVars map[string]interface{} `yaml:"-" json:"-"` // Loaded separately
 }
 

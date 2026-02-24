@@ -244,7 +244,7 @@ deployment:
 
 **Variables file (`environments.yaml`)**:
 ```yaml
-konfigo_forEach:
+forEach:
   - name: "dev"
     vars:
       DB_HOST: "dev-db.company.com"
@@ -405,7 +405,7 @@ konfigo -s test-config.yaml -S your-schema.yaml --validate-only
 | **Validate fields** | `validation:` | `- path: "port" type: "number"` |
 | **Transform data** | `transforms:` | `- path: "url" setValue: "${HOST}"` |
 | **Generate UUIDs** | `generation:` | `- path: "id" uuid: true` |
-| **Batch outputs** | Use `-V` with `konfigo_forEach` | See batch examples |
+| **Batch outputs** | Use `-V` with `forEach` | See batch examples |
 | **Protect fields** | `immutable:` | `- "security.keys"` |
 
 ## Next Steps
@@ -934,7 +934,7 @@ If `KONFIGO_KEY_service.name=my-runtime-app` is set, it *will* override `my-core
 
 For in-depth information on each processing capability, refer to their dedicated pages:
 
-*   **[Variables & Substitution](./variables.md)**: Learn how to define and use variables, including the powerful `konfigo_forEach` for batch processing.
+*   **[Variables & Substitution](./variables.md)**: Learn how to define and use variables, including the powerful `forEach` for batch processing.
 *   **[Data Generation](./generation.md)**: Discover how to create new configuration values.
 *   **[Data Transformation](./transformation.md)**: Explore ways to modify your configuration's structure and content.
 *   **[Data Validation](./validation.md)**: Understand how to enforce rules and constraints on your configuration.
