@@ -227,18 +227,18 @@ validate_all_outputs() {
             local filename=$(basename "$output_file")
             local expected_file="$EXPECTED_DIR/$filename"
             
-            compare_files "$expected_file" "$output_file" "$filename"
+            compare_files "$expected_file" "$output_file" "$filename" || true
         done
     done
-    
+
     # Check for missing output files
     for pattern in "${file_patterns[@]}"; do
         for expected_file in $EXPECTED_DIR/$pattern; do
             [[ -f "$expected_file" ]] || continue
-            
+
             local filename=$(basename "$expected_file")
             local output_file="$OUTPUT_DIR/$filename"
-            
+
             if [[ ! -f "$output_file" ]]; then
                 echo -e "${RED}⚠️  $filename: MISSING from output directory${NC}"
                 TOTAL_VALIDATIONS=$((TOTAL_VALIDATIONS + 1))

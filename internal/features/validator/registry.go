@@ -8,12 +8,12 @@ type Registry struct {
 // NewRegistry creates a new validator registry with all built-in validators.
 func NewRegistry() *Registry {
 	registry := &Registry{}
-	
+
 	// Register all built-in validators
 	registry.Register(&TypeValidator{})
 	registry.Register(&NumericValidator{})
 	registry.Register(&StringValidator{})
-	
+
 	return registry
 }
 

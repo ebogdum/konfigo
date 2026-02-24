@@ -38,7 +38,7 @@ do
     env GOOS="$GOOS" GOARCH="$GOARCH" go build -o "$OUTPUT_NAME" "$PACKAGE_PATH"
     if [ $? -ne 0 ]; then
         echo "An error occurred while building for $GOOS/$GOARCH."
-        # Optionally exit on error: exit 1
+        exit 1
     fi
 done
 

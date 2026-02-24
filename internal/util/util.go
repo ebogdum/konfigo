@@ -96,13 +96,13 @@ func DeepCopyMap(originalMap map[string]interface{}) (map[string]interface{}, er
 	if originalMap == nil {
 		return nil, nil
 	}
-	
+
 	// Try native deep copy first (much faster)
 	copiedMap, err := deepCopyMapNative(originalMap)
 	if err == nil {
 		return copiedMap, nil
 	}
-	
+
 	// Fallback to JSON-based copy for complex types
 	bytes, err := json.Marshal(originalMap)
 	if err != nil {
@@ -120,7 +120,7 @@ func DeepCopyMap(originalMap map[string]interface{}) (map[string]interface{}, er
 // Returns error if encounters unsupported types that require JSON fallback.
 func deepCopyMapNative(originalMap map[string]interface{}) (map[string]interface{}, error) {
 	copiedMap := make(map[string]interface{}, len(originalMap))
-	
+
 	for key, value := range originalMap {
 		copiedValue, err := deepCopyValue(value)
 		if err != nil {
@@ -128,7 +128,7 @@ func deepCopyMapNative(originalMap map[string]interface{}) (map[string]interface
 		}
 		copiedMap[key] = copiedValue
 	}
-	
+
 	return copiedMap, nil
 }
 

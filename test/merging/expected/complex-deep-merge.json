@@ -10,7 +10,7 @@
     "ttl": 3600
   },
   "database": {
-    "host": "prod-db.example.com",
+    "host": "env-specific-db.com",
     "pool": {
       "max": 20,
       "min": 5

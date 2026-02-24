@@ -20,7 +20,7 @@ type Definition struct {
 type Transformer interface {
 	// Transform applies the transformation logic to the configuration.
 	Transform(config map[string]interface{}, def Definition) error
-	
+
 	// Type returns the transformer type name.
 	Type() string
 }
@@ -37,7 +37,7 @@ type Registry map[string]Transformer
 // NewRegistry creates a new transformer registry with default transformers.
 func NewRegistry() Registry {
 	registry := make(Registry)
-	
+
 	// Register built-in transformers
 	registry[RenameKeyType] = &RenameKeyTransformer{}
 	registry[ChangeCaseType] = &ChangeCaseTransformer{}
@@ -47,7 +47,7 @@ func NewRegistry() Registry {
 	registry[TrimType] = &TrimTransformer{}
 	registry[ReplaceKeyType] = &ReplaceKeyTransformer{}
 	registry[SetValueType] = &SetValueTransformer{}
-	
+
 	return registry
 }
 

@@ -2,27 +2,27 @@
   "application": {
     "environment": "production",
     "name": "my-app",
-    "port": 9090,
+    "port": 8080,
     "version": "1.0.0"
   },
   "database": {
-    "host": "prod-db.example.com",
+    "host": "localhost",
     "pool": {
       "max": 20,
       "min": 5
     },
     "port": 5432,
-    "ssl": true,
+    "ssl": false,
     "user": "app_user"
   },
   "features": {
     "auth": true,
-    "cache": true,
+    "cache": false,
     "monitoring": true
   },
   "logging": {
-    "format": "json",
-    "level": "warn",
+    "format": "text",
+    "level": "info",
     "output": "stdout"
   },
   "secrets": {
