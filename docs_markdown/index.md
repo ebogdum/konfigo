@@ -117,7 +117,7 @@ Whether you're dealing with simple JSON files or complex, multi-layered YAML con
 *   **Environment Variable Integration**:
     *   Override configuration values directly using `KONFIGO_KEY_path.to.key=value`.
     *   Supply variables for substitution using `KONFIGO_VAR_VARNAME=value`.
-*   **Batch Output Generation**: Use the `konfigo_forEach` directive in your variables file to produce multiple tailored configuration outputs from a single run.
+*   **Batch Output Generation**: Use the `forEach` directive in your variables file to produce multiple tailored configuration outputs from a single run.
 *   **Input/Output Control**:
     *   Read from files, directories (recursively), or stdin.
     *   Output to stdout or specified files.

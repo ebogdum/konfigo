@@ -20,7 +20,7 @@ Whether you're managing simple settings or complex, multi-layered configurations
     *   **Data Transformation**: Modify keys and values (e.g., `renameKey`, `changeCase`, `addKeyPrefix`, `addKeySuffix`, `deleteKey`, `trim`, `replaceKey`, `setValue`).
     *   **Data Validation**: Enforce rules (`required`, `type`, `min`, `max`, `minLength`, `enum`, `regex`).
     *   **Input/Output Schemas**: Validate incoming data and filter outgoing data against defined structures.
-*   **Batch Processing**: Use the `konfigo_forEach` directive in a variables file to generate multiple tailored configuration outputs from a single schema and run.
+*   **Batch Processing**: Use the `forEach` directive in a variables file to generate multiple tailored configuration outputs from a single schema and run.
 *   **Environment Variable Integration**:
     *   Override any configuration value directly using `KONFIGO_KEY_path.to.key=value`.
 *   **Comprehensive CLI**: Rich set of command-line options for fine-grained control over input, output, and processing behavior.
@@ -147,10 +147,10 @@ Generate a new value using a schema.
 
 **`schema.yml`**
 ```yaml
-konfigo_schema:
+schema:
   properties:
     request_id:
-      konfigo_generate:
+      generate:
         type: id
         id_type: uuid
 ```
@@ -180,10 +180,10 @@ Rename a key using a schema.
 
 **`schema.yml`**
 ```yaml
-konfigo_schema:
+schema:
   properties:
     old_key:
-      konfigo_transform:
+      transform:
         - type: renameKey
           new_key: new_key
 ```
@@ -213,10 +213,10 @@ Validate that a required key is present.
 
 **`schema.yml`**
 ```yaml
-konfigo_schema:
+schema:
   properties:
     required_key:
-      konfigo_validate:
+      validate:
         - type: required
 ```
 
@@ -236,17 +236,17 @@ Generate multiple output files from a list of variables.
 
 **`vars.yml`**
 ```yaml
-konfigo_forEach:
+forEach:
   - user: alice
   - user: bob
 ```
 
 **`schema.yml`**
 ```yaml
-konfigo_schema:
+schema:
   properties:
     username:
-      konfigo_set:
+      set:
         value: ${user}
 ```
 

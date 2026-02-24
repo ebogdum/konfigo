@@ -1,6 +1,6 @@
 # Batch Processing Test Suite
 
-This directory contains comprehensive tests for Konfigo's batch processing functionality (`konfigo_forEach`).
+This directory contains comprehensive tests for Konfigo's batch processing functionality (`forEach`).
 
 ## Overview
 
@@ -68,7 +68,7 @@ batch/
 ### services-batch.yaml
 Defines service configurations using `items` array:
 ```yaml
-konfigo_forEach:
+forEach:
   item: service
   items:
     - name: "frontend"
@@ -86,7 +86,7 @@ konfigo_forEach:
 ### envs-itemfiles-batch.yaml  
 Defines environment configurations using `itemFiles`:
 ```yaml
-konfigo_forEach:
+forEach:
   item: env
   itemFiles:
     - "variables/environments/dev.yaml"
@@ -98,7 +98,7 @@ konfigo_forEach:
 ### deployments-batch.yaml
 Defines deployment configurations with nested structure:
 ```yaml
-konfigo_forEach:
+forEach:
   item: deployment
   items:
     - name: "backend"
@@ -176,7 +176,7 @@ rm -rf output/*
 - Schema validation applies to each generated file individually
 
 ### 🔧 Technical Details
-- Batch processing uses `konfigo_forEach` directive in variable files
+- Batch processing uses `forEach` directive in variable files
 - The `item` field defines the iteration variable name
 - Either `items` (inline array) or `itemFiles` (external files) can be used
 - Output path templates support variable substitution

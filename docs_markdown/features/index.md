@@ -17,7 +17,7 @@ Welcome to the Features section! Here you'll find detailed documentation on Konf
 - **[Recursive Discovery](./recursive-discovery.md)** - Automatic file discovery in directory trees
 
 ### Advanced Processing
-- **[Batch Processing](./batch-processing.md)** - Multi-output generation using `konfigo_forEach`
+- **[Batch Processing](./batch-processing.md)** - Multi-output generation using `forEach`
 
 ## Test Coverage
 

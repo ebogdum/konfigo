@@ -2,7 +2,7 @@
 CLUSTER_NAME: "k8s-prod"
 NAMESPACE: "applications"
 
-konfigo_forEach:
+forEach:
   items:
     - SERVICE_NAME: "web-frontend"
       IMAGE_NAME: "nginx"

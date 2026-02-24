@@ -203,4 +203,4 @@ This completes the generator testing. Next features to test:
 1. **Transformers** (`renameKey`, `changeCase`, `addKeyPrefix`, `setValue`)
 2. **Validators** (type, range, pattern, enum validation)
 3. **Configuration Merging** (multi-source file merging)
-4. **Batch Processing** (`konfigo_forEach` functionality)
+4. **Batch Processing** (`forEach` functionality)

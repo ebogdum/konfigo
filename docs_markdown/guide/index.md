@@ -439,7 +439,7 @@ environment: "${ENVIRONMENT}"
 **Step 2**: Create variables for environments
 ```yaml
 # environments.yaml
-konfigo_forEach:
+forEach:
   - name: "dev"
     vars:
       DATABASE_HOST: "dev-db.company.com"
@@ -489,7 +489,7 @@ konfigo -s base.yaml -S schema.yaml -V environments.yaml
 **For microservices deployment**:
 ```yaml
 # services.yaml
-konfigo_forEach:
+forEach:
   - name: "user-service"
     vars:
       SERVICE_NAME: "user-service"
@@ -530,8 +530,8 @@ The User Guide gives you practical solutions for real tasks. Start with what you
         v.  **Global Variable Substitution**: `${VAR_NAME}` placeholders are substituted throughout the configuration.
         vi. **Validation**: The processed configuration is validated against the `validate` rules in the schema.
         vii. **Output Schema Filtering**: If `outputSchema` is defined, the configuration is filtered.
-    d.  **(If Batch Mode with `konfigo_forEach` in `-V` file and Schema Provided)**:
-        *   Steps c.ii through c.vii are performed for *each iteration* defined in `konfigo_forEach`, using a deep copy of the merged configuration from step 4.b and iteration-specific variables. Each iteration produces its own output file.
+    d.  **(If Batch Mode with `forEach` in `-V` file and Schema Provided)**:
+        *   Steps c.ii through c.vii are performed for *each iteration* defined in `forEach`, using a deep copy of the merged configuration from step 4.b and iteration-specific variables. Each iteration produces its own output file.
     e.  **Output**: The final configuration (or multiple configurations in batch mode) is written to the specified output file(s) or to stdout in the chosen format.
 
 This guide, along with the [Schema Documentation](../schema/index.md), aims to provide you with all the information needed to master Konfigo.
