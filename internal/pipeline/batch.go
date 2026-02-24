@@ -17,31 +17,31 @@ import (
 	"strings"
 )
 
-// processBatch handles batch processing mode with konfigo_forEach
+// processBatch handles batch processing mode with forEach
 func (p *Pipeline) processBatch(baseFinalConfig map[string]interface{}, loadedSchema *schema.Schema, forEachDirective *schema.KonfigoForEach, envVarsForSchema map[string]string) error {
-	logger.Log("Starting batch processing with konfigo_forEach...")
+	logger.Log("Starting batch processing with forEach...")
 
 	if len(forEachDirective.Items) > 0 && len(forEachDirective.ItemFiles) > 0 {
-		return errors.NewError(errors.ErrorTypeConfigMerge, "konfigo_forEach cannot have both 'items' and 'itemFiles' defined simultaneously")
+		return errors.NewError(errors.ErrorTypeConfigMerge, "forEach cannot have both 'items' and 'itemFiles' defined simultaneously")
 	}
 	if len(forEachDirective.Items) == 0 && len(forEachDirective.ItemFiles) == 0 {
-		return errors.NewError(errors.ErrorTypeConfigMerge, "konfigo_forEach must define either 'items' or 'itemFiles'")
+		return errors.NewError(errors.ErrorTypeConfigMerge, "forEach must define either 'items' or 'itemFiles'")
 	}
 	if forEachDirective.Output.FilenamePattern == "" {
-		return errors.NewError(errors.ErrorTypeCLIValidation, "konfigo_forEach.output.filenamePattern is required")
+		return errors.NewError(errors.ErrorTypeCLIValidation, "forEach.output.filenamePattern is required")
 	}
 
 	iterationSources := []map[string]interface{}{}
 	itemFileBasenames := []string{} // For ${ITEM_FILE_BASENAME}
 
 	if len(forEachDirective.Items) > 0 {
-		logger.Debug("Iterating using 'items' from konfigo_forEach.")
+		logger.Debug("Iterating using 'items' from forEach.")
 		iterationSources = forEachDirective.Items
 		for range forEachDirective.Items { // Populate basenames with empty strings for 'items'
 			itemFileBasenames = append(itemFileBasenames, "")
 		}
 	} else { // len(forEachDirective.ItemFiles) > 0
-		logger.Debug("Iterating using 'itemFiles' from konfigo_forEach.")
+		logger.Debug("Iterating using 'itemFiles' from forEach.")
 		for _, itemFilePath := range forEachDirective.ItemFiles {
 			fullItemFilePath := itemFilePath
 			if !filepath.IsAbs(itemFilePath) && p.Config.VarsFile != "" {
@@ -99,7 +99,7 @@ func (p *Pipeline) processBatch(baseFinalConfig map[string]interface{}, loadedSc
 			outputFormat = strings.ToLower(forEachDirective.Output.Format)
 		}
 		if outputFormat == "" {
-			logger.Warn("Output format for iteration %d (%s) is ambiguous, defaulting to YAML. Specify format in konfigo_forEach.output.format or use a file extension.", i, outputFilename)
+			logger.Warn("Output format for iteration %d (%s) is ambiguous, defaulting to YAML. Specify format in forEach.output.format or use a file extension.", i, outputFilename)
 			outputFormat = "yaml"
 		}
 

@@ -331,9 +331,9 @@ Flags are used to control Konfigo's behavior, from specifying input sources and 
 *   `-V, --vars-file <path>`:
     *   **Description**: Path to a file (YAML, JSON, or TOML) providing high-priority variables for substitution within your schema and configuration.
     *   Variables from this file override those defined in the schema's `vars` block but are themselves overridden by `KONFIGO_VAR_...` environment variables.
-    *   This file can also contain the `konfigo_forEach` directive for batch processing.
+    *   This file can also contain the `forEach` directive for batch processing.
     *   **Example**: `konfigo -s config.yml -S schema.yml -V prod-vars.yml`
-    *   See [Variable Precedence](#variable-precedence) and [Batch Processing with `konfigo_forEach`](../schema/variables.md#batch-processing-with-konfigo_foreach) for more details.
+    *   See [Variable Precedence](#variable-precedence) and [Batch Processing with `forEach`](../schema/variables.md#batch-processing-with-foreach) for more details.
 
 #### Variable Precedence
 
@@ -341,7 +341,7 @@ Konfigo resolves variables used in `${VAR_NAME}` substitutions with the followin
 
 1.  **Environment Variables**: Set as `KONFIGO_VAR_VARNAME=value`. (See [Environment Variables](./environment-variables.md))
 2.  **Variables File**: Variables defined in the file specified by `-V` or `--vars-file`.
-    *   In batch mode (`konfigo_forEach`), iteration-specific variables take precedence over global variables within this file.
+    *   In batch mode (`forEach`), iteration-specific variables take precedence over global variables within this file.
 3.  **Schema `vars` Block**: Variables defined within the `vars:` section of the schema file specified by `-S`.
 
 ### Output & Formatting

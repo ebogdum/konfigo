@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// BatchProcessor handles konfigo_forEach batch processing.
+// BatchProcessor handles forEach batch processing.
 type BatchProcessor struct{}
 
 // NewBatchProcessor creates a new batch processor.
@@ -27,7 +27,7 @@ type ProcessResult struct {
 	Errors      []error
 }
 
-// Process executes batch processing using the konfigo_forEach directive.
+// Process executes batch processing using the forEach directive.
 func (bp *BatchProcessor) Process(
 	forEachConfig *schema.KonfigoForEach,
 	baseConfig map[string]interface{},
@@ -37,7 +37,7 @@ func (bp *BatchProcessor) Process(
 ) (*ProcessResult, error) {
 
 	if forEachConfig == nil {
-		return nil, errors.New("konfigo_forEach configuration is nil")
+		return nil, errors.New("forEach configuration is nil")
 	}
 
 	// Validate the forEach configuration
@@ -45,7 +45,7 @@ func (bp *BatchProcessor) Process(
 		return nil, err
 	}
 
-	logger.Log("Starting batch processing with konfigo_forEach...")
+	logger.Log("Starting batch processing with forEach...")
 
 	result := &ProcessResult{
 		OutputFiles: []string{},
@@ -53,35 +53,35 @@ func (bp *BatchProcessor) Process(
 	}
 
 	if len(forEachConfig.Items) > 0 {
-		logger.Debug("Iterating using 'items' from konfigo_forEach.")
+		logger.Debug("Iterating using 'items' from forEach.")
 		bp.processItems(forEachConfig, baseConfig, schemaFile, varsFromFile, envVarsForSchema, result)
 	} else if len(forEachConfig.ItemFiles) > 0 {
-		logger.Debug("Iterating using 'itemFiles' from konfigo_forEach.")
+		logger.Debug("Iterating using 'itemFiles' from forEach.")
 		bp.processItemFiles(forEachConfig, baseConfig, schemaFile, varsFromFile, envVarsForSchema, result)
 	}
 
 	return result, nil
 }
 
-// validateForEachConfig validates the konfigo_forEach configuration.
+// validateForEachConfig validates the forEach configuration.
 func (bp *BatchProcessor) validateForEachConfig(forEachConfig *schema.KonfigoForEach) error {
 	hasItems := len(forEachConfig.Items) > 0
 	hasItemFiles := len(forEachConfig.ItemFiles) > 0
 
 	if hasItems && hasItemFiles {
-		return errors.New("konfigo_forEach cannot have both 'items' and 'itemFiles' defined simultaneously")
+		return errors.New("forEach cannot have both 'items' and 'itemFiles' defined simultaneously")
 	}
 	if !hasItems && !hasItemFiles {
-		return errors.New("konfigo_forEach must define either 'items' or 'itemFiles'")
+		return errors.New("forEach must define either 'items' or 'itemFiles'")
 	}
 	if forEachConfig.Output.FilenamePattern == "" {
-		return errors.New("konfigo_forEach.output.filenamePattern is required")
+		return errors.New("forEach.output.filenamePattern is required")
 	}
 
 	return nil
 }
 
-// processItems processes the items array from konfigo_forEach.
+// processItems processes the items array from forEach.
 func (bp *BatchProcessor) processItems(
 	forEachConfig *schema.KonfigoForEach,
 	baseConfig map[string]interface{},
@@ -97,7 +97,7 @@ func (bp *BatchProcessor) processItems(
 	}
 }
 
-// processItemFiles processes the itemFiles array from konfigo_forEach.
+// processItemFiles processes the itemFiles array from forEach.
 func (bp *BatchProcessor) processItemFiles(
 	forEachConfig *schema.KonfigoForEach,
 	baseConfig map[string]interface{},
@@ -158,7 +158,7 @@ func (bp *BatchProcessor) processIteration(
 	return nil
 }
 
-// ExtractForEachFromVars extracts konfigo_forEach directive from variables file.
+// ExtractForEachFromVars extracts forEach directive from variables file.
 func ExtractForEachFromVars(varsFromFile map[string]interface{}) (*schema.KonfigoForEach, map[string]interface{}, error) {
 	if varsFromFile == nil {
 		return nil, nil, nil
@@ -167,21 +167,21 @@ func ExtractForEachFromVars(varsFromFile map[string]interface{}) (*schema.Konfig
 	var forEachConfig *schema.KonfigoForEach
 	globalVars := make(map[string]interface{})
 
-	// Separate konfigo_forEach from other global vars
+	// Separate forEach from other global vars
 	for k, v := range varsFromFile {
-		if k == "konfigo_forEach" {
+		if k == "forEach" {
 			// Convert to KonfigoForEach struct
 			yamlBytes, err := yaml.Marshal(v)
 			if err != nil {
-				return nil, nil, fmt.Errorf("failed to marshal konfigo_forEach directive: %w", err)
+				return nil, nil, fmt.Errorf("failed to marshal forEach directive: %w", err)
 			}
 
 			forEachConfig = &schema.KonfigoForEach{}
 			if err := yaml.Unmarshal(yamlBytes, forEachConfig); err != nil {
-				return nil, nil, fmt.Errorf("failed to unmarshal konfigo_forEach directive: %w", err)
+				return nil, nil, fmt.Errorf("failed to unmarshal forEach directive: %w", err)
 			}
 
-			logger.Debug("Found konfigo_forEach directive.")
+			logger.Debug("Found forEach directive.")
 		} else {
 			globalVars[k] = v
 		}

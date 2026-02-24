@@ -276,4 +276,4 @@ This completes the transformer testing. Next features to test:
 1. **Validators** (type, range, pattern, enum validation)
 2. **Configuration Merging** (multi-source file merging)
 3. **Input/Output Schema** (structure validation and filtering)
-4. **Batch Processing** (`konfigo_forEach` functionality)
+4. **Batch Processing** (`forEach` functionality)

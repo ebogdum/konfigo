@@ -178,7 +178,7 @@ validate:
 
 **`services-batch.yaml`**
 ```yaml
-konfigo_forEach:
+forEach:
   items:
     - service:
         name: "user-service"

@@ -368,15 +368,15 @@ server:
   timeout: "30s"
 ```
 
-## Batch Processing with `konfigo_forEach`
+## Batch Processing with `forEach`
 
 Konfigo supports generating multiple output files from a single schema by iterating over sets of variables. This is a powerful feature for managing configurations across different environments, services, or any scenario requiring multiple variations of a base template.
 
-This feature is activated by defining a `konfigo_forEach` block in the variables file specified with the `-V` or `--vars-file` flag.
+This feature is activated by defining a `forEach` block in the variables file specified with the `-V` or `--vars-file` flag.
 
-### `konfigo_forEach` Structure
+### `forEach` Structure
 
-The `konfigo_forEach` block has the following structure within your `-V` variables file:
+The `forEach` block has the following structure within your `-V` variables file:
 
 ```yaml
 # In your main variables file (e.g., -V loop-vars.yml)
@@ -386,7 +386,7 @@ The `konfigo_forEach` block has the following structure within your `-V` variabl
 GLOBAL_API_KEY: "default_global_key"
 DEPLOYMENT_TIER: "general"
 
-konfigo_forEach:
+forEach:
   # Specify the source of iteration data (choose ONE):
   items: # Option 1: Define variable sets directly as a list of maps.
     - SERVICE_NAME: "frontend"
@@ -418,14 +418,14 @@ konfigo_forEach:
     # format: "yaml"
 ```
 
-### Key aspects of `konfigo_forEach`:
+### Key aspects of `forEach`:
 
 *   **Location**: Must be in the variables file supplied via `-V`.
 *   **Iteration Data**:
     *   `items`: A list of maps, where each map represents a set of variables for one iteration.
     *   `itemFiles`: A list of paths to other variable files. Each file provides variables for one iteration. Paths are relative to the main `-V` file's directory if not absolute.
     *   You must use *either* `items` *or* `itemFiles`, not both.
-*   **Global Variables**: Variables defined in the `-V` file *outside* the `konfigo_forEach` block are considered global. They are available to each iteration unless an iteration-specific variable (from `items` or an `itemFile`) has the same name.
+*   **Global Variables**: Variables defined in the `-V` file *outside* the `forEach` block are considered global. They are available to each iteration unless an iteration-specific variable (from `items` or an `itemFile`) has the same name.
 *   **Output Configuration (`output`)**:
     *   `filenamePattern` (Required): A template for generating output filenames. It can use `${VAR_NAME}`, `${ITEM_INDEX}`, and `${ITEM_FILE_BASENAME}` placeholders.
         *   `${VAR_NAME}` resolution for filename patterns prioritizes:
@@ -434,21 +434,21 @@ konfigo_forEach:
             3.  Simple `value` or `defaultValue` from the schema's `vars` block (does not resolve `fromEnv` or `fromPath` for filenames).
     *   `format` (Optional): Explicitly sets the output format for all generated files in the loop, overriding format inference from `filenamePattern`'s extension or global output flags.
 
-### Variable Precedence in `konfigo_forEach` Mode
+### Variable Precedence in `forEach` Mode
 
-For each generated file during a `konfigo_forEach` loop, the variable resolution order is:
+For each generated file during a `forEach` loop, the variable resolution order is:
 
 1.  **`KONFIGO_VAR_...` Environment Variables (Highest Priority)**
 2.  **Current Iteration Variables**:
     *   If using `items`: Variables from the current item in the list.
     *   If using `itemFiles`: Variables loaded from the current item file.
-3.  **Global Variables from `-V` file**: Variables defined in the main `-V` file *outside* the `konfigo_forEach` block.
+3.  **Global Variables from `-V` file**: Variables defined in the main `-V` file *outside* the `forEach` block.
 4.  **Schema `vars` Block (Lowest Priority)**: Variables defined in the `vars:` section of your main schema file (`-S`).
 
 ### How It Works
 
 1.  Konfigo loads the main schema (`-S`) and the primary variables file (`-V`).
-2.  It detects the `konfigo_forEach` block within the `-V` file.
+2.  It detects the `forEach` block within the `-V` file.
 3.  It determines the iteration data (either `items` or `itemFiles`).
 4.  For each iteration (each item in `items` or each file in `itemFiles`):
     a.  A deep copy of the base merged configuration (from `-s` sources) is created.
@@ -457,9 +457,9 @@ For each generated file during a `konfigo_forEach` loop, the variable resolution
     d.  The main schema (`-S`) is processed against the copied configuration using this iteration's specific variable set. This includes all standard Konfigo steps: `vars` resolution (within the schema, if any are still relevant), `generators`, `transform`, variable substitution in config values, and `validate`.
     e.  The output directory for the generated file is created if it doesn't exist.
     f.  The resulting configuration is marshalled to the specified (or inferred) `output.format` and written to the generated filename.
-5.  Once all iterations are complete, Konfigo exits. Normal output flags (`-of`, `-oj`, etc.) are ignored when `konfigo_forEach` is active, as output is fully controlled by the directive.
+5.  Once all iterations are complete, Konfigo exits. Normal output flags (`-of`, `-oj`, etc.) are ignored when `forEach` is active, as output is fully controlled by the directive.
 
-### Example Usage of `konfigo_forEach`
+### Example Usage of `forEach`
 
 **Schema (`schema.yml`):**
 ```yaml
@@ -485,7 +485,7 @@ config:
 GLOBAL_CONFIG_VAL: "shared-across-all"
 ZONE: "default-zone" # Global, can be overridden by items
 
-konfigo_forEach:
+forEach:
   items:
     - SERVICE_NAME: "user-service"
       REPLICAS: 2

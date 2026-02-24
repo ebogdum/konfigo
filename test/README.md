@@ -6,7 +6,7 @@ This directory contains comprehensive test suites for the Konfigo configuration 
 
 The test suite is organized into the following directories:
 
-- `batch/` - Tests for batch processing and `konfigo_forEach` functionality
+- `batch/` - Tests for batch processing and `forEach` functionality
 - `env-integration/` - Tests for environment variable integration
 - `format-conversion/` - Tests for converting between different configuration formats
 - `generators/` - Tests for configuration generation features
