@@ -14,7 +14,7 @@
   "features": {
     "auth": true,
     "cache": false,
-    "new_feature": "true"
+    "new_feature": true
   },
   "logging": {
     "format": "text",
@@ -22,3 +22,4 @@
     "output": "stdout"
   }
 }
+

@@ -215,6 +215,19 @@ run_test "Cross-format with schema to ENV" \
     "$KONFIGO -s input/base-config.yaml,input/override-staging.toml -S config/schema-immutable.json -oe" \
     "cross-format-schema-env.env"
 
+echo "10. ARRAY MERGE TESTS (-m flag)"
+echo "==============================="
+
+# Test 28: Arrays replaced by default (no -m flag)
+run_test "Arrays replaced by default (no -m)" \
+    "$KONFIGO -s input/array-base.json,input/array-override.json -oj" \
+    "array-replace-default.json"
+
+# Test 29: Arrays merged by union with -m flag
+run_test "Arrays merged by union (-m flag)" \
+    "$KONFIGO -s input/array-base.json,input/array-override.json -m -oj" \
+    "array-merge-union.json"
+
 echo "=== Test Summary ==="
 echo "Total tests: $test_count"
 echo "Passed: $passed_count"

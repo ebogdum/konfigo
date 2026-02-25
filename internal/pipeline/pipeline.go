@@ -297,14 +297,14 @@ func (p *Pipeline) processSources(immutablePaths map[string]struct{}, envConfig 
 			if err != nil {
 				return nil, errors.WrapError(errors.ErrorTypeStdinRead, "failed to parse stdin", err)
 			}
-			merger.Merge(finalConfig, data, p.Config.CaseSensitive, immutablePaths)
+			merger.Merge(finalConfig, data, p.Config.CaseSensitive, immutablePaths, p.Config.MergeArrays)
 		} else {
 			res := resultsByIndex[se.Index]
 			if res.Err != nil {
 				parseErrors = append(parseErrors, fmt.Sprintf("%s: %v", res.FilePath, res.Err))
 				continue
 			}
-			merger.Merge(finalConfig, res.Data, p.Config.CaseSensitive, immutablePaths)
+			merger.Merge(finalConfig, res.Data, p.Config.CaseSensitive, immutablePaths, p.Config.MergeArrays)
 		}
 	}
 	if len(parseErrors) > 0 {
@@ -314,7 +314,7 @@ func (p *Pipeline) processSources(immutablePaths map[string]struct{}, envConfig 
 
 	if len(envConfig) > 0 {
 		logger.Log("Merging %d configuration key(s) from environment variables...", len(envConfig))
-		merger.Merge(finalConfig, envConfig, p.Config.CaseSensitive, immutablePaths)
+		merger.Merge(finalConfig, envConfig, p.Config.CaseSensitive, immutablePaths, p.Config.MergeArrays)
 	}
 
 	return finalConfig, nil

@@ -12,6 +12,7 @@ This page provides comprehensive documentation for all Konfigo command-line flag
 | `-v` | `--verbose` | Enable informational logging | false |
 | `-d` | `--debug` | Enable debug logging | false |
 | `-c` | `--case-sensitive` | Use case-sensitive key matching | false |
+| `-m` | `--merge-arrays` | Merge arrays by union with deduplication | false |
 | `-r` | `--recursive` | Recursively search subdirectories | false |
 
 ### Source Input Options
