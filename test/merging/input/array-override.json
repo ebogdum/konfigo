@@ -1,0 +1,10 @@
+{
+  "application": {
+    "tags": ["api", "production"],
+    "plugins": ["cache", "logging"]
+  },
+  "database": {
+    "hosts": ["db3.prod"],
+    "port": 5433
+  }
+}
