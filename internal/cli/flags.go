@@ -54,9 +54,10 @@ type Config struct {
 	OutputENV  bool
 
 	// Behavior and Logging
-	Verbose bool
-	Debug   bool
-	Help    bool
+	MergeArrays bool
+	Verbose     bool
+	Debug       bool
+	Help        bool
 }
 
 // ParseFlags parses command line flags and returns a Config struct
@@ -86,6 +87,7 @@ func ParseFlags() (*Config, error) {
 	flag.BoolVar(&config.OutputENV, "oe", false, "Output in ENV format")
 
 	// Behavior and Logging
+	flag.BoolVar(&config.MergeArrays, "m", false, "Merge arrays by union with deduplication instead of replacing.")
 	flag.BoolVar(&config.Verbose, "v", false, "Enable informational (INFO) logging. Overrides default quiet behavior.")
 	flag.BoolVar(&config.Debug, "d", false, "Enable debug (DEBUG and INFO) logging. Overrides -v and default quiet behavior.")
 	flag.BoolVar(&config.Help, "h", false, "Show this help message.")

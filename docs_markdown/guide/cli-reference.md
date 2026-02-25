@@ -377,6 +377,11 @@ Konfigo resolves variables used in `${VAR_NAME}` substitutions with the followin
     *   By default, Konfigo performs case-insensitive key matching (e.g., `key` and `Key` would be treated as the same key, with the latter overriding the former if it appears later in the merge sequence).
     *   **Example**: `konfigo -s config.json -c`
 
+*   `-m`:
+    *   **Description**: Merge arrays by union with deduplication instead of replacing.
+    *   By default, arrays from later sources completely replace earlier arrays. With `-m`, elements from later arrays are appended only if not already present, using deep equality for comparison.
+    *   **Example**: `konfigo -s base.json,override.json -m`
+
 *   `-v`:
     *   **Description**: Enable verbose (INFO) logging. Shows processing steps and decision points.
     *   Overrides default quiet behavior but is overridden by `-d`.

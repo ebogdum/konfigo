@@ -1,4 +1,5 @@
 {
-  "APPLICATION_NAME": "stdin-env-app\\nAPPLICATION_PORT=7000"
+  "APPLICATION_NAME": "stdin-env-app",
+  "APPLICATION_PORT": "7000"
 }
 

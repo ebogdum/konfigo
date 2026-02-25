@@ -34,6 +34,7 @@ func PrintHelp() {
 	fmt.Fprintf(out, "  Behavior & Logging:\n")
 	fmt.Fprintf(out, "    (Default behavior is quiet; no informational or debug logs are printed unless specified.)\n")
 	fmt.Fprintf(out, "    -c\t\tUse case-sensitive key matching (default is case-insensitive).\n")
+	fmt.Fprintf(out, "    -m\t\tMerge arrays by union with deduplication instead of replacing.\n")
 	fmt.Fprintf(out, "    -v\t\tEnable informational (INFO) logging.\n")
 	fmt.Fprintf(out, "    -d\t\tEnable debug (DEBUG and INFO) logging. Overrides -v.\n")
 	fmt.Fprintf(out, "    -h\t\tShow this help message.\n\n")

@@ -74,8 +74,8 @@ database:
   ssl: true                  # overridden
 ```
 
-### Array Replacement
-Arrays are replaced entirely, not merged:
+### Array Replacement (Default)
+By default, arrays are replaced entirely, not merged:
 
 ```yaml
 # base.yml
@@ -83,7 +83,7 @@ features:
   - auth
   - logging
 
-# override.yml  
+# override.yml
 features:
   - auth
   - analytics
@@ -92,7 +92,23 @@ features:
 # Result: array completely replaced
 features:
   - auth
-  - analytics  
+  - analytics
+  - monitoring
+```
+
+### Array Union (`-m` flag)
+With the `-m` flag, arrays are merged by union with deduplication:
+
+```bash
+konfigo -m -s base.yml,override.yml
+```
+
+```yaml
+# Result: union of both arrays, duplicates removed
+features:
+  - auth
+  - logging
+  - analytics
   - monitoring
 ```
 
