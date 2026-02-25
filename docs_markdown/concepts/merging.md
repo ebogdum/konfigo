@@ -105,7 +105,7 @@ servers:
   - "server1"
   - "server2"
 
-# prod.yaml  
+# prod.yaml
 servers:
   - "prod-server1"
   - "prod-server2"
@@ -114,8 +114,28 @@ servers:
 # Result: ["prod-server1", "prod-server2", "prod-server3"]
 ```
 
-### Append Strategy (Future Enhancement)
-Future versions may support array appending strategies for specific use cases.
+### Union Strategy (`-m` flag)
+With the `-m` flag, arrays are merged by union with deduplication. Elements from the source array are appended to the destination array only if they are not already present:
+
+```bash
+konfigo -m -s base.yaml,prod.yaml
+```
+
+```yaml
+# base.yaml
+tags:
+  - "web"
+  - "api"
+
+# prod.yaml
+tags:
+  - "api"
+  - "production"
+
+# Result: ["web", "api", "production"]
+```
+
+Deduplication uses deep equality, so nested objects in arrays are also compared correctly.
 
 ## Complex Merging Examples
 

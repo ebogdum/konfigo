@@ -29,6 +29,7 @@ konfigo [flags]
 | `-s` | | Source file/directory paths (comma-separated). Use `-` for stdin |
 | `-r` | | Recursive directory discovery |
 | `-c` | | Case-sensitive key matching (default: case-insensitive) |
+| `-m` | | Merge arrays by union with deduplication instead of replacing |
 | `-S` | `--schema` | Path to schema file (JSON, YAML, or TOML only) |
 | `-V` | `--vars-file` | Path to variables file (high-priority variables) |
 | `-sj` | | Force input format: JSON |
@@ -121,7 +122,8 @@ If no schema is provided, only merging and basic variable substitution are perfo
 
 - **Precedence**: Later sources override earlier sources (left-to-right in `-s` flag order)
 - **Deep merge**: Nested maps are merged recursively
-- **Arrays**: Replaced entirely (NOT merged element-by-element)
+- **Arrays (default)**: Replaced entirely (NOT merged element-by-element)
+- **Arrays (`-m` flag)**: Merged by union with deduplication (e.g., `[a,b]` + `[b,c]` = `[a,b,c]`)
 - **Immutable paths**: Protected from being overwritten (only if key already exists)
 - **Environment overrides** (KONFIGO_KEY_*): Always merged last, giving them highest precedence
 
