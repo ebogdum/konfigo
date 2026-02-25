@@ -1,0 +1,23 @@
+{
+  "application": {
+    "name": "my-app",
+    "plugins": [
+      "auth",
+      "cache",
+      "logging"
+    ],
+    "tags": [
+      "web",
+      "api",
+      "production"
+    ]
+  },
+  "database": {
+    "hosts": [
+      "db1.local",
+      "db2.local",
+      "db3.prod"
+    ],
+    "port": 5433
+  }
+}
