@@ -78,8 +78,8 @@ database:
   ssl: true            # replaced
 ```
 
-### Arrays: Complete Replacement
-Arrays are replaced entirely, not merged:
+### Arrays: Complete Replacement (Default)
+By default, arrays are replaced entirely, not merged:
 
 ```yaml
 # base.yaml
@@ -90,6 +90,24 @@ tags: ["app", "production", "critical"]
 
 # Result
 tags: ["app", "production", "critical"]  # completely replaced
+```
+
+### Arrays: Union with Deduplication (`-m` flag)
+Use the `-m` flag to merge arrays by union instead of replacing:
+
+```bash
+konfigo -m -s base.yaml,override.yaml
+```
+
+```yaml
+# base.yaml
+tags: ["app", "service"]
+
+# override.yaml
+tags: ["app", "production", "critical"]
+
+# Result
+tags: ["app", "service", "production", "critical"]  # union with dedup
 ```
 
 ## Environment Variable Overrides
@@ -261,7 +279,13 @@ database:
 ### ⚠️ Common Pitfalls
 
 ::: warning Array Replacement
-Arrays are completely replaced, not merged. If you need array merging, consider using objects with keys instead:
+By default, arrays are completely replaced, not merged. Use the `-m` flag if you need union-based array merging:
+
+```bash
+konfigo -m -s base.yaml,override.yaml
+```
+
+Alternatively, consider using objects with keys:
 
 ```yaml
 # Instead of this:
@@ -327,7 +351,7 @@ konfigo -v -s file1.yaml,file2.yaml
 ```
 
 ### Array Merging Issues
-Arrays are replaced, not merged. If you need array merging, use transformation schemas.
+By default, arrays are replaced, not merged. Use the `-m` flag to enable union-based array merging with deduplication.
 
 ### Case Sensitivity
 By default, merging is case-sensitive. Use `-c` flag for case-insensitive merging:
