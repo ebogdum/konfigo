@@ -5,7 +5,7 @@
     "docs:preview": "vitepress preview docs_markdown"
   },
   "devDependencies": {
-    "esbuild": "^0.27.3",
+    "esbuild": "^0.27.4",
     "vitepress": "^1.6.4"
   }
 }
