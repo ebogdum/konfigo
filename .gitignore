@@ -4,7 +4,9 @@
 *.dll
 *.so
 *.dylib
+konfigo
 builds/
+reports/
 
 # Go test and coverage
 *.test
