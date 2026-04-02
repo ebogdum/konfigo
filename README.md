@@ -1,350 +1,331 @@
-# Konfigo: Versatile Configuration Management
+# Konfigo - Merge, Transform, and Validate Configuration Files
 
 <p align="center">
-  <img src="konfigo_logo.png" alt="Konfigo Logo" width="200"/>
+  <img src="konfigo_logo.png" alt="Konfigo - Configuration file merger, converter, and validator" width="200"/>
 </p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://github.com/ebogdum/konfigo/releases"><img src="https://img.shields.io/github/v/release/ebogdum/konfigo" alt="Latest Release"></a>
+  <a href="https://goreportcard.com/report/github.com/ebogdum/konfigo"><img src="https://goreportcard.com/badge/github.com/ebogdum/konfigo" alt="Go Report Card"></a>
+</p>
 
-Konfigo is a powerful command-line tool designed to streamline your configuration workflow. It excels at reading various configuration file formats (JSON, YAML, TOML, .env), merging them intelligently, and processing the combined data against a user-defined schema for validation, transformation, variable substitution, and even batch output generation.
+<p align="center">
+  <strong>A fast, schema-driven CLI tool for merging, converting, validating, and generating configuration files across JSON, YAML, TOML, ENV, and INI formats.</strong>
+</p>
 
-Whether you're managing simple settings or complex, multi-layered configurations with environment-specific overrides, Konfigo provides the tools to do so efficiently and reliably.
+---
 
-## Key Features
+Konfigo solves the problem of managing configuration across multiple files, formats, and environments. Instead of writing custom scripts to merge YAML files, convert JSON to TOML, or validate config values before deployment, Konfigo handles it all in a single command.
 
-*   **Multi-Format Support**: Reads and writes JSON, YAML, TOML, and .env files.
-*   **Flexible Merging**: Intelligently merges multiple configuration sources, respecting order and immutability rules.
-*   **Powerful Schema Processing**:
-    *   **Variable Substitution**: Inject dynamic values from environment variables (`KONFIGO_VAR_...`), dedicated variable files (`-V`), or schema defaults.
-    *   **Data Generation**: Create new configuration values (e.g., `concat`, `timestamp`, `random`, `id`).
-    *   **Data Transformation**: Modify keys and values (e.g., `renameKey`, `changeCase`, `addKeyPrefix`, `addKeySuffix`, `deleteKey`, `trim`, `replaceKey`, `setValue`).
-    *   **Data Validation**: Enforce rules (`required`, `type`, `min`, `max`, `minLength`, `enum`, `regex`).
-    *   **Input/Output Schemas**: Validate incoming data and filter outgoing data against defined structures.
-*   **Batch Processing**: Use the `forEach` directive in a variables file to generate multiple tailored configuration outputs from a single schema and run.
-*   **Environment Variable Integration**:
-    *   Override any configuration value directly using `KONFIGO_KEY_path.to.key=value`.
-*   **Comprehensive CLI**: Rich set of command-line options for fine-grained control over input, output, and processing behavior.
+**Use cases:**
+- Merge base + environment-specific configs for deployment pipelines
+- Convert between JSON, YAML, TOML, and ENV formats
+- Validate configuration values (types, ranges, patterns, required fields)
+- Generate UUIDs, timestamps, and computed values at build time
+- Batch-generate configs for multiple services or environments from a single template
+- Override any config value via environment variables without editing files
 
-## Getting Started
+## Quick Start
 
-### 1. Installation
+### Install
 
-The primary way to install Konfigo is downloading a pre-built binary from the release page:
-
-[Releases](https://github.com/ebogdum/konfigo/releases)
-
-For other installation methods, please refer to the [Installation Guide](docs_markdown/installation.md) in our documentation.
-
-### 2. Basic Usage
-
-Merge two configuration files (`config.json` and `overrides.yml`) and output the result to `final.yml`:
+Download a pre-built binary from [Releases](https://github.com/ebogdum/konfigo/releases) (Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD - amd64/arm64), or build from source:
 
 ```bash
-konfigo -s config.json,overrides.yml -of final.yml
+go install github.com/ebogdum/konfigo/cmd/konfigo@latest
 ```
 
-### 3. Using a Schema
-
-Merge `config.json`, process it with `schema.yml`, use variables from `staging-vars.yml`, and output to `staging_config.json`:
+### Merge configuration files
 
 ```bash
-konfigo -s config.json -S schema.yml -V staging-vars.yml -of staging_config.json
+konfigo -s base.yaml,production.yaml -of config.json
 ```
 
-## Feature Examples
+Later files override earlier files. Nested objects are deep-merged.
 
-Here are minimal examples for each of Konfigo's key features.
+### Convert between formats
 
-### Multi-Format Support
-
-Convert `config.json` to `config.yml`.
-
-**`config.json`**
-```json
-{
-  "key": "value"
-}
-```
-
-**Command**
 ```bash
-konfigo -s config.json -of config.yml
+konfigo -s config.yaml -oj        # YAML to JSON (stdout)
+konfigo -s config.json -oy        # JSON to YAML
+konfigo -s config.toml -oe        # TOML to ENV
+konfigo -s legacy.ini -of out.yaml  # INI to YAML
 ```
 
-**`config.yml` (Output)**
+### Override values from environment variables
+
+```bash
+export KONFIGO_KEY_database.host=prod-db.example.com
+export KONFIGO_KEY_database.port=5432
+konfigo -s config.yaml -of config.json
+```
+
+Environment variables always take highest precedence over file sources.
+
+## Features
+
+### Multi-Format Configuration Merging
+
+Merge any combination of JSON, YAML, TOML, ENV, and INI files with deterministic precedence:
+
+```bash
+# Later sources override earlier ones; objects deep-merge, arrays replace
+konfigo -s defaults.yaml,environment.json,secrets.env
+
+# Recursive directory discovery
+konfigo -s configs/ -r -of merged.yaml
+
+# Case-sensitive key matching
+konfigo -s config1.yaml,config2.yaml -c
+
+# Array union merge (deduplicated instead of replaced)
+konfigo -s base.yaml,override.yaml -m
+```
+
+### Schema-Driven Processing
+
+Apply a schema to validate, transform, and generate configuration values:
+
 ```yaml
-key: value
+# schema.yaml
+vars:
+  - name: ENVIRONMENT
+    fromEnv: NODE_ENV
+    defaultValue: development
+  - name: VERSION
+    value: "2.0.0"
+
+generators:
+  - type: concat
+    targetPath: service.url
+    format: "https://{host}:${PORT}"
+    sources:
+      host: service.host
+
+  - type: timestamp
+    targetPath: metadata.buildTime
+    format: rfc3339
+
+  - type: random
+    targetPath: session.secret
+    format: uuid
+
+transform:
+  - type: renameKey
+    from: legacy.dbHost
+    to: database.host
+  - type: changeCase
+    path: service.name
+    case: snake
+  - type: setValue
+    path: app.version
+    value: "${VERSION}"
+
+validate:
+  - path: database.port
+    rules:
+      required: true
+      type: number
+      min: 1
+      max: 65535
+  - path: service.name
+    rules:
+      type: string
+      minLength: 3
+      regex: "^[a-z][a-z0-9-]*$"
+  - path: environment
+    rules:
+      enum: [development, staging, production]
+
+immutable:
+  - database.credentials
+  - security.apiKey
 ```
 
-### Flexible Merging
-
-Merge two JSON files, where keys in the second file override the first.
-
-**`config1.json`**
-```json
-{
-  "a": 1,
-  "b": 2
-}
-```
-
-**`config2.json`**
-```json
-{
-  "b": 3,
-  "c": 4
-}
-```
-
-**Command**
 ```bash
-konfigo -s config1.json,config2.json
+konfigo -s config.yaml -S schema.yaml -V vars/production.yaml -of deploy.json
 ```
 
-**Output (JSON)**
-```json
-{
-  "a": 1,
-  "b": 3,
-  "c": 4
-}
-```
+### Variable Substitution
 
-### Powerful Schema Processing
+Three-tier variable precedence: environment (`KONFIGO_VAR_*`) > variables file (`-V`) > schema defaults.
 
-#### Variable Substitution
-
-Substitute a variable from a file into the configuration.
-
-**`config.json`**
-```json
-{
-  "greeting": "Hello, ${user.name}"
-}
-```
-
-**`vars.yml`**
 ```yaml
-user:
-  name: World
+# config.yaml
+database:
+  url: "postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+  pool_size: "${POOL_SIZE}"
 ```
 
-**Command**
 ```bash
-konfigo -s config.json -V vars.yml
-```
-
-**Output (JSON)**
-```json
-{
-  "greeting": "Hello, World"
-}
-```
-
-#### Data Generation
-
-Generate a new value using a schema.
-
-**`schema.yml`**
-```yaml
-schema:
-  properties:
-    request_id:
-      generate:
-        type: id
-        id_type: uuid
-```
-
-**Command**
-```bash
-konfigo -S schema.yml
-```
-
-**Output (JSON)**
-```json
-{
-  "request_id": "...some generated uuid..."
-}
-```
-
-#### Data Transformation
-
-Rename a key using a schema.
-
-**`config.json`**
-```json
-{
-  "old_key": "value"
-}
-```
-
-**`schema.yml`**
-```yaml
-schema:
-  properties:
-    old_key:
-      transform:
-        - type: renameKey
-          new_key: new_key
-```
-
-**Command**
-```bash
-konfigo -s config.json -S schema.yml
-```
-
-**Output (JSON)**
-```json
-{
-  "new_key": "value"
-}
-```
-
-#### Data Validation
-
-Validate that a required key is present.
-
-**`config.json`**
-```json
-{
-  "other_key": "value"
-}
-```
-
-**`schema.yml`**
-```yaml
-schema:
-  properties:
-    required_key:
-      validate:
-        - type: required
-```
-
-**Command**
-```bash
-konfigo -s config.json -S schema.yml
-```
-
-**Output**
-```
-Error: Validation failed: required_key is required
+export KONFIGO_VAR_DB_HOST=prod-db.example.com
+konfigo -s config.yaml -V vars.yaml -oj
 ```
 
 ### Batch Processing
 
-Generate multiple output files from a list of variables.
+Generate multiple config files from a single template using `forEach`:
 
-**`vars.yml`**
 ```yaml
+# batch-vars.yaml
+CLUSTER: k8s-prod
+
 forEach:
-  - user: alice
-  - user: bob
+  items:
+    - SERVICE_NAME: api
+      PORT: "8080"
+      REPLICAS: "3"
+    - SERVICE_NAME: worker
+      PORT: "8081"
+      REPLICAS: "5"
+  output:
+    filenamePattern: "deploy/${SERVICE_NAME}/config-${ITEM_INDEX}.yaml"
 ```
 
-**`schema.yml`**
+```bash
+konfigo -s base.yaml -S schema.yaml -V batch-vars.yaml
+# Creates: deploy/api/config-0.yaml, deploy/worker/config-1.yaml
+```
+
+### Input and Output Schema Validation
+
+Validate structure before processing, filter sensitive data from output:
+
 ```yaml
-schema:
-  properties:
-    username:
-      set:
-        value: ${user}
+# schema.yaml
+inputSchema:
+  path: "../schemas/required-structure.json"
+  strict: true   # reject unexpected keys
+
+outputSchema:
+  path: "../schemas/public-api.json"
+  strict: false  # include only defined keys, drop extras
 ```
 
-**Command**
+### Immutable Path Protection
+
+Protect critical config values from being overwritten by later sources, transformers, or generators. Child paths are automatically protected:
+
+```yaml
+immutable:
+  - database.credentials   # also protects database.credentials.username, etc.
+  - security.apiKey
+```
+
+## CLI Reference
+
+```
+konfigo [flags] -s <sources>
+```
+
+| Flag | Description |
+|------|-------------|
+| `-s <paths>` | Comma-separated source files/directories. Use `-` for stdin |
+| `-r` | Recursive directory discovery |
+| `-c` | Case-sensitive key matching (default: case-insensitive) |
+| `-m` | Merge arrays by union with deduplication instead of replacing |
+| `-S, --schema <path>` | Schema file for processing (JSON, YAML, or TOML) |
+| `-V, --vars-file <path>` | Variables file (high-priority variables + forEach) |
+| `-sj / -sy / -st / -se` | Force input format: JSON / YAML / TOML / ENV |
+| `-of <path>` | Output file (format from extension, or use with `-oX`) |
+| `-oj / -oy / -ot / -oe` | Output format: JSON / YAML / TOML / ENV |
+| `-v` | Verbose logging (INFO) |
+| `-d` | Debug logging (DEBUG + INFO) |
+| `-h` | Show help |
+
+### Environment Variables
+
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `KONFIGO_KEY_*` | Override any config value (highest precedence) | `KONFIGO_KEY_database.host=prod-db` |
+| `KONFIGO_VAR_*` | Set schema variables (highest variable precedence) | `KONFIGO_VAR_ENV=production` |
+
+## Supported Formats
+
+| Format | Input | Output | Extensions |
+|--------|-------|--------|------------|
+| JSON | Yes | Yes | `.json` |
+| YAML | Yes | Yes | `.yaml`, `.yml` |
+| TOML | Yes | Yes | `.toml` |
+| ENV | Yes | Yes | `.env` |
+| INI | Yes | No | `.ini` |
+
+## Processing Pipeline
+
+```
+Source Files -> Parse -> Merge -> [Schema Processing] -> Output
+                                       |
+                         Input Schema Validation
+                         Variable Resolution
+                         Generator Execution
+                         Transformer Execution
+                         Variable Substitution
+                         Validator Execution
+                         Output Schema Filtering
+```
+
+## Real-World Examples
+
+### CI/CD: Environment-Specific Deployment Config
+
 ```bash
-konfigo -S schema.yml -V vars.yml -of output/${user}.json
+# Generate production config from layered sources
+konfigo -s config/base.yaml,config/production.yaml \
+  -S schemas/deploy.yaml \
+  -V vars/production.yaml \
+  -of deploy/config.json
 ```
 
-**Output**
-*   `output/alice.json` with `{"username": "alice"}`
-*   `output/bob.json` with `{"username": "bob"}`
+### Docker: Build-Time Configuration
 
-### Environment Variable Integration
+```dockerfile
+FROM golang:1.22 AS config
+COPY configs/ /configs/
+COPY schemas/ /schemas/
+RUN konfigo -s /configs/ -r -S /schemas/app.yaml -of /app-config.json
 
-Override a configuration value from an environment variable.
-
-**`config.json`**
-```json
-{
-  "database": {
-    "host": "localhost"
-  }
-}
+FROM alpine:latest
+COPY --from=config /app-config.json /etc/app/config.json
 ```
 
-**Command**
+### Kubernetes: Generate Per-Service Configs
+
 ```bash
-export KONFIGO_KEY_database.host=prod.db.server
-konfigo -s config.json
+konfigo -s k8s/base.yaml -S k8s/schema.yaml -V k8s/services-batch.yaml
+# Generates one config file per service defined in forEach items
 ```
 
-**Output (JSON)**
-```json
-{
-  "database": {
-    "host": "prod.db.server"
-  }
-}
+### Config Validation in Pre-Commit Hooks
+
+```bash
+konfigo -s config/ -r -S schemas/validation.yaml > /dev/null
+# Exit code 0 = valid, 1 = errors found
 ```
 
-## Command-Line Options
+### Format Migration
 
-Below is a summary of the available command-line options. For more details, run `konfigo -h`.
+```bash
+# Convert legacy INI to YAML
+konfigo -s legacy.ini -of modern.yaml
 
-**Input & Sources**
-
-| Flag(s)                 | Description                                                                 |
-|-------------------------|-----------------------------------------------------------------------------|
-| `-s <paths>`            | Comma-separated list of source files/directories. Use '-' for stdin.        |
-| `-r`                    | Recursively search for configuration files in subdirectories.               |
-| `-sj`                   | Force input to be parsed as JSON (required for stdin).                      |
-| `-sy`                   | Force input to be parsed as YAML (required for stdin).                      |
-| `-st`                   | Force input to be parsed as TOML (required for stdin).                      |
-| `-se`                   | Force input to be parsed as ENV (required for stdin).                       |
-
-**Schema & Variables**
-
-| Flag(s)                 | Description                                                                 |
-|-------------------------|-----------------------------------------------------------------------------|
-| `-S, --schema <path>`   | Path to a schema file for processing the config.                            |
-| `-V, --vars-file <path>`| Path to a file providing high-priority variables.                           |
-
-**Output & Formatting**
-
-| Flag(s)                 | Description                                                                 |
-|-------------------------|-----------------------------------------------------------------------------|
-| `-of <path>`            | Write output to file. Extension determines format, or use with -oX flags.   |
-| `-oj`                   | Output in JSON format.                                                      |
-| `-oy`                   | Output in YAML format.                                                      |
-| `-ot`                   | Output in TOML format.                                                      |
-| `-oe`                   | Output in ENV format.                                                       |
-
-**Behavior & Logging**
-
-| Flag(s)                 | Description                                                                 |
-|-------------------------|-----------------------------------------------------------------------------|
-| `-c`                    | Use case-sensitive key matching (default is case-insensitive).              |
-| `-v`                    | Enable informational (INFO) logging. Overrides default quiet behavior.      |
-| `-d`                    | Enable debug (DEBUG and INFO) logging. Overrides -v and default quiet behavior. |
-| `-h`                    | Show this help message.                                                     |
+# Convert .env to JSON for application consumption
+konfigo -s .env -of config.json
+```
 
 ## Documentation
 
-For detailed information on all features, CLI options, and schema capabilities, please visit our full documentation site:
+Full documentation: **[ebogdum.github.io/konfigo](https://ebogdum.github.io/konfigo/)**
 
-**[Konfigo Documentation Site](https://ebogdum.github.io/konfigo/)**
-
-Alternatively, you can browse the Markdown files directly in the [`/docs_markdown`](docs_markdown) directory.
-
-Key sections:
-*   [User Guide](docs_markdown/guide/index.md)
-*   [Schema Guide](docs_markdown/schema/index.md)
+- [User Guide](https://ebogdum.github.io/konfigo/guide/) - Task-oriented walkthroughs
+- [Schema Guide](https://ebogdum.github.io/konfigo/schema/) - Variables, generators, transformers, validators
+- [CLI Reference](https://ebogdum.github.io/konfigo/guide/cli-reference) - Complete flag documentation
+- [Batch Processing](https://ebogdum.github.io/konfigo/features/batch-processing) - forEach and multi-output generation
 
 ## Contributing
 
-Contributions are welcome!
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
 Konfigo is licensed under the [MIT License](./LICENSE).
-
