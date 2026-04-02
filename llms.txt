@@ -123,8 +123,8 @@ If no schema is provided, only merging and basic variable substitution are perfo
 - **Precedence**: Later sources override earlier sources (left-to-right in `-s` flag order)
 - **Deep merge**: Nested maps are merged recursively
 - **Arrays (default)**: Replaced entirely (NOT merged element-by-element)
-- **Arrays (`-m` flag)**: Merged by union with deduplication (e.g., `[a,b]` + `[b,c]` = `[a,b,c]`)
-- **Immutable paths**: Protected from being overwritten (only if key already exists)
+- **Arrays (`-m` flag)**: Merged by union with deduplication (e.g., `[a,b]` + `[b,c]` = `[a,b,c]`). For very large arrays (>1,000 elements per side), deduplication is automatically skipped for performance.
+- **Immutable paths**: Protected from being overwritten (only if key already exists). Child paths are also protected — marking `database` immutable also protects `database.host`, `database.port`, etc.
 - **Environment overrides** (KONFIGO_KEY_*): Always merged last, giving them highest precedence
 
 ### Precedence Order (lowest to highest)
@@ -139,7 +139,7 @@ If no schema is provided, only merging and basic variable substitution are perfo
 
 ### Case Sensitivity
 
-By default, merging is **case-insensitive**. Keys like `Database`, `database`, and `DATABASE` are treated as the same key. The source key's casing takes precedence (original key is deleted and replaced).
+By default, merging is **case-insensitive**. Keys like `Database`, `database`, and `DATABASE` are treated as the same key. The source key's casing takes precedence (original key is deleted and replaced). A debug-level log is emitted when key casing changes during merge.
 
 Use `-c` flag to enable case-sensitive matching where `Database` and `database` are distinct keys.
 
@@ -327,7 +327,7 @@ Variables are defined in the schema's `vars` section. Each variable has a `name`
 
 | Field | Description |
 |-------|-------------|
-| `name` | Variable name (used as `${NAME}` in substitution). Must be uppercase, digits, underscores only. |
+| `name` | Variable name (used as `${NAME}` in substitution). Must be uppercase, digits, underscores only. Each name must be unique within the `vars` block; duplicates cause an error. |
 | `value` | Static value |
 | `fromEnv` | Read from OS environment variable |
 | `fromPath` | Read from a path in the merged configuration |
@@ -432,6 +432,8 @@ Generates random values.
 | `string:N` | Random alphanumeric string of length N | `aB3kF9mP2xQ1` |
 | `bytes:N` | Random bytes as hex string | `a1b2c3d4e5f6` |
 | `uuid` | UUID v4 format | `550e8400-e29b-41d4-a716-446655440000` |
+
+All random generators use cryptographically-seeded PRNG (`crypto/rand` for seed). If the crypto random source is unavailable, an error is returned instead of silently falling back to a predictable seed.
 
 ---
 
@@ -550,7 +552,7 @@ Validators check the final configuration values and return errors if validation 
 | Rule | Type | Description |
 |------|------|-------------|
 | `required` | boolean | Field must exist (not nil) |
-| `type` | string | Type check: `string`, `number`, `bool`, `int`, `float` |
+| `type` | string | Type check: `string`, `number`, `bool`, `int`, `float`. Also accepts aliases: `boolean`→`bool`, `integer`→`int`, `array`→`slice`, `object`→`map`, `double`→`number` |
 | `min` | number | Minimum numeric value |
 | `max` | number | Maximum numeric value |
 | `minLength` | number | Minimum string length |
@@ -585,10 +587,15 @@ validate:
 ### Type Validation Details
 
 - `string`: Must be a Go string type
-- `number`: Accepts any Go numeric type (int, int8-64, uint, uint8-64, float32, float64)
-- `int`: Accepts Go integer types only
-- `float`: Accepts Go float types only
-- `bool`: Must be a Go boolean type
+- `number` (also `float`, `double`): Accepts any Go numeric type (int, int8-64, uint, uint8-64, float32, float64)
+- `int` (also `integer`): Accepts Go integer types only
+- `bool` (also `boolean`): Must be a Go boolean type
+- `slice` (also `array`): Must be a Go slice type
+- `map` (also `object`): Must be a Go map type
+
+### Regex Validation
+
+Regex patterns use Go's RE2 engine. Input values longer than 1 MiB are rejected to prevent ReDoS. Compiled regexes are cached (bounded to 500 entries).
 
 ---
 
@@ -604,7 +611,7 @@ inputSchema:
   strict: true
 ```
 
-The input schema file defines the expected structure. In strict mode, any keys present in the config but not in the schema cause validation failure.
+The input schema file defines the expected structure. Relative paths are resolved from the schema file's directory (e.g., `../schemas/input.json`). In strict mode, any keys present in the config but not in the schema cause validation failure.
 
 ### Output Schema
 
@@ -626,7 +633,7 @@ In non-strict mode, the output schema acts as a projection - only schema-defined
 
 ## Immutable Paths
 
-Paths listed in the `immutable` section are protected from being overwritten during merging. If a key already exists and a later source tries to override it, the override is silently ignored.
+Paths listed in the `immutable` section are protected from being overwritten during merging, generator execution, and transformer execution. If a key already exists and a later source tries to override it, the override is silently ignored.
 
 ```yaml
 immutable:
@@ -635,7 +642,11 @@ immutable:
   - deployment.region
 ```
 
-Important: Immutability only applies during the merge phase. If the key does not yet exist, it can be set. Once set, subsequent sources cannot change it.
+Important details:
+- **Child path protection**: Marking `database` immutable also protects `database.host`, `database.port`, etc.
+- **Generator/transformer protection**: Immutable values are snapshotted before generators and transformers run, and restored afterward if modified.
+- **Merge-time protection**: If the key does not yet exist, it can be set. Once set, subsequent sources cannot change it.
+- **Environment override**: `KONFIGO_KEY_*` environment variables can still override immutable paths.
 
 ---
 
@@ -685,7 +696,7 @@ forEach:
 | Variable | Description |
 |----------|-------------|
 | `${ITEM_INDEX}` | Zero-based iteration index (0, 1, 2, ...) |
-| `${ITEM_FILE_BASENAME}` | Base filename without extension (when using `itemFiles`) |
+| `${ITEM_FILE_BASENAME}` | Base filename without extension (only for `itemFiles` mode; resolves to empty string in `items` mode — a warning is logged if used with `items`) |
 
 ### Batch Processing Flow
 
@@ -797,12 +808,16 @@ Konfigo uses a structured error system. Each error includes:
 
 Source files are parsed concurrently using a worker pool sized to the number of CPU cores. Results are collected and merged in the original CLI-specified order to maintain deterministic precedence.
 
+### File Size Limits
+
+- Configuration files: **50 MiB** maximum (larger files are rejected)
+- Schema files: **10 MiB** maximum
+
 ### Memory Optimizations
 
-- **Buffer pooling**: `sync.Pool` with 64KB buffers for file reads
-- **Buffered reading**: Direct read for files < 1MB, buffered for larger files
 - **Native deep copy**: Optimized copying for common types (maps, slices, primitives) with JSON-based fallback
-- **String pooling**: Deduplication of repeated string values
+- **Regex caching**: Compiled regex patterns cached (bounded to 500 entries)
+- **Array merge guard**: Arrays >1,000 elements skip O(n*m) deduplication during union merge
 
 ---
 
@@ -916,7 +931,7 @@ internal/
                          addKeySuffix, deleteKey, setValue, trim, replaceKey
     validator/         - Validation: required, type, min, max, minLength, enum, regex
     input_schema/      - Input schema validation
-  util/                - Nested value ops, deep copy, type inference, string pooling
+  util/                - Nested value ops, deep copy, type inference
 ```
 
 ### Execution Flow
