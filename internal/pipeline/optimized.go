@@ -11,18 +11,12 @@ import (
 // OptimizedFileProcessor provides optimized parallel file processing
 type OptimizedFileProcessor struct {
 	numWorkers int
-	pool       sync.Pool
 }
 
 // NewOptimizedFileProcessor creates a new optimized file processor
 func NewOptimizedFileProcessor() *OptimizedFileProcessor {
 	return &OptimizedFileProcessor{
 		numWorkers: runtime.NumCPU(),
-		pool: sync.Pool{
-			New: func() interface{} {
-				return make([]byte, 0, 64*1024) // 64KB initial capacity
-			},
-		},
 	}
 }
 
@@ -75,17 +69,8 @@ func (ofp *OptimizedFileProcessor) ProcessFiles(entries []sourceEntry, formatOve
 	return parsedResults
 }
 
-// processFile processes a single file with memory optimization
+// processFile processes a single file
 func (ofp *OptimizedFileProcessor) processFile(path string, formatOverride string) parseResult {
-	// Get buffer from pool
-	bufferInterface := ofp.pool.Get()
-	buffer := bufferInterface.([]byte)
-	defer func() {
-		// Reset buffer and return to pool
-		buffer = buffer[:0]
-		ofp.pool.Put(buffer)
-	}()
-
 	content, err := reader.ReadFile(path)
 	if err != nil {
 		logger.Debug("Failed to read file %s: %v", path, err)
@@ -96,44 +81,3 @@ func (ofp *OptimizedFileProcessor) processFile(path string, formatOverride strin
 	return parseResult{FilePath: path, Data: data, Err: err}
 }
 
-// BatchProcessor provides optimized batch processing with memory management
-type BatchProcessor struct {
-	maxBatchSize    int
-	memoryThreshold int64 // in bytes
-}
-
-// NewBatchProcessor creates a new batch processor
-func NewBatchProcessor() *BatchProcessor {
-	return &BatchProcessor{
-		maxBatchSize:    runtime.NumCPU() * 2,
-		memoryThreshold: 100 * 1024 * 1024, // 100MB
-	}
-}
-
-// ProcessInBatches processes items in memory-efficient batches
-func (bp *BatchProcessor) ProcessInBatches(items []interface{}, processor func(item interface{}) error) error {
-	batchSize := bp.maxBatchSize
-
-	for i := 0; i < len(items); i += batchSize {
-		end := i + batchSize
-		if end > len(items) {
-			end = len(items)
-		}
-
-		batch := items[i:end]
-
-		// Process batch
-		for _, item := range batch {
-			if err := processor(item); err != nil {
-				return err
-			}
-		}
-
-		// Force garbage collection between batches for memory management
-		if i%bp.maxBatchSize == 0 {
-			runtime.GC()
-		}
-	}
-
-	return nil
-}

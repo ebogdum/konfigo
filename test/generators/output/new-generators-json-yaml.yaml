@@ -1,17 +1,17 @@
 code:
-  alpha: AJXdDH
+  alpha: DABlDy
 config:
   enabled: true
-  randomBytes: 367b1b47a4e955f492b80e470aae9dcb
-  randomFloat: "0.046953"
+  randomBytes: 942c4b827ef793bcd1944e4ca3c4c5f9
+  randomFloat: "0.260342"
 environment: testing
 instance:
-  id: b11jZY4TQ7sT
+  id: 1mP5CaehJvRo
 metadata:
   author: konfigo-test
-  createdAt: "2026-02-24T19:30:47Z"
+  createdAt: "2026-04-02T15:45:14Z"
 order:
-  number: "41229045"
+  number: "24146589"
 service:
   name: test-service
   version: 2.1.0

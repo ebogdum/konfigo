@@ -5,4 +5,4 @@ features:
   cache: true
 service:
   environment: production
-  name: should-not-work
+  name: base-service

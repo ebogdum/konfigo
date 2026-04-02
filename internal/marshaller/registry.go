@@ -57,9 +57,11 @@ func (r *Registry) GetFormats() []string {
 	return formats
 }
 
+// packageRegistry is a package-level registry for format lookups.
+var packageRegistry = NewRegistry()
+
 // IsFormatSupported checks if the given format is supported.
 func IsFormatSupported(format string) bool {
-	defaultRegistry := NewRegistry()
-	_, exists := defaultRegistry.Get(format)
+	_, exists := packageRegistry.Get(format)
 	return exists
 }

@@ -32,13 +32,3 @@ func WriteToStdout(content []byte) error {
 	return nil
 }
 
-// WriteMultipleFiles writes content to multiple files.
-// It returns an error if any file fails to write.
-func WriteMultipleFiles(files map[string][]byte) error {
-	for filePath, content := range files {
-		if err := WriteFile(filePath, content); err != nil {
-			return errors.WrapError(errors.ErrorTypeFileWrite, "failed to write file", err).WithContext("file", filePath)
-		}
-	}
-	return nil
-}

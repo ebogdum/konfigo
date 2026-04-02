@@ -42,6 +42,34 @@ func (g *ConcatGenerator) Generate(config map[string]interface{}, def Definition
 	replacer := strings.NewReplacer(replacerArgs...)
 	result := replacer.Replace(def.Format)
 
+	// Check for any remaining unresolved {PLACEHOLDER} patterns in the result.
+	// strings.NewReplacer leaves unmatched patterns as-is, so any {name} still
+	// present after replacement is a missing source definition.
+	// Skip ${VAR} patterns — those are variable substitution placeholders, not concat sources.
+	var unresolvedPlaceholders []string
+	remaining := result
+	for {
+		openIdx := strings.Index(remaining, "{")
+		if openIdx < 0 {
+			break
+		}
+		closeIdx := strings.Index(remaining[openIdx:], "}")
+		if closeIdx < 0 {
+			break
+		}
+		placeholder := remaining[openIdx : openIdx+closeIdx+1]
+		// Skip ${VAR} variable substitution patterns (preceded by $)
+		if openIdx > 0 && remaining[openIdx-1] == '$' {
+			remaining = remaining[openIdx+closeIdx+1:]
+			continue
+		}
+		unresolvedPlaceholders = append(unresolvedPlaceholders, placeholder)
+		remaining = remaining[openIdx+closeIdx+1:]
+	}
+	if len(unresolvedPlaceholders) > 0 {
+		return fmt.Errorf("concat generator: unresolved placeholder(s) %s in format string — no matching source defined", strings.Join(unresolvedPlaceholders, ", "))
+	}
+
 	// Substitute any global variables in the final result
 	if resolver != nil {
 		result = resolver.SubstituteString(result)

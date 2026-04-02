@@ -1,7 +1,7 @@
 apiVersion: "konfigo/v1alpha1"
 
 outputSchema:
-  path: "schemas/output-schema.json"
+  path: "../schemas/output-schema.json"
 
 vars:
   - name: "API_VERSION"

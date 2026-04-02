@@ -212,7 +212,8 @@ func captureStackTrace(skip int) []string {
 
 	for {
 		frame, more := frames.Next()
-		if !strings.Contains(frame.File, "runtime/") {
+		// Skip Go runtime and standard library frames
+		if !strings.Contains(frame.File, "runtime/") && !strings.Contains(frame.File, "/go/src/") {
 			trace = append(trace, fmt.Sprintf("%s:%d %s", frame.File, frame.Line, frame.Function))
 		}
 		if !more {

@@ -1,162 +1,12 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"konfigo/internal/logger"
-	"konfigo/internal/parser"
-	"konfigo/internal/reader"
 	"konfigo/internal/schema"
-	"path/filepath"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 )
-
-// BatchProcessor handles forEach batch processing.
-type BatchProcessor struct{}
-
-// NewBatchProcessor creates a new batch processor.
-func NewBatchProcessor() *BatchProcessor {
-	return &BatchProcessor{}
-}
-
-// ProcessResult contains the result of batch processing.
-type ProcessResult struct {
-	OutputFiles []string
-	Errors      []error
-}
-
-// Process executes batch processing using the forEach directive.
-func (bp *BatchProcessor) Process(
-	forEachConfig *schema.KonfigoForEach,
-	baseConfig map[string]interface{},
-	schemaFile *schema.Schema,
-	varsFromFile map[string]interface{},
-	envVarsForSchema map[string]string,
-) (*ProcessResult, error) {
-
-	if forEachConfig == nil {
-		return nil, errors.New("forEach configuration is nil")
-	}
-
-	// Validate the forEach configuration
-	if err := bp.validateForEachConfig(forEachConfig); err != nil {
-		return nil, err
-	}
-
-	logger.Log("Starting batch processing with forEach...")
-
-	result := &ProcessResult{
-		OutputFiles: []string{},
-		Errors:      []error{},
-	}
-
-	if len(forEachConfig.Items) > 0 {
-		logger.Debug("Iterating using 'items' from forEach.")
-		bp.processItems(forEachConfig, baseConfig, schemaFile, varsFromFile, envVarsForSchema, result)
-	} else if len(forEachConfig.ItemFiles) > 0 {
-		logger.Debug("Iterating using 'itemFiles' from forEach.")
-		bp.processItemFiles(forEachConfig, baseConfig, schemaFile, varsFromFile, envVarsForSchema, result)
-	}
-
-	return result, nil
-}
-
-// validateForEachConfig validates the forEach configuration.
-func (bp *BatchProcessor) validateForEachConfig(forEachConfig *schema.KonfigoForEach) error {
-	hasItems := len(forEachConfig.Items) > 0
-	hasItemFiles := len(forEachConfig.ItemFiles) > 0
-
-	if hasItems && hasItemFiles {
-		return errors.New("forEach cannot have both 'items' and 'itemFiles' defined simultaneously")
-	}
-	if !hasItems && !hasItemFiles {
-		return errors.New("forEach must define either 'items' or 'itemFiles'")
-	}
-	if forEachConfig.Output.FilenamePattern == "" {
-		return errors.New("forEach.output.filenamePattern is required")
-	}
-
-	return nil
-}
-
-// processItems processes the items array from forEach.
-func (bp *BatchProcessor) processItems(
-	forEachConfig *schema.KonfigoForEach,
-	baseConfig map[string]interface{},
-	schemaFile *schema.Schema,
-	varsFromFile map[string]interface{},
-	envVarsForSchema map[string]string,
-	result *ProcessResult,
-) {
-	for i, item := range forEachConfig.Items {
-		if err := bp.processIteration(i, item, "", forEachConfig, baseConfig, schemaFile, varsFromFile, envVarsForSchema, result); err != nil {
-			result.Errors = append(result.Errors, fmt.Errorf("iteration %d failed: %w", i, err))
-		}
-	}
-}
-
-// processItemFiles processes the itemFiles array from forEach.
-func (bp *BatchProcessor) processItemFiles(
-	forEachConfig *schema.KonfigoForEach,
-	baseConfig map[string]interface{},
-	schemaFile *schema.Schema,
-	varsFromFile map[string]interface{},
-	envVarsForSchema map[string]string,
-	result *ProcessResult,
-) {
-	for i, itemFile := range forEachConfig.ItemFiles {
-		// Load item data from file
-		itemContent, err := reader.ReadFile(itemFile)
-		if err != nil {
-			result.Errors = append(result.Errors, fmt.Errorf("failed to read item file %s: %w", itemFile, err))
-			continue
-		}
-
-		itemData, err := parser.Parse(itemFile, itemContent, "")
-		if err != nil {
-			result.Errors = append(result.Errors, fmt.Errorf("failed to parse item file %s: %w", itemFile, err))
-			continue
-		}
-
-		// Get base filename without extension for pattern resolution
-		itemFileBasename := strings.TrimSuffix(filepath.Base(itemFile), filepath.Ext(itemFile))
-
-		if err := bp.processIteration(i, itemData, itemFileBasename, forEachConfig, baseConfig, schemaFile, varsFromFile, envVarsForSchema, result); err != nil {
-			result.Errors = append(result.Errors, fmt.Errorf("iteration %d (file %s) failed: %w", i, itemFile, err))
-		}
-	}
-}
-
-// processIteration processes a single iteration of the batch.
-func (bp *BatchProcessor) processIteration(
-	index int,
-	iterVars map[string]interface{},
-	itemFileBasename string,
-	forEachConfig *schema.KonfigoForEach,
-	baseConfig map[string]interface{},
-	schemaFile *schema.Schema,
-	varsFromFile map[string]interface{},
-	envVarsForSchema map[string]string,
-	result *ProcessResult,
-) error {
-	// This is a placeholder for the actual iteration processing logic
-	// In the real implementation, this would:
-	// 1. Resolve the filename pattern with variables
-	// 2. Create a copy of the base config
-	// 3. Merge iteration variables
-	// 4. Apply schema processing
-	// 5. Write the output file
-
-	logger.Debug("Processing iteration %d", index)
-
-	// For now, just track that we processed this iteration
-	// The actual implementation would need to be integrated with
-	// the existing processing logic from main.go
-
-	return nil
-}
 
 // ExtractForEachFromVars extracts forEach directive from variables file.
 func ExtractForEachFromVars(varsFromFile map[string]interface{}) (*schema.KonfigoForEach, map[string]interface{}, error) {
@@ -176,6 +26,10 @@ func ExtractForEachFromVars(varsFromFile map[string]interface{}) (*schema.Konfig
 				return nil, nil, fmt.Errorf("failed to marshal forEach directive: %w", err)
 			}
 
+			const maxForEachSize = 10 * 1024 * 1024 // 10 MiB
+			if len(yamlBytes) > maxForEachSize {
+				return nil, nil, fmt.Errorf("forEach directive exceeds maximum allowed size of %d bytes", maxForEachSize)
+			}
 			forEachConfig = &schema.KonfigoForEach{}
 			if err := yaml.Unmarshal(yamlBytes, forEachConfig); err != nil {
 				return nil, nil, fmt.Errorf("failed to unmarshal forEach directive: %w", err)

@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"konfigo/internal/logger"
 	"konfigo/internal/util"
-	"math/rand"
+	mrand "math/rand"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -38,15 +39,16 @@ func (g *IdGenerator) Generate(config map[string]interface{}, def Definition, re
 		format = "simple:8" // Default format
 	}
 
-	// Initialize random seed based on current time
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rng, err := newCryptoRand()
+	if err != nil {
+		return fmt.Errorf("id generator: %w", err)
+	}
 
 	var result string
-	var err error
 
 	switch {
 	case format == "sequential":
-		result = generateSequentialId(config, def.TargetPath)
+		result = generateSequentialId(def.TargetPath)
 	case format == "timestamp":
 		result = generateTimestampId(rng)
 	case len(format) >= 7 && format[:7] == "simple:":
@@ -78,7 +80,7 @@ func (g *IdGenerator) Generate(config map[string]interface{}, def Definition, re
 }
 
 // generateSimpleId creates a simple random ID using [a-zA-Z0-9]
-func generateSimpleId(rng *rand.Rand, params string) (string, error) {
+func generateSimpleId(rng *mrand.Rand, params string) (string, error) {
 	length, err := strconv.Atoi(params)
 	if err != nil {
 		return "", fmt.Errorf("invalid length '%s': %w", params, err)
@@ -98,7 +100,7 @@ func generateSimpleId(rng *rand.Rand, params string) (string, error) {
 }
 
 // generatePrefixId creates an ID with a prefix followed by random characters
-func generatePrefixId(rng *rand.Rand, params string) (string, error) {
+func generatePrefixId(rng *mrand.Rand, params string) (string, error) {
 	parts := strings.SplitN(params, ":", 2)
 	if len(parts) != 2 {
 		return "", fmt.Errorf("prefix format requires 'prefix:length', got '%s'", params)
@@ -124,7 +126,7 @@ func generatePrefixId(rng *rand.Rand, params string) (string, error) {
 }
 
 // generateNumericId creates a numeric ID using only digits [0-9]
-func generateNumericId(rng *rand.Rand, params string) (string, error) {
+func generateNumericId(rng *mrand.Rand, params string) (string, error) {
 	length, err := strconv.Atoi(params)
 	if err != nil {
 		return "", fmt.Errorf("invalid length '%s': %w", params, err)
@@ -144,7 +146,7 @@ func generateNumericId(rng *rand.Rand, params string) (string, error) {
 }
 
 // generateAlphaId creates an alphabetic ID using only letters [a-zA-Z]
-func generateAlphaId(rng *rand.Rand, params string) (string, error) {
+func generateAlphaId(rng *mrand.Rand, params string) (string, error) {
 	length, err := strconv.Atoi(params)
 	if err != nil {
 		return "", fmt.Errorf("invalid length '%s': %w", params, err)
@@ -163,31 +165,24 @@ func generateAlphaId(rng *rand.Rand, params string) (string, error) {
 	return string(result), nil
 }
 
+// sequentialCountersMu protects sequentialCounters from concurrent access.
+var sequentialCountersMu sync.Mutex
+
+// sequentialCounters tracks sequential ID counters outside of the user config
+// to avoid polluting the configuration data.
+var sequentialCounters = make(map[string]int)
+
 // generateSequentialId creates a sequential counter-based ID
-func generateSequentialId(config map[string]interface{}, targetPath string) string {
-	// Look for existing sequential counters in the config
-	counterPath := "_internal.sequentialCounters." + strings.ReplaceAll(targetPath, ".", "_")
-
-	counter, found := util.GetNestedValue(config, counterPath)
-	var nextId int
-	if !found {
-		nextId = 1
-	} else {
-		if currentId, ok := counter.(int); ok {
-			nextId = currentId + 1
-		} else {
-			nextId = 1
-		}
-	}
-
-	// Store the updated counter
-	util.SetNestedValue(config, counterPath, nextId)
-
-	return strconv.Itoa(nextId)
+func generateSequentialId(targetPath string) string {
+	sequentialCountersMu.Lock()
+	sequentialCounters[targetPath]++
+	id := sequentialCounters[targetPath]
+	sequentialCountersMu.Unlock()
+	return strconv.Itoa(id)
 }
 
 // generateTimestampId creates a timestamp-based ID
-func generateTimestampId(rng *rand.Rand) string {
+func generateTimestampId(rng *mrand.Rand) string {
 	timestamp := time.Now().Unix()
 
 	// Add a 4-character random suffix to ensure uniqueness

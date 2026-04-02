@@ -26,10 +26,16 @@ package cli
 
 import (
 	"flag"
+	"os"
 	"strings"
 
 	"konfigo/internal/errors"
 )
+
+// flagSet is the package-level flag set used for parsing.
+// Using a dedicated FlagSet instead of the global flag.CommandLine
+// allows tests to call ParseFlags multiple times without panicking.
+var flagSet *flag.FlagSet
 
 // Config holds all CLI flag values
 type Config struct {
@@ -60,39 +66,44 @@ type Config struct {
 	Help        bool
 }
 
-// ParseFlags parses command line flags and returns a Config struct
+// ParseFlags parses command line flags and returns a Config struct.
+// It creates a fresh FlagSet each time so the function is safe to call repeatedly in tests.
 func ParseFlags() (*Config, error) {
 	config := &Config{}
 
+	flagSet = flag.NewFlagSet("konfigo", flag.ContinueOnError)
+
 	// Schema & Variables
-	flag.StringVar(&config.SchemaFile, "schema", "", "Path to a schema file for processing the config.")
-	flag.StringVar(&config.SchemaFile, "S", "", "Path to a schema file (shorthand for --schema).")
-	flag.StringVar(&config.VarsFile, "vars-file", "", "Path to a file providing high-priority variables.")
-	flag.StringVar(&config.VarsFile, "V", "", "Path to a variables file (shorthand for --vars-file).")
+	flagSet.StringVar(&config.SchemaFile, "schema", "", "Path to a schema file for processing the config.")
+	flagSet.StringVar(&config.SchemaFile, "S", "", "Path to a schema file (shorthand for --schema).")
+	flagSet.StringVar(&config.VarsFile, "vars-file", "", "Path to a file providing high-priority variables.")
+	flagSet.StringVar(&config.VarsFile, "V", "", "Path to a variables file (shorthand for --vars-file).")
 
 	// Sources and Input
-	flag.StringVar(&config.SourcePaths, "s", "", "Comma-separated list of source files/directories. Use '-' for stdin.")
-	flag.BoolVar(&config.Recursive, "r", false, "Recursively search for configuration files in subdirectories")
-	flag.BoolVar(&config.CaseSensitive, "c", false, "Use case-sensitive key matching (default is case-insensitive)")
-	flag.BoolVar(&config.InputJSON, "sj", false, "Force input to be parsed as JSON (required for stdin)")
-	flag.BoolVar(&config.InputYAML, "sy", false, "Force input to be parsed as YAML (required for stdin)")
-	flag.BoolVar(&config.InputTOML, "st", false, "Force input to be parsed as TOML (required for stdin)")
-	flag.BoolVar(&config.InputENV, "se", false, "Force input to be parsed as ENV (required for stdin)")
+	flagSet.StringVar(&config.SourcePaths, "s", "", "Comma-separated list of source files/directories. Use '-' for stdin.")
+	flagSet.BoolVar(&config.Recursive, "r", false, "Recursively search for configuration files in subdirectories")
+	flagSet.BoolVar(&config.CaseSensitive, "c", false, "Use case-sensitive key matching (default is case-insensitive)")
+	flagSet.BoolVar(&config.InputJSON, "sj", false, "Force input to be parsed as JSON (required for stdin)")
+	flagSet.BoolVar(&config.InputYAML, "sy", false, "Force input to be parsed as YAML (required for stdin)")
+	flagSet.BoolVar(&config.InputTOML, "st", false, "Force input to be parsed as TOML (required for stdin)")
+	flagSet.BoolVar(&config.InputENV, "se", false, "Force input to be parsed as ENV (required for stdin)")
 
 	// Output
-	flag.StringVar(&config.OutputFile, "of", "", "Write output to file. Extension determines format, or use with -oX flags.")
-	flag.BoolVar(&config.OutputJSON, "oj", false, "Output in JSON format")
-	flag.BoolVar(&config.OutputYAML, "oy", false, "Output in YAML format")
-	flag.BoolVar(&config.OutputTOML, "ot", false, "Output in TOML format")
-	flag.BoolVar(&config.OutputENV, "oe", false, "Output in ENV format")
+	flagSet.StringVar(&config.OutputFile, "of", "", "Write output to file. Extension determines format, or use with -oX flags.")
+	flagSet.BoolVar(&config.OutputJSON, "oj", false, "Output in JSON format")
+	flagSet.BoolVar(&config.OutputYAML, "oy", false, "Output in YAML format")
+	flagSet.BoolVar(&config.OutputTOML, "ot", false, "Output in TOML format")
+	flagSet.BoolVar(&config.OutputENV, "oe", false, "Output in ENV format")
 
 	// Behavior and Logging
-	flag.BoolVar(&config.MergeArrays, "m", false, "Merge arrays by union with deduplication instead of replacing.")
-	flag.BoolVar(&config.Verbose, "v", false, "Enable informational (INFO) logging. Overrides default quiet behavior.")
-	flag.BoolVar(&config.Debug, "d", false, "Enable debug (DEBUG and INFO) logging. Overrides -v and default quiet behavior.")
-	flag.BoolVar(&config.Help, "h", false, "Show this help message.")
+	flagSet.BoolVar(&config.MergeArrays, "m", false, "Merge arrays by union with deduplication instead of replacing.")
+	flagSet.BoolVar(&config.Verbose, "v", false, "Enable informational (INFO) logging. Overrides default quiet behavior.")
+	flagSet.BoolVar(&config.Debug, "d", false, "Enable debug (DEBUG and INFO) logging. Overrides -v and default quiet behavior.")
+	flagSet.BoolVar(&config.Help, "h", false, "Show this help message.")
 
-	flag.Parse()
+	if err := flagSet.Parse(os.Args[1:]); err != nil {
+		return nil, errors.WrapError(errors.ErrorTypeCLIFlag, "failed to parse flags", err)
+	}
 
 	return config, nil
 }
@@ -113,15 +124,18 @@ func (c *Config) GetInputFormat() string {
 
 // GetSourcePaths returns the list of source paths, handling both -s flag and positional args
 func (c *Config) GetSourcePaths() string {
-	if c.SourcePaths == "" && flag.NArg() > 0 {
-		return strings.Join(flag.Args(), ",")
+	if c.SourcePaths == "" && flagSet != nil && flagSet.NArg() > 0 {
+		return strings.Join(flagSet.Args(), ",")
 	}
 	return c.SourcePaths
 }
 
 // ShouldShowHelp returns true if help should be displayed
 func (c *Config) ShouldShowHelp() bool {
-	return c.Help || (flag.NFlag() == 0 && flag.NArg() == 0)
+	if flagSet == nil {
+		return c.Help
+	}
+	return c.Help || (flagSet.NFlag() == 0 && flagSet.NArg() == 0)
 }
 
 // GetLoggerConfig returns the logger configuration based on debug/verbose flags
@@ -151,48 +165,3 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// ValidateSourcePaths validates the source paths for common issues
-func (c *Config) ValidateSourcePaths() error {
-	sourcePaths := c.GetSourcePaths()
-	if sourcePaths == "" {
-		return errors.NewError(errors.ErrorTypeCLIValidation, "no input source specified. Use -s <paths> or pipe from stdin")
-	}
-
-	sources := strings.Split(sourcePaths, ",")
-	for _, source := range sources {
-		source = strings.TrimSpace(source)
-		if source == "" {
-			continue
-		}
-
-		// If it's stdin, validate that a format is specified
-		if source == "-" {
-			inputFormat := c.GetInputFormat()
-			if inputFormat == "" {
-				return errors.NewError(errors.ErrorTypeCLIValidation, "when using stdin (-), an input format must be specified (-sj, -sy, -st, or -se)")
-			}
-		}
-	}
-
-	return nil
-}
-
-// ValidateOutputConfiguration validates output configuration for consistency
-func (c *Config) ValidateOutputConfiguration() error {
-	// Check for conflicting output format flags
-	outputFormats := []bool{c.OutputJSON, c.OutputYAML, c.OutputTOML, c.OutputENV}
-	outputCount := 0
-	for _, set := range outputFormats {
-		if set {
-			outputCount++
-		}
-	}
-
-	// Multiple output formats are allowed, but warn if both file and stdout outputs are mixed
-	if c.OutputFile != "" && outputCount > 0 {
-		// This is actually allowed - file output and stdout output can coexist
-		// Just ensure it's not confusing
-	}
-
-	return nil
-}

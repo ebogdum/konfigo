@@ -7,9 +7,13 @@ import (
 )
 
 // DetectFormat detects the file format from the file path extension.
+// Returns an empty string if the file has no extension.
 func DetectFormat(filePath string) string {
-	ext := strings.TrimPrefix(filepath.Ext(filePath), ".")
-	return strings.ToLower(ext)
+	raw := filepath.Ext(filePath)
+	if raw == "" {
+		return ""
+	}
+	return strings.ToLower(strings.TrimPrefix(raw, "."))
 }
 
 // IsFormatSupported checks if the given format is supported.

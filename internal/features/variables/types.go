@@ -5,7 +5,7 @@ import (
 )
 
 // VarRegex is the regular expression for matching variable placeholders like ${VAR_NAME}.
-var VarRegex = regexp.MustCompile(`\$\{[A-Z0-9_]+\}`)
+var VarRegex = regexp.MustCompile(`\$\{[A-Za-z0-9_]+\}`)
 
 // Definition defines a variable that can be used for substitution.
 type Definition struct {

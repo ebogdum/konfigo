@@ -49,6 +49,10 @@ func compareStructure(data, schema map[string]interface{}, path string, strict b
 
 // validateTypeMatch validates that data value type matches schema value type.
 func validateTypeMatch(dataVal, schemaVal interface{}, path string, strict bool) error {
+	if dataVal == nil {
+		return fmt.Errorf("input schema validation: path '%s' has null value, expected %v", path, reflect.TypeOf(schemaVal))
+	}
+
 	schemaType := reflect.TypeOf(schemaVal)
 	dataType := reflect.TypeOf(dataVal)
 

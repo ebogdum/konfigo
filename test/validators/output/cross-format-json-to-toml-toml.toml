@@ -1,19 +1,19 @@
 [cache]
-  maxSize = 1000000.0
-  ttl = 3600.0
+  maxSize = 1000000
+  ttl = 3600
   type = "redis"
 
 [database]
   host = "db.example.com"
-  port = 5432.0
+  port = 5432
   ssl = true
   timeout = 30.5
   [database.credentials]
     password = "complex_password123"
     username = "admin"
   [database.pools]
-    max = 100.0
-    min = 5.0
+    max = 100
+    min = 5
 
 [features]
   betaEnabled = true
@@ -21,7 +21,7 @@
 
 [metrics]
   enabled = true
-  interval = 60.0
+  interval = 60
   tags = ["env:prod", "service:user"]
 
 [service]
@@ -29,10 +29,10 @@
   debug = false
   environment = "prod"
   name = "user-service"
-  port = 8080.0
+  port = 8080
   version = "1.2.3"
 
 [timeouts]
   connect = 10.5
-  read = 30.0
-  write = 45.0
+  read = 30
+  write = 45

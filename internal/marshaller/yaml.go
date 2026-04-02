@@ -17,7 +17,9 @@ func (ym *YAMLMarshaller) Marshal(data map[string]interface{}) ([]byte, error) {
 	if err := encoder.Encode(data); err != nil {
 		return nil, err
 	}
-	encoder.Close()
+	if err := encoder.Close(); err != nil {
+		return nil, err
+	}
 	return buf.Bytes(), nil
 }
 

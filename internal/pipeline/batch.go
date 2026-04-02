@@ -17,6 +17,10 @@ import (
 	"strings"
 )
 
+// filenameVarRegex matches ${VAR_NAME} placeholders in filename patterns.
+// Compiled once at package level to avoid per-iteration regex compilation.
+var filenameVarRegex = regexp.MustCompile(`\$\{[A-Za-z0-9_]+\}`)
+
 // processBatch handles batch processing mode with forEach
 func (p *Pipeline) processBatch(baseFinalConfig map[string]interface{}, loadedSchema *schema.Schema, forEachDirective *schema.KonfigoForEach, envVarsForSchema map[string]string) error {
 	logger.Log("Starting batch processing with forEach...")
@@ -36,16 +40,19 @@ func (p *Pipeline) processBatch(baseFinalConfig map[string]interface{}, loadedSc
 
 	if len(forEachDirective.Items) > 0 {
 		logger.Debug("Iterating using 'items' from forEach.")
+		if strings.Contains(forEachDirective.Output.FilenamePattern, "${ITEM_FILE_BASENAME}") {
+			logger.Warn("forEach.output.filenamePattern uses ${ITEM_FILE_BASENAME} but 'items' mode is active — this placeholder will resolve to an empty string. Use 'itemFiles' instead or remove the placeholder.")
+		}
 		iterationSources = forEachDirective.Items
-		for range forEachDirective.Items { // Populate basenames with empty strings for 'items'
+		for range forEachDirective.Items {
 			itemFileBasenames = append(itemFileBasenames, "")
 		}
 	} else { // len(forEachDirective.ItemFiles) > 0
 		logger.Debug("Iterating using 'itemFiles' from forEach.")
 		for _, itemFilePath := range forEachDirective.ItemFiles {
-			fullItemFilePath := itemFilePath
-			if !filepath.IsAbs(itemFilePath) && p.Config.VarsFile != "" {
-				fullItemFilePath = filepath.Join(filepath.Dir(p.Config.VarsFile), itemFilePath)
+			fullItemFilePath, err := p.resolveItemFilePath(itemFilePath)
+			if err != nil {
+				return err
 			}
 			logger.Debug("Loading iteration variables from itemFile: %s", fullItemFilePath)
 			content, err := reader.ReadFile(fullItemFilePath)
@@ -116,6 +123,46 @@ func (p *Pipeline) processBatch(baseFinalConfig map[string]interface{}, loadedSc
 	return nil
 }
 
+// resolveItemFilePath resolves and validates an itemFile path, preventing path traversal.
+func (p *Pipeline) resolveItemFilePath(itemFilePath string) (string, error) {
+	fullItemFilePath := itemFilePath
+	if !filepath.IsAbs(itemFilePath) {
+		if p.Config.VarsFile == "" {
+			return "", errors.NewError(errors.ErrorTypeCLIValidation, "itemFiles with relative paths require a vars file (-V) to resolve against")
+		}
+		fullItemFilePath = filepath.Join(filepath.Dir(p.Config.VarsFile), itemFilePath)
+	}
+
+	// Resolve symlinks to prevent containment bypass, then validate
+	absItemPath, err := filepath.Abs(fullItemFilePath)
+	if err != nil {
+		return "", errors.WrapError(errors.ErrorTypeFileRead, "failed to resolve itemFile path", err).WithContext("file", itemFilePath)
+	}
+	// Resolve symlinks on the parent directory (the file itself may not exist yet for validation)
+	realItemPath, err := filepath.EvalSymlinks(filepath.Dir(absItemPath))
+	if err != nil {
+		return "", errors.WrapError(errors.ErrorTypeFileRead, "failed to resolve itemFile symlinks", err).WithContext("file", itemFilePath)
+	}
+	realItemPath = filepath.Join(realItemPath, filepath.Base(absItemPath))
+
+	// Only enforce containment when we have a vars file to contain against
+	if p.Config.VarsFile != "" {
+		allowedBase, err := filepath.Abs(filepath.Dir(p.Config.VarsFile))
+		if err != nil {
+			return "", errors.WrapError(errors.ErrorTypeFileRead, "failed to resolve vars file directory", err)
+		}
+		realAllowedBase, err := filepath.EvalSymlinks(allowedBase)
+		if err != nil {
+			return "", errors.WrapError(errors.ErrorTypeFileRead, "failed to resolve vars directory symlinks", err)
+		}
+		if !strings.HasPrefix(realItemPath, realAllowedBase+string(filepath.Separator)) && realItemPath != realAllowedBase {
+			return "", errors.NewErrorf(errors.ErrorTypeCLIValidation, "itemFile path %q escapes the vars file directory %q", itemFilePath, realAllowedBase)
+		}
+	}
+
+	return realItemPath, nil
+}
+
 // resolveFilenamePattern substitutes placeholders in the filename pattern.
 // Placeholders: ${VAR_NAME}, ${ITEM_INDEX}, ${ITEM_FILE_BASENAME}
 func resolveFilenamePattern(pattern string, iterVars map[string]interface{}, envVarsForSchema map[string]string, schemaVars []variables.Definition, itemIndex int, itemFileBasename string) (string, error) {
@@ -132,38 +179,63 @@ func resolveFilenamePattern(pattern string, iterVars map[string]interface{}, env
 		resolvedPattern = strings.ReplaceAll(resolvedPattern, "${ITEM_FILE_BASENAME}", "")
 	}
 
-	// Regex to find ${VAR_NAME}
-	varRegex := regexp.MustCompile(`\$\{[A-Z0-9_]+\}`)
-
-	resolvedPattern = varRegex.ReplaceAllStringFunc(resolvedPattern, func(match string) string {
+	var unresolvedVars []string
+	resolvedPattern = filenameVarRegex.ReplaceAllStringFunc(resolvedPattern, func(match string) string {
 		varName := strings.TrimSuffix(strings.TrimPrefix(match, "${"), "}")
 
 		// 1. Check iterVars (highest priority for filename context)
 		if val, ok := iterVars[varName]; ok {
-			return fmt.Sprintf("%v", val)
+			strVal := fmt.Sprintf("%v", val)
+			// Reject variable values containing path traversal components
+			if strings.Contains(strVal, "..") || filepath.IsAbs(strVal) {
+				unresolvedVars = append(unresolvedVars, fmt.Sprintf("%s (unsafe path component)", match))
+				return ""
+			}
+			return strVal
 		}
 		// 2. Check envVarsForSchema (KONFIGO_VAR_...)
 		if val, ok := envVarsForSchema[varName]; ok {
+			if strings.Contains(val, "..") || filepath.IsAbs(val) {
+				unresolvedVars = append(unresolvedVars, fmt.Sprintf("%s (unsafe path component)", match))
+				return ""
+			}
 			return val
 		}
 		// 3. Check schemaVars (default values or simple values if not from env/path)
 		for _, sv := range schemaVars {
 			if sv.Name == varName {
-				if sv.Value != "" { // Only use direct value or default for simplicity in filename
-					return sv.Value
+				val := sv.Value
+				if val == "" {
+					val = sv.DefaultValue
 				}
-				if sv.DefaultValue != "" {
-					return sv.DefaultValue
+				if val != "" {
+					if strings.Contains(val, "..") || filepath.IsAbs(val) {
+						unresolvedVars = append(unresolvedVars, fmt.Sprintf("%s (unsafe path component from schema var)", match))
+						return ""
+					}
+					return val
 				}
 			}
 		}
-		// Log error and replace with empty string if not found
-		logger.Log("ERROR: Variable %s in filenamePattern not found, replacing with empty string.", match)
-		return "" // Replace unresolved variable with an empty string
+		// Collect all unresolved variable names
+		unresolvedVars = append(unresolvedVars, match)
+		return ""
 	})
 
-	// Clean up path, e.g. remove double slashes if a variable was empty
+	if len(unresolvedVars) > 0 {
+		return "", fmt.Errorf("unresolved variables in filenamePattern: %s", strings.Join(unresolvedVars, ", "))
+	}
+
+	// Clean up path
 	resolvedPattern = filepath.Clean(resolvedPattern)
+
+	// Final safety check: reject patterns that resolve to absolute paths or escape upward
+	if filepath.IsAbs(resolvedPattern) {
+		return "", fmt.Errorf("resolved filenamePattern %q must be a relative path", resolvedPattern)
+	}
+	if strings.HasPrefix(resolvedPattern, "..") {
+		return "", fmt.Errorf("resolved filenamePattern %q escapes the output directory", resolvedPattern)
+	}
 
 	return resolvedPattern, nil
 }

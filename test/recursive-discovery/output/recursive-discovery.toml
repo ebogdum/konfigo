@@ -11,7 +11,7 @@ DATABASE_SLOW_QUERY_THRESHOLD = "1000"
   environment = "development"
   features = ["authentication", "logging", "monitoring"]
   name = "base-application"
-  port = 8080.0
+  port = 8080
   version = "1.0.0"
   [app.config]
     max_connections = 1000
@@ -45,7 +45,7 @@ DATABASE_SLOW_QUERY_THRESHOLD = "1000"
   [services.auth]
     enabled = true
     provider = "oauth2"
-    timeout = 10.0
+    timeout = 10
     [services.auth.jwt]
       algorithm = "HS256"
       expiration = 86400
@@ -66,7 +66,7 @@ DATABASE_SLOW_QUERY_THRESHOLD = "1000"
   [services.cache]
     enabled = true
     provider = "redis"
-    ttl = 3600.0
+    ttl = 3600
     [services.cache.redis]
       database = 0
       host = "redis.example.com"
@@ -79,5 +79,5 @@ DATABASE_SLOW_QUERY_THRESHOLD = "1000"
       max_memory = "512mb"
   [services.monitoring]
     enabled = true
-    interval = 30.0
+    interval = 30
     provider = "prometheus"

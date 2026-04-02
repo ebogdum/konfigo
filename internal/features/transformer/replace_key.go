@@ -28,6 +28,11 @@ func (t *ReplaceKeyTransformer) Transform(config map[string]interface{}, def Def
 		return fmt.Errorf("replaceKey: target path '%s' not found", def.Target)
 	}
 
+	// Check if destination path exists — warn if not, as this creates a new key
+	if _, exists := util.GetNestedValue(config, def.Path); !exists {
+		logger.Warn("replaceKey: destination path '%s' does not exist, creating new key", def.Path)
+	}
+
 	// Set the target value at the main path
 	util.SetNestedValue(config, def.Path, targetValue)
 

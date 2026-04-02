@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync/atomic"
 )
 
 // LogLevel represents the severity of a log message.
@@ -39,41 +40,43 @@ func (l LogLevel) String() string {
 }
 
 var (
-	isVerbose = false
-	isQuiet   = false
-	logger    = log.New(os.Stderr, "", log.LstdFlags)
+	verboseFlag atomic.Bool
+	quietFlag   atomic.Bool
+	logWriter   = log.New(os.Stderr, "", log.LstdFlags)
 )
 
 // Init initializes the logger with the desired verbosity settings.
-func Init(verbose, quiet bool) {
-	isVerbose = verbose
-	isQuiet = quiet
+// When debug is true, DEBUG-level messages are printed.
+// When quiet is true, INFO-level messages are suppressed.
+func Init(debug, quiet bool) {
+	verboseFlag.Store(debug)
+	quietFlag.Store(quiet)
 }
 
 // Log prints a standard log message, unless in quiet mode.
 func Log(format string, v ...interface{}) {
-	if !isQuiet {
-		logger.Printf(format, v...)
+	if !quietFlag.Load() {
+		logWriter.Printf(format, v...)
 	}
 }
 
 // Debug prints a verbose/debug message, only if in verbose mode.
 func Debug(format string, v ...interface{}) {
-	if isVerbose {
-		logger.Printf("DEBUG: "+format, v...)
+	if verboseFlag.Load() {
+		logWriter.Printf("DEBUG: "+format, v...)
 	}
 }
 
-// Warn prints a warning message, only if in verbose mode.
+// Warn prints a warning message unless in quiet mode.
 func Warn(format string, v ...interface{}) {
-	if isVerbose {
-		logger.Printf("WARN: "+format, v...)
+	if !quietFlag.Load() {
+		logWriter.Printf("WARN: "+format, v...)
 	}
 }
 
 // Error prints an error message unconditionally.
 func Error(format string, v ...interface{}) {
-	logger.Printf("ERROR: "+format, v...)
+	logWriter.Printf("ERROR: "+format, v...)
 }
 
 // LogAtLevel logs a message at the specified level.
@@ -92,17 +95,17 @@ func LogAtLevel(level LogLevel, format string, v ...interface{}) {
 
 // IsVerbose returns true if verbose logging is enabled.
 func IsVerbose() bool {
-	return isVerbose
+	return verboseFlag.Load()
 }
 
 // IsQuiet returns true if quiet mode is enabled.
 func IsQuiet() bool {
-	return isQuiet
+	return quietFlag.Load()
 }
 
 // SetOutput sets the output destination for the logger.
 func SetOutput(output *os.File) {
-	logger.SetOutput(output)
+	logWriter.SetOutput(output)
 }
 
 // Logf is a convenience function for formatted logging.

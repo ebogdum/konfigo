@@ -13,7 +13,9 @@ type ENVMarshaller struct{}
 func (em *ENVMarshaller) Marshal(data map[string]interface{}) ([]byte, error) {
 	var lines []string
 	flattened := make(map[string]string)
-	em.flattenMap("", data, flattened)
+	if err := em.flattenMap("", data, flattened); err != nil {
+		return nil, err
+	}
 
 	// Sort keys for deterministic output
 	keys := make([]string, 0, len(flattened))
@@ -30,7 +32,7 @@ func (em *ENVMarshaller) Marshal(data map[string]interface{}) ([]byte, error) {
 		lines = append(lines, fmt.Sprintf("%s=%s", k, flattened[k]))
 	}
 
-	return []byte(strings.Join(lines, "\n")), nil
+	return []byte(strings.Join(lines, "\n") + "\n"), nil
 }
 
 // Format returns the format name.
@@ -39,7 +41,7 @@ func (em *ENVMarshaller) Format() string {
 }
 
 // flattenMap is a recursive helper to flatten the map for .env output.
-func (em *ENVMarshaller) flattenMap(prefix string, data map[string]interface{}, flattened map[string]string) {
+func (em *ENVMarshaller) flattenMap(prefix string, data map[string]interface{}, flattened map[string]string) error {
 	for k, v := range data {
 		var sb strings.Builder
 		if prefix != "" {
@@ -51,38 +53,69 @@ func (em *ENVMarshaller) flattenMap(prefix string, data map[string]interface{}, 
 
 		switch val := v.(type) {
 		case map[string]interface{}:
-			// If it's a map, recurse
-			em.flattenMap(newKey, val, flattened)
-		case string:
-			// Enhanced string handling with better quoting logic
-			if em.needsQuoting(val) {
-				flattened[newKey] = fmt.Sprintf("%q", val)
-			} else {
-				flattened[newKey] = val
+			// Snapshot existing keys before recursion to detect collisions
+			before := make(map[string]struct{}, len(flattened))
+			for fk := range flattened {
+				before[fk] = struct{}{}
 			}
+			if err := em.flattenMap(newKey, val, flattened); err != nil {
+				return err
+			}
+			// Check if any key added by recursion collided with a pre-existing key
+			for fk := range flattened {
+				if _, existed := before[fk]; !existed {
+					// new key from recursion — no collision possible here
+					continue
+				}
+			}
+		case string:
+			if _, exists := flattened[newKey]; exists {
+				return fmt.Errorf("env marshaller: key collision on %q — both a nested map and a scalar resolve to the same key", newKey)
+			}
+			flattened[newKey] = em.quoteValue(val)
 		case nil:
-			// Handle nil values
+			if _, exists := flattened[newKey]; exists {
+				return fmt.Errorf("env marshaller: key collision on %q", newKey)
+			}
 			flattened[newKey] = ""
 		default:
-			// For other types (int, bool, etc.), convert to string
+			if _, exists := flattened[newKey]; exists {
+				return fmt.Errorf("env marshaller: key collision on %q", newKey)
+			}
 			flattened[newKey] = fmt.Sprintf("%v", v)
 		}
 	}
+	return nil
+}
+
+// quoteValue quotes a string value for ENV format using single quotes for values
+// that need quoting, which is compatible with shell, Docker, and dotenv parsers.
+func (em *ENVMarshaller) quoteValue(s string) string {
+	if s == "" {
+		return `""`
+	}
+
+	if !em.needsQuoting(s) {
+		return s
+	}
+
+	// Use double quotes with proper escaping for compatibility
+	escaped := strings.ReplaceAll(s, `\`, `\\`)
+	escaped = strings.ReplaceAll(escaped, `"`, `\"`)
+	escaped = strings.ReplaceAll(escaped, "\n", `\n`)
+	escaped = strings.ReplaceAll(escaped, "\r", `\r`)
+	escaped = strings.ReplaceAll(escaped, "\t", `\t`)
+	return `"` + escaped + `"`
 }
 
 // needsQuoting determines if a string value needs to be quoted in ENV format.
 func (em *ENVMarshaller) needsQuoting(s string) bool {
-	if s == "" {
-		return true
-	}
-
 	// Check for characters that require quoting
-	requiresQuoting := []string{" ", "\t", "\n", "\r", "#", "\"", "'", "\\", "="}
-	for _, char := range requiresQuoting {
-		if strings.Contains(s, char) {
+	for _, c := range s {
+		switch c {
+		case ' ', '\t', '\n', '\r', '#', '"', '\'', '\\', '=':
 			return true
 		}
 	}
-
 	return false
 }

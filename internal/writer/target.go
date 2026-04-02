@@ -37,9 +37,9 @@ func DetermineOutputTargets(outputFile string, outJSON bool, outYAML bool, outTO
 		targets = append(targets, OutputTarget{Format: "env"})
 	}
 
-	// Default to JSON if no format specified
+	// Default to YAML if no format specified (consistent with pipeline default)
 	if len(targets) == 0 {
-		targets = append(targets, OutputTarget{Format: "json"})
+		targets = append(targets, OutputTarget{Format: "yaml"})
 	}
 
 	// If output file is specified without extension, create filenames for each format
