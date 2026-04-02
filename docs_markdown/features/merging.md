@@ -112,11 +112,20 @@ features:
   - monitoring
 ```
 
+::: info Performance Note
+For very large arrays (over 1,000 elements per side), deduplication is automatically skipped to avoid performance degradation. In this case, elements are simply appended.
+:::
+
 ## Case Sensitivity
 
 By default, Konfigo uses case-insensitive key matching. Use `-c` flag for case-sensitive mode.
 
 ### Case-Insensitive (Default)
+
+::: tip Key Casing
+In case-insensitive mode, when keys differ only in casing, the **last source's casing wins**. For example, if file A has `DatabaseHost` and file B has `databasehost`, the final key will be `databasehost`. Enable debug logging (`-d`) to see when key casing changes during merge.
+:::
+
 ```bash
 # These keys are treated as the same
 konfigo -s config1.json,config2.json
@@ -177,7 +186,7 @@ konfigo -s base.json,override.json
 
 ## Immutable Paths
 
-The schema can define paths as immutable, preventing later sources from overriding earlier values:
+The schema can define paths as immutable, preventing later sources from overriding earlier values. Immutable protection also extends to all child paths — marking `service` as immutable also protects `service.name`, `service.port`, etc.
 
 ```yaml
 # schema.yml

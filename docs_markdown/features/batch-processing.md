@@ -96,7 +96,11 @@ environment: production
 Each iteration has access to special built-in variables:
 
 - `${ITEM_INDEX}` - Zero-based iteration index (0, 1, 2, ...)
-- `${ITEM_FILE_BASENAME}` - Filename without extension (for itemFiles mode)
+- `${ITEM_FILE_BASENAME}` - Filename without extension (only for `itemFiles` mode; resolves to empty string in `items` mode)
+
+::: warning ITEM_FILE_BASENAME with items mode
+Using `${ITEM_FILE_BASENAME}` in `filenamePattern` when using `items` (not `itemFiles`) will produce an empty string, which may result in unexpected paths like `output//config.yaml`. Konfigo will log a warning when this is detected.
+:::
 
 ## Real-World Example
 
