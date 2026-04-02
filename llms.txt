@@ -7,7 +7,9 @@
 Konfigo is a standalone Go binary. Build from source:
 
 ```bash
-go build -o konfigo cmd/konfigo/main.go
+git clone https://github.com/ebogdum/konfigo.git
+cd konfigo
+go build -o konfigo ./cmd/konfigo
 ```
 
 Pre-built binaries are available for Linux (amd64/arm64), macOS (amd64/arm64), Windows (amd64/arm64), FreeBSD (amd64/arm64), and more via GitHub Releases.
@@ -50,7 +52,7 @@ konfigo [flags]
 - **File with extension** (`-of config.yaml`): Format inferred from extension
 - **File without extension + format flags** (`-of config -oj -oy`): Creates `config.json` and `config.yaml`
 - **Format flags only** (`-oj`): Writes to stdout in that format
-- **No output flags**: Defaults to JSON on stdout
+- **No output flags**: Defaults to YAML on stdout
 - **Multiple stdout formats**: Separated by `---`
 
 ### Exit Codes
@@ -294,9 +296,8 @@ transform:
   - type: trim
     path: description
   - type: replaceKey
-    path: services
-    pattern: "^test-"
-    target: "prod-"
+    path: api.endpoint
+    target: temp.newEndpoint
 
 # Optional: Validate final configuration values
 validate:
@@ -327,7 +328,7 @@ Variables are defined in the schema's `vars` section. Each variable has a `name`
 
 | Field | Description |
 |-------|-------------|
-| `name` | Variable name (used as `${NAME}` in substitution). Must be uppercase, digits, underscores only. Each name must be unique within the `vars` block; duplicates cause an error. |
+| `name` | Variable name (used as `${NAME}` in substitution). Can contain letters (upper and lower), digits, and underscores. Each name must be unique within the `vars` block; duplicates cause an error. |
 | `value` | Static value |
 | `fromEnv` | Read from OS environment variable |
 | `fromPath` | Read from a path in the merged configuration |
@@ -341,7 +342,7 @@ Variables are defined in the schema's `vars` section. Each variable has a `name`
 
 ### Variable Substitution
 
-After resolution, all `${VAR_NAME}` placeholders throughout the configuration are replaced with their resolved values. The regex pattern is `${[A-Z0-9_]+}`.
+After resolution, all `${VAR_NAME}` placeholders throughout the configuration are replaced with their resolved values. The regex pattern is `${[A-Za-z0-9_]+}` (letters, digits, underscores).
 
 Variable substitution is also applied to transformer and generator definitions before they execute.
 
@@ -413,7 +414,7 @@ Generates various ID formats.
 | `numeric:N` | Random digits [0-9] only | `847293615028` |
 | `alpha:N` | Random letters [a-zA-Z] only | `kFmPxQaBcDeF` |
 | `sequential` | Counter starting at 1, increments per call | `1`, `2`, `3` |
-| `timestamp` | Unix timestamp + 4-char random suffix | `1705312200-aB3k` |
+| `timestamp` | Unix timestamp + 4-char random suffix | `1705312200aB3k` |
 
 ### random
 
@@ -519,27 +520,27 @@ The `value` field accepts any type (string, number, boolean, map, array).
 
 ### trim
 
-Trims leading and trailing whitespace from a string value.
+Trims whitespace (default) or a literal pattern string from both ends of a string value.
 
 ```yaml
 - type: trim
   path: description
+  pattern: "---"  # optional: literal string to trim (not a character set)
 ```
 
-Returns an error if the value at path is not a string.
+Without `pattern`, trims whitespace. With `pattern`, removes the exact literal string repeatedly from both ends. Returns an error if the value at path is not a string.
 
 ### replaceKey
 
-Replaces key names matching a regex pattern within a map at the specified path.
+Replaces the value at `path` with the value from `target`, then deletes the `target` path.
 
 ```yaml
 - type: replaceKey
-  path: services
-  pattern: "^test-"
-  target: "prod-"
+  path: api.endpoint
+  target: temp.newEndpoint
 ```
 
-Before: `{services: {test-api: ..., test-db: ...}}` -> After: `{services: {prod-api: ..., prod-db: ...}}`
+Before: `{api: {endpoint: "old"}, temp: {newEndpoint: "new"}}` -> After: `{api: {endpoint: "new"}}` (temp.newEndpoint deleted)
 
 ---
 
@@ -646,7 +647,7 @@ Important details:
 - **Child path protection**: Marking `database` immutable also protects `database.host`, `database.port`, etc.
 - **Generator/transformer protection**: Immutable values are snapshotted before generators and transformers run, and restored afterward if modified.
 - **Merge-time protection**: If the key does not yet exist, it can be set. Once set, subsequent sources cannot change it.
-- **Environment override**: `KONFIGO_KEY_*` environment variables can still override immutable paths.
+- **No exceptions**: `KONFIGO_KEY_*` environment variables are also subject to immutable path protection. Once a path is set and marked immutable, no source (including environment variables) can override it.
 
 ---
 

@@ -112,8 +112,9 @@ database:
 ```
 
 **Important Notes:**
-- Environment variables (`KONFIGO_KEY_*`) can still override immutable paths (for operational flexibility)
-- Immutable protection applies during file merging, not environment overrides
+- Once set, immutable paths cannot be overridden by any source, including `KONFIGO_KEY_*` environment variables
+- Child paths are also protected (marking `database` immutable protects `database.host`, etc.)
+- Generators and transformers also cannot modify immutable paths
 - Use for security-critical or compliance-required settings
 
 ## Complex Variable Resolution

@@ -7,7 +7,7 @@ Konfigo leverages environment variables for two primary purposes: directly setti
 You can directly set or override any configuration value by using environment variables prefixed with `KONFIGO_KEY_`. The part of the variable name following this prefix is treated as a dot-separated path to the desired key within your configuration structure.
 
 *   **Syntax**: `KONFIGO_KEY_path.to.your.key=value`
-*   **Precedence**: These overrides have the **highest precedence** over all other configuration sources, including files specified with `-s`, and even immutable paths defined in a schema.
+*   **Precedence**: These overrides have the **highest precedence** over all other file-based configuration sources. However, they are still subject to immutable path protection — if a path is marked immutable and already has a value, `KONFIGO_KEY_` variables cannot override it.
 *   **Use Case**: Ideal for injecting sensitive data (like API keys or database passwords) from a secure environment (e.g., CI/CD pipeline secrets) or for making quick, temporary changes without altering files.
 
 ### Examples

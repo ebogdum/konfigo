@@ -33,7 +33,9 @@ Konfigo solves the problem of managing configuration across multiple files, form
 Download a pre-built binary from [Releases](https://github.com/ebogdum/konfigo/releases) (Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD - amd64/arm64), or build from source:
 
 ```bash
-go install github.com/ebogdum/konfigo/cmd/konfigo@latest
+git clone https://github.com/ebogdum/konfigo.git
+cd konfigo
+go build -o konfigo ./cmd/konfigo
 ```
 
 ### Merge configuration files
@@ -205,7 +207,7 @@ outputSchema:
 
 ### Immutable Path Protection
 
-Protect critical config values from being overwritten by later sources, transformers, or generators. Child paths are automatically protected:
+Protect critical config values from being overwritten by later sources (including environment variables), transformers, or generators. Child paths are automatically protected:
 
 ```yaml
 immutable:
@@ -281,6 +283,9 @@ konfigo -s config/base.yaml,config/production.yaml \
 
 ```dockerfile
 FROM golang:1.22 AS config
+COPY . /src
+WORKDIR /src
+RUN go build -o /usr/local/bin/konfigo ./cmd/konfigo
 COPY configs/ /configs/
 COPY schemas/ /schemas/
 RUN konfigo -s /configs/ -r -S /schemas/app.yaml -of /app-config.json

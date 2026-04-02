@@ -6,23 +6,14 @@ Comprehensive reference for all Konfigo configuration options, environment varia
 
 ### Source File Discovery
 
-Konfigo uses the following order to discover configuration files:
+Konfigo discovers configuration files from the sources you specify:
 
-1. **Explicit paths** specified with `-s` flag
-2. **Current directory** search for common config files
-3. **Recursive discovery** with `-r` flag (searches subdirectories)
-4. **Environment variable paths** from `KONFIGO_CONFIG_PATH`
+1. **Explicit paths** specified with `-s` flag (files or directories)
+2. **Recursive discovery** with `-r` flag (searches subdirectories for supported extensions)
 
-### Default File Patterns
+Supported file extensions: `.json`, `.yaml`, `.yml`, `.toml`, `.ini`, `.env`
 
-When no explicit sources are provided, Konfigo searches for:
-
-```
-config.{json,yaml,yml,toml,env}
-app.{json,yaml,yml,toml,env}
-konfigo.{json,yaml,yml,toml,env}
-.env
-```
+Files within directories are sorted lexicographically for deterministic merge order.
 
 ### Case Sensitivity
 
@@ -67,23 +58,19 @@ export KONFIGO_VAR_DATABASE_PASSWORD=secret123
 export KONFIGO_VAR_API_ENDPOINT=https://api.company.com
 ```
 
-### System Configuration
+### Logging
 
-Control Konfigo's behavior:
+Logging is controlled via CLI flags, not environment variables:
 
 ```bash
-# Logging level
-export KONFIGO_LOG_LEVEL=DEBUG    # ERROR, WARN, INFO, DEBUG
+# Verbose (INFO) logging
+konfigo -v -s config.yaml
 
-# Default search paths
-export KONFIGO_CONFIG_PATH=/etc/konfigo:/usr/local/konfigo
-
-# Disable colored output
-export NO_COLOR=1
-
-# Force specific locale for parsing
-export LC_ALL=C
+# Debug (DEBUG + INFO) logging
+konfigo -d -s config.yaml
 ```
+
+All logs go to stderr; stdout is reserved for configuration output.
 
 ## Schema Configuration
 

@@ -13,10 +13,9 @@ konfigo -s base.yaml,prod.yaml -of result.json
 
 Konfigo uses **deep merging** with clear precedence rules:
 
-1. **Environment Variables** (`KONFIGO_KEY_*`) - Highest precedence
-2. **Later Source Files** (rightmost in `-s` list)
-3. **Earlier Source Files** (leftmost in `-s` list)
-4. **Stdin Input** (lowest precedence)
+1. **Environment Variables** (`KONFIGO_KEY_*`) - Highest precedence, merged last
+2. **Sources in CLI order** - Processed left-to-right as listed in `-s`; later sources override earlier ones
+3. **Stdin** (`-`) - Merged in whatever position it appears in the `-s` list (not inherently lowest)
 
 ### Example: Three-Way Merge
 
