@@ -4,12 +4,10 @@ Konfigo merges multiple configuration sources using well-defined precedence rule
 
 ## Merge Order and Precedence
 
-Configuration sources are processed in this order (highest to lowest precedence):
+Configuration sources are processed in this order:
 
-1. **Environment Variables** (`KONFIGO_KEY_*`) - Highest precedence
-2. **Later Source Files** (rightmost in `-s` list)
-3. **Earlier Source Files** (leftmost in `-s` list)
-4. **Stdin Input** (if provided)
+1. **Sources in CLI order** - Processed left-to-right as listed in `-s`; later sources override earlier ones. Stdin (`-`) is merged at whatever position it appears.
+2. **Environment Variables** (`KONFIGO_KEY_*`) - Merged last, giving them highest precedence
 
 ### Command Line Example
 ```bash
@@ -219,7 +217,7 @@ immutable:
 }
 ```
 
-**Important**: `KONFIGO_KEY_` environment variables can still override immutable paths.
+**Important**: `KONFIGO_KEY_` environment variables are also subject to immutable path protection. Once a value is set at an immutable path, no source can override it.
 
 ## Real-World Example
 

@@ -34,10 +34,13 @@ chmod +x konfigo
 
 ### **Q: What file formats does Konfigo support?**
 **A:** Input and output:
-- **JSON** (`.json`, `.jsonc`) - Comments supported in JSONC
-- **YAML** (`.yaml`, `.yml`) - Full YAML 1.2 support
+- **JSON** (`.json`) - Standard JSON
+- **YAML** (`.yaml`, `.yml`) - Single-document YAML
 - **TOML** (`.toml`) - TOML v1.0.0
-- **ENV** (`.env`, `.envrc`) - Key=value pairs
+- **ENV** (`.env`) - Key=value pairs
+
+Input only:
+- **INI** (`.ini`) - Sections become nested maps
 
 ### **Q: Can I mix different formats in one command?**
 **A:** Absolutely! That's one of Konfigo's strengths:
@@ -91,7 +94,7 @@ immutable:
   - "app.name"
   - "security.keys"
 ```
-Note: Environment variables can still override immutable paths.
+Once set, immutable paths cannot be overridden by any source, including environment variables. Child paths are also protected.
 
 ### **Q: How do I merge all files in a directory?**
 **A:** Use the recursive flag:

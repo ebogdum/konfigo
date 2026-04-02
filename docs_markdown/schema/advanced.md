@@ -20,7 +20,7 @@ immutable:
 2. **Complete Protection**: Later sources cannot override immutable values
 3. **Child Path Protection**: Marking a path as immutable also protects all its children (e.g., marking `database` immutable also protects `database.host`, `database.port`, etc.)
 4. **Generator/Transformer Protection**: Generators and transformers also cannot overwrite immutable paths; values are snapshotted before processing and restored afterward if modified
-5. **Environment Override**: `KONFIGO_KEY_*` environment variables **can** still override immutable paths
+5. **No Exceptions**: `KONFIGO_KEY_*` environment variables are also subject to immutable path protection — once a value is set at an immutable path, no source can override it
 
 ### Examples from Tests
 
@@ -79,24 +79,6 @@ database:
 security:
   apiKey: "base-secret-key"   # ← Protected by immutable
   protocol: "https"           # ← Added by second source
-```
-
-### Environment Variable Override
-
-Even immutable fields can be overridden by environment variables:
-
-```bash
-# This WILL override the immutable service.name
-export KONFIGO_KEY_service__name=env-override-service
-
-konfigo -s 01-base.yaml -s 02-override.yaml -S schema.yaml
-```
-
-**Result:**
-```yaml
-service:
-  name: "env-override-service"  # ← Environment variable wins
-  # ... rest unchanged
 ```
 
 ## Input Schema Validation

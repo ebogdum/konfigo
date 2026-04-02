@@ -128,7 +128,7 @@ Whether you're dealing with simple JSON files or complex, multi-layered YAML con
 
 ## Getting Started
 
-1.  **Installation**: (Add installation instructions here if available, e.g., `go install` or binary download links)
+1.  **Installation**: Download a pre-built binary from [Releases](https://github.com/ebogdum/konfigo/releases) or build from source with `go build ./cmd/konfigo`
 2.  **Basic Usage**: `konfigo -s source1.yml -s source2.json -of output.yml`
 3.  **Using a Schema**: `konfigo -s config.json -S schema.yml -V staging-vars.yml -of staging_config.json`
 

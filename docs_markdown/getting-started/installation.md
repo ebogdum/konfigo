@@ -50,13 +50,10 @@ Move-Item konfigo.exe C:\Windows\System32\
 If you have Go installed and want the latest development version:
 
 ```bash
-# Install directly from source
-go install github.com/ebogdum/konfigo/cmd/konfigo@latest
-
-# Or clone and build
 git clone https://github.com/ebogdum/konfigo.git
 cd konfigo
-go build -o konfigo cmd/konfigo/main.go
+go build -o konfigo ./cmd/konfigo
+sudo mv konfigo /usr/local/bin/
 ```
 
 ### 🍺 **Package Managers** (Coming Soon)
@@ -69,15 +66,6 @@ We're working on adding Konfigo to popular package managers:
 ## Verify Installation
 
 Test that Konfigo is installed correctly:
-
-```bash
-konfigo --version
-```
-
-You should see output like:
-```
-konfigo version v1.2.3
-```
 
 ### "Hello World" Test
 

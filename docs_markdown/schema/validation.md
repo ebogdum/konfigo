@@ -366,7 +366,7 @@ validate:
     *   **Example**: `enum: ["production", "staging", "development"]`
 
 *   `regex` (string):
-    *   For values of `type: "string"`. The string value must match the provided ECMA 262 (JavaScript-style) regular expression.
+    *   For values of `type: "string"`. The string value must match the provided Go RE2 regular expression. Input values longer than 1 MiB are rejected.
     *   **Example**: `regex: "^\\d{3}-\\d{2}-\\d{4}$"` (for a US SSN format)
 
 ## How Validation Works

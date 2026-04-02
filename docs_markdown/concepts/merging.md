@@ -92,7 +92,7 @@ immutable:
   - "database.credentials.username"
 ```
 
-**Important**: Environment variables (`KONFIGO_KEY_*`) can still override immutable paths, as they represent explicit runtime configuration.
+**Important**: Once set, immutable paths cannot be overridden by any source, including `KONFIGO_KEY_*` environment variables. Child paths are also protected.
 
 ## Array Merging Strategies
 

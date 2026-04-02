@@ -7,7 +7,7 @@ Systematic approach to diagnosing and solving common Konfigo issues. Start with 
 ### 1. **Basic Health Check**
 ```bash
 # Verify Konfigo is working
-konfigo --version
+konfigo -h
 
 # Test with minimal example
 echo '{"test": true}' | konfigo -s -
@@ -373,7 +373,7 @@ When reporting issues, include:
 
 ```bash
 # Konfigo version
-konfigo --version
+konfigo -h
 
 # Command that failed
 konfigo -v -s config.yaml -S schema.yaml
@@ -397,7 +397,7 @@ uname -a
 
 ### Before Reporting a Bug
 
-1. **Update to latest version**: `konfigo --version`
+1. **Update to latest version**: `konfigo -h`
 2. **Check existing issues**: Search GitHub issues
 3. **Create minimal reproduction**: Simplest possible example
 4. **Include debug output**: Use `-d` flag for details

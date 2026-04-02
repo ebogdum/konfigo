@@ -7,7 +7,7 @@ Konfigo provides comprehensive support for multiple configuration formats, enabl
 | Format | Extensions | Input | Output | Features |
 |--------|------------|-------|--------|----------|
 | **JSON** | `.json` | ✅ | ✅ | Precise typing, compact, widely supported |
-| **YAML** | `.yaml`, `.yml` | ✅ | ✅ | Human-readable, comments, multi-document |
+| **YAML** | `.yaml`, `.yml` | ✅ | ✅ | Human-readable, comments, single-document |
 | **TOML** | `.toml` | ✅ | ✅ | Configuration-focused, strongly typed |
 | **ENV** | `.env` | ✅ | ✅ | Environment variables, simple key-value |
 | **INI** | `.ini` | ✅ | ❌ | Legacy support, sections |
@@ -23,15 +23,7 @@ konfigo -s app.yaml       # Detected as YAML
 konfigo -s settings.toml  # Detected as TOML
 ```
 
-### 2. Content Analysis (Fallback)
-When file extensions are missing or ambiguous, Konfigo analyzes content structure:
-
-```bash
-konfigo -s config          # Auto-detects based on content
-konfigo -s data.txt        # Analyzes content structure
-```
-
-### 3. Format Override (Explicit)
+### 2. Format Override (Explicit)
 Force specific format parsing:
 
 ```bash
@@ -57,7 +49,7 @@ konfigo -s settings -st    # Force TOML parsing
 ```
 
 ### YAML
-- **Strengths**: Human-readable, supports comments, multi-document
+- **Strengths**: Human-readable, supports comments
 - **Use Cases**: Configuration files, documentation, complex structures
 - **Example**:
 ```yaml

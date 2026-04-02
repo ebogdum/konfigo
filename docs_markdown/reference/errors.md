@@ -324,7 +324,7 @@ environment: "development"  # ✅ Valid
 
 **Cause**: Attempting to override a path marked as immutable in schema.
 
-**Note**: Environment variables (`KONFIGO_KEY_*`) can still override immutable paths.
+**Note**: Once set, immutable paths cannot be overridden by any source, including environment variables.
 
 **Solution**:
 ```bash

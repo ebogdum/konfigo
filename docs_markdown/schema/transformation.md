@@ -79,6 +79,8 @@ transform:
 - `"lower"`: lowercase  
 - `"snake"`: snake_case
 - `"camel"`: camelCase
+- `"kebab"`: kebab-case
+- `"pascal"`: PascalCase
 
 **Example from Tests:**
 ```yaml
@@ -271,7 +273,7 @@ transform:
 **Fields:**
 - **`type`** (Required): `"trim"`
 - **`path`** (Required): Path to string value
-- **`pattern`** (Optional): Characters to trim (defaults to whitespace)
+- **`pattern`** (Optional): A literal string to trim from both ends (not a character set). Removed repeatedly until no longer present. Defaults to whitespace trimming when omitted.
 
 **Examples:**
 
@@ -292,6 +294,8 @@ api:
 ```
 
 **Custom Pattern Trimming:**
+
+The `pattern` field is a literal string that is removed from both ends, repeatedly:
 ```yaml
 # Input config:
 token:
@@ -301,7 +305,7 @@ token:
 transform:
   - type: "trim"
     path: "token.value"
-    pattern: "-"
+    pattern: "---"
 
 # Result:
 token:
@@ -519,6 +523,8 @@ transform:
         *   `"lower"`: Converts to lowercase.
         *   `"snake"`: Converts to snake_case.
         *   `"camel"`: Converts to camelCase (lower camel case).
+        *   `"kebab"`: Converts to kebab-case.
+        *   `"pascal"`: Converts to PascalCase.
 *   **Behavior**:
     *   Retrieves the value from `path`.
     *   If the path is not found or the value is not a string, an error occurs.

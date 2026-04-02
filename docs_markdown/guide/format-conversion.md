@@ -26,10 +26,11 @@ konfigo -s config.yaml -oj -oy -ot -of base  # Creates base.json, base.yaml, bas
 
 | Format | Extensions | Input Flag | Output Flag | Notes |
 |--------|------------|------------|-------------|-------|
-| **JSON** | `.json`, `.jsonc` | `-sj` | `-oj` | Comments supported in JSONC |
-| **YAML** | `.yaml`, `.yml` | `-sy` | `-oy` | Full YAML 1.2 support |
+| **JSON** | `.json` | `-sj` | `-oj` | Standard JSON (no comments) |
+| **YAML** | `.yaml`, `.yml` | `-sy` | `-oy` | Single-document YAML |
 | **TOML** | `.toml` | `-st` | `-ot` | TOML v1.0.0 compatible |
-| **ENV** | `.env`, `.envrc` | `-se` | `-oe` | Key=value pairs |
+| **ENV** | `.env` | `-se` | `-oe` | Key=value pairs |
+| **INI** | `.ini` | - | - | Input only (no output) |
 
 ## Detailed Examples
 

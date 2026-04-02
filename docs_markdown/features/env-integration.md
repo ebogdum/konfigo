@@ -42,15 +42,12 @@ konfigo -s config.yml
 - All configuration files
 - Variables files (`-V`)
 - Schema-defined values
-- Even immutable paths defined in schema
+
+Note: Immutable paths are still protected from `KONFIGO_KEY_*` overrides. Once a value is set at an immutable path, no source can change it.
 
 ```bash
-# This will override immutable paths
-export KONFIGO_KEY_service.name=override-service
-
-# Even with immutable schema definition:
-# immutable:
-#   - "service.name"
+# Override any non-immutable configuration value
+export KONFIGO_KEY_service.port=9090
 ```
 
 ## Schema Variables (`KONFIGO_VAR_`)

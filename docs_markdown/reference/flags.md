@@ -6,41 +6,41 @@ This page provides comprehensive documentation for all Konfigo command-line flag
 
 ### Global Options
 
-| Flag | Long Form | Description | Default |
-|------|-----------|-------------|---------|
-| `-h` | `--help` | Show help message | - |
-| `-v` | `--verbose` | Enable informational logging | false |
-| `-d` | `--debug` | Enable debug logging | false |
-| `-c` | `--case-sensitive` | Use case-sensitive key matching | false |
-| `-m` | `--merge-arrays` | Merge arrays by union with deduplication | false |
-| `-r` | `--recursive` | Recursively search subdirectories | false |
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-h` | Show help message | - |
+| `-v` | Enable informational (INFO) logging | false |
+| `-d` | Enable debug (DEBUG + INFO) logging, overrides `-v` | false |
+| `-c` | Use case-sensitive key matching | false (case-insensitive) |
+| `-m` | Merge arrays by union with deduplication | false (arrays replaced) |
+| `-r` | Recursively search subdirectories | false |
 
 ### Source Input Options
 
-| Flag | Long Form | Description | Notes |
-|------|-----------|-------------|-------|
-| `-s` | `--sources` | Comma-separated list of source files/directories | Required |
-| `-sj` | `--source-json` | Force input parsing as JSON | For stdin or ambiguous files |
-| `-sy` | `--source-yaml` | Force input parsing as YAML | For stdin or ambiguous files |
-| `-st` | `--source-toml` | Force input parsing as TOML | For stdin or ambiguous files |
-| `-se` | `--source-env` | Force input parsing as ENV | For stdin or ambiguous files |
+| Flag | Description | Notes |
+|------|-------------|-------|
+| `-s` | Comma-separated list of source files/directories | Required. Use `-` for stdin |
+| `-sj` | Force input parsing as JSON | Required for stdin |
+| `-sy` | Force input parsing as YAML | Required for stdin |
+| `-st` | Force input parsing as TOML | Required for stdin |
+| `-se` | Force input parsing as ENV | Required for stdin |
 
 ### Schema Processing Options
 
 | Flag | Long Form | Description | Notes |
 |------|-----------|-------------|-------|
-| `-S` | `--schema` | Path to schema file | Enables advanced processing |
+| `-S` | `--schema` | Path to schema file | JSON, YAML, or TOML only |
 | `-V` | `--vars-file` | Path to variables file | High-priority variable definitions |
 
 ### Output Format Options
 
-| Flag | Long Form | Description | Notes |
-|------|-----------|-------------|-------|
-| `-oj` | `--output-json` | Output in JSON format | - |
-| `-oy` | `--output-yaml` | Output in YAML format | - |
-| `-ot` | `--output-toml` | Output in TOML format | - |
-| `-oe` | `--output-env` | Output in ENV format | - |
-| `-of` | `--output-file` | Write output to file | Extension determines format |
+| Flag | Description | Notes |
+|------|-------------|-------|
+| `-oj` | Output in JSON format | - |
+| `-oy` | Output in YAML format | Default when no format specified |
+| `-ot` | Output in TOML format | - |
+| `-oe` | Output in ENV format | - |
+| `-of` | Write output to file | Extension determines format |
 
 ## Environment Variables
 
@@ -48,41 +48,38 @@ This page provides comprehensive documentation for all Konfigo command-line flag
 
 | Variable Pattern | Description | Example |
 |------------------|-------------|---------|
-| `KONFIGO_KEY_*` | Override any configuration key | `KONFIGO_KEY_app.port=8080` |
-| `KONFIGO_VAR_*` | Define schema variables | `KONFIGO_VAR_DATABASE_HOST=prod-db.com` |
-
-### Processing Control
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `KONFIGO_LOG_LEVEL` | Set logging level (ERROR, WARN, INFO, DEBUG) | ERROR |
-| `KONFIGO_CONFIG_PATH` | Default search paths for config files | Current directory |
+| `KONFIGO_KEY_*` | Override any configuration key (highest precedence, but subject to immutable paths) | `KONFIGO_KEY_app.port=8080` |
+| `KONFIGO_VAR_*` | Define schema variables (highest variable precedence) | `KONFIGO_VAR_DATABASE_HOST=prod-db.com` |
 
 ## Exit Codes
 
 | Code | Meaning | Description |
 |------|---------|-------------|
 | 0 | Success | Operation completed successfully |
-| 1 | General Error | Invalid arguments or processing error |
-| 2 | File Error | Source file not found or unreadable |
-| 3 | Parse Error | Invalid syntax in source or schema files |
-| 4 | Validation Error | Schema validation failed |
-| 5 | Schema Error | Invalid or malformed schema |
+| 1 | Error | Any error (parsing, validation, file I/O, schema processing, etc.) |
 
 ## File Format Support
 
 ### Input Formats
 
-| Format | Extensions | Parser | Notes |
-|--------|------------|---------|-------|
-| JSON | `.json`, `.jsonc` | Standard JSON with comment support | JSONC comments supported |
-| YAML | `.yaml`, `.yml` | YAML 1.2 compliant | Full spec support |
-| TOML | `.toml` | TOML v1.0.0 | Complete specification |
-| ENV | `.env`, `.envrc` | Key=value pairs | Shell-style variables |
+| Format | Extensions | Notes |
+|--------|------------|-------|
+| JSON | `.json` | Standard JSON (no comments) |
+| YAML | `.yaml`, `.yml` | Single-document YAML |
+| TOML | `.toml` | Full TOML v1.0.0 support |
+| ENV | `.env` | `KEY=value` pairs, `#` comments, dot notation for nesting |
+| INI | `.ini` | Sections become nested maps, input only |
 
 ### Output Formats
 
-All input formats are supported as output formats with automatic conversion between them.
+| Format | Notes |
+|--------|-------|
+| JSON | Pretty-printed with 2-space indentation |
+| YAML | 2-space indentation |
+| TOML | Standard TOML with sections |
+| ENV | Flattened to `UPPERCASE_UNDERSCORE=value`, sorted keys, auto-quoting |
+
+INI is input-only; it cannot be used as an output format.
 
 ## Error Handling
 
@@ -125,7 +122,10 @@ konfigo -s base.yaml,env/${ENVIRONMENT}.yaml -S schema.yaml -of config.json
 ### Container Integration
 ```dockerfile
 # Multi-stage build pattern
-FROM konfigo:latest as config-builder
+FROM golang:1.22 AS config-builder
+COPY . /src
+WORKDIR /src
+RUN go build -o /usr/local/bin/konfigo ./cmd/konfigo
 COPY configs/ /configs/
 RUN konfigo -s /configs/base.yaml,/configs/prod.yaml -of /tmp/final.json
 
@@ -136,16 +136,7 @@ COPY --from=config-builder /tmp/final.json /app/config.json
 ### Library Integration
 Konfigo is designed as a CLI tool but can be integrated into build processes, deployment scripts, and configuration management workflows.
 
-## Version Compatibility
+## Schema Version
 
-### Schema Version Support
-- `apiVersion: v1` - Current stable version
-- `apiVersion: konfigo/v1alpha1` - Legacy format (deprecated)
-
-### Breaking Changes
-Major version updates may include breaking changes to:
-- Schema format and processing
-- Command-line flag syntax
-- Output format structure
-
-See release notes for migration guides and compatibility information.
+The `apiVersion` field in schema files is informational only. Konfigo does not enforce or validate this field. Common values used in the community:
+- `konfigo/v1alpha1`
