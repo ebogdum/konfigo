@@ -33,6 +33,10 @@ vars:
 
 **`defaultValue`** (Optional): Fallback when `fromEnv`/`fromPath` fails
 
+::: warning Duplicate Variable Names
+Each variable `name` in the `vars` block must be unique. Konfigo will return an error if duplicate names are detected.
+:::
+
 ## Examples from Tests
 
 ### Basic Variable Definition

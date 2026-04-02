@@ -18,8 +18,9 @@ immutable:
 
 1. **Source Order Matters**: First source to set an immutable path wins
 2. **Complete Protection**: Later sources cannot override immutable values
-3. **Environment Override**: `KONFIGO_KEY_*` environment variables **can** still override immutable paths
-4. **Deep Path Protection**: Protects specific nested paths, not entire objects
+3. **Child Path Protection**: Marking a path as immutable also protects all its children (e.g., marking `database` immutable also protects `database.host`, `database.port`, etc.)
+4. **Generator/Transformer Protection**: Generators and transformers also cannot overwrite immutable paths; values are snapshotted before processing and restored afterward if modified
+5. **Environment Override**: `KONFIGO_KEY_*` environment variables **can** still override immutable paths
 
 ### Examples from Tests
 
@@ -112,7 +113,7 @@ inputSchema:
 
 ### Fields
 
-- **`path`** (Required): Path to external schema file defining expected input structure
+- **`path`** (Required): Path to external schema file defining expected input structure. Relative paths are resolved from the schema file's directory (e.g., `../schemas/input.json` to reference a sibling directory).
 - **`strict`** (Optional, default: `false`): 
   - `false`: Extra keys allowed in input
   - `true`: Input must contain **only** keys defined in schema
@@ -190,7 +191,7 @@ outputSchema:
 
 ### Fields
 
-- **`path`** (Required): Path to external schema file defining output structure
+- **`path`** (Required): Path to external schema file defining output structure. Relative paths are resolved from the schema file's directory.
 - **`strict`** (Optional, default: `false`):
   - `false`: Include only keys present in output schema, ignore extras
   - `true`: Final output must exactly match output schema structure

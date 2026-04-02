@@ -30,6 +30,7 @@ validate:
 **`type` (string)**
 - Enforces specific data type
 - Supported types: `"string"`, `"number"`, `"integer"`, `"boolean"`, `"slice"`, `"map"`
+- Common aliases are also accepted: `"boolean"` (→ `bool`), `"integer"` (→ `int`), `"array"` (→ `slice`), `"object"` (→ `map`), `"float"`/`"double"` (→ `number`)
 
 ### String Rules
 
@@ -37,7 +38,8 @@ validate:
 - Minimum string length
 
 **`regex` (string)** 
-- ECMA 262 JavaScript-style regular expression pattern
+- Go RE2 regular expression pattern
+- Input values longer than 1 MiB are rejected to prevent ReDoS
 
 **`enum` (array of strings)**
 - Value must match one of the provided options

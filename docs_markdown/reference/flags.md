@@ -104,15 +104,15 @@ Use `-v` or `-d` flags to get detailed information about:
 
 ## Performance Considerations
 
-### Large Configuration Files
-- Use streaming parsers for files >100MB
-- Consider splitting large schemas into modules
-- Batch processing for multiple environments
+### File Size Limits
+- Configuration files are limited to **50 MiB** each; larger files are rejected with an error
+- Schema files are limited to **10 MiB**
+- Consider splitting large configurations into multiple files and merging
 
 ### Memory Usage
 - Konfigo loads all source files into memory
 - Schema processing requires additional memory for transformations
-- Monitor usage with large variable files
+- Array union merging (`-m`) with very large arrays (>1,000 elements per side) automatically skips deduplication to avoid O(n*m) performance degradation
 
 ## Integration Patterns
 
