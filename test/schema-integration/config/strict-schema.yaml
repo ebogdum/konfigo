@@ -1,11 +1,11 @@
 apiVersion: "konfigo/v1alpha1"
 
 inputSchema:
-  path: "schemas/input-schema-strict.json"
+  path: "../schemas/input-schema-strict.json"
   strict: true
 
 outputSchema:
-  path: "schemas/output-schema-strict.json"
+  path: "../schemas/output-schema-strict.json"
   strict: true
 
 vars:

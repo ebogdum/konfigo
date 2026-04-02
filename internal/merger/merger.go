@@ -44,8 +44,8 @@ func mergeCaseSensitive(dst, src map[string]interface{}, path string, immutableP
 			currentPath = path + "." + key
 		}
 
-		// Check for immutability
-		if _, isImmutable := immutablePaths[currentPath]; isImmutable {
+		// Check for immutability (exact match or child of immutable path)
+		if isPathImmutable(currentPath, immutablePaths) {
 			if _, exists := dst[key]; exists {
 				logger.Debug("  - Skipping overwrite of immutable key: %s", currentPath)
 				continue
@@ -81,25 +81,32 @@ func mergeCaseInsensitive(dst, src map[string]interface{}, path string, immutabl
 			currentPath = path + "." + srcKey
 		}
 
-		// Check for immutability
+		// Check for immutability (exact match or child of immutable path)
 		if found {
-			// Use the original path from dst for the immutability check
 			immutableCheckPath := existingDstKey
 			if path != "" {
 				immutableCheckPath = path + "." + existingDstKey
 			}
-			if _, isImmutable := immutablePaths[immutableCheckPath]; isImmutable {
+			if isImmutableCaseInsensitive(immutableCheckPath, immutablePaths) {
 				logger.Debug("  - Skipping overwrite of immutable key: %s", immutableCheckPath)
 				continue
 			}
 		}
 
 		if !found {
+			// Still check immutability for case-insensitive paths
+			if isImmutableCaseInsensitive(currentPath, immutablePaths) {
+				logger.Debug("  - Skipping overwrite of immutable key: %s", currentPath)
+				continue
+			}
 			dst[srcKey] = srcVal
 			continue
 		}
 
 		dstVal := dst[existingDstKey]
+		if existingDstKey != srcKey {
+			logger.Debug("  - Key casing changed: '%s' -> '%s' (case-insensitive merge)", existingDstKey, srcKey)
+		}
 		delete(dst, existingDstKey)
 
 		dstMap, dstOk := dstVal.(map[string]interface{})
@@ -122,10 +129,54 @@ func mergeCaseInsensitive(dst, src map[string]interface{}, path string, immutabl
 	}
 }
 
+// isPathImmutable checks if a path is immutable by exact match or if it is a child of an immutable path.
+func isPathImmutable(path string, immutablePaths map[string]struct{}) bool {
+	if immutablePaths == nil {
+		return false
+	}
+	if _, ok := immutablePaths[path]; ok {
+		return true
+	}
+	for ip := range immutablePaths {
+		if strings.HasPrefix(path, ip+".") {
+			return true
+		}
+	}
+	return false
+}
+
+// isImmutableCaseInsensitive checks if a path matches any immutable path case-insensitively,
+// including child paths.
+func isImmutableCaseInsensitive(path string, immutablePaths map[string]struct{}) bool {
+	if immutablePaths == nil {
+		return false
+	}
+	lowerPath := strings.ToLower(path)
+	for ip := range immutablePaths {
+		lowerIP := strings.ToLower(ip)
+		if lowerIP == lowerPath || strings.HasPrefix(lowerPath, lowerIP+".") {
+			return true
+		}
+	}
+	return false
+}
+
+// maxSliceMergeSize is the threshold above which array union deduplication
+// falls back to append-only (no dedup) to avoid O(n*m) performance.
+const maxSliceMergeSize = 1000
+
 // mergeSlices returns the union of two slices, deduplicating elements using reflect.DeepEqual.
+// For slices larger than maxSliceMergeSize, deduplication is skipped to avoid O(n*m) cost.
 func mergeSlices(dst, src []interface{}) []interface{} {
-	result := make([]interface{}, len(dst))
+	result := make([]interface{}, len(dst), len(dst)+len(src))
 	copy(result, dst)
+
+	if len(dst)*len(src) > maxSliceMergeSize*maxSliceMergeSize {
+		logger.Debug("  - Array merge: skipping deduplication for large slices (%d x %d)", len(dst), len(src))
+		result = append(result, src...)
+		return result
+	}
+
 	for _, sv := range src {
 		found := false
 		for _, dv := range result {

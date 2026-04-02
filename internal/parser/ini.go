@@ -29,6 +29,9 @@ func (ip *INIParser) Parse(content []byte) (map[string]interface{}, error) {
 		if section.Name() == ini.DefaultSection {
 			continue
 		}
+		if _, exists := data[section.Name()]; exists {
+			return nil, fmt.Errorf("INI section name %q collides with a key from the default section", section.Name())
+		}
 		sectionMap := make(map[string]interface{})
 		for _, key := range section.Keys() {
 			sectionMap[key.Name()] = key.Value()

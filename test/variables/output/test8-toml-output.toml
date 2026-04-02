@@ -1,6 +1,6 @@
 [api]
   baseUrl = "env-override.example.com:9090"
-  retries = 3.0
+  retries = 3
   timeout = "30s"
 
 [app]
@@ -10,7 +10,7 @@
 [database]
   host = "localhost"
   name = "testdb"
-  port = 5432.0
+  port = 5432
 
 [deployment]
   namespace = "production"

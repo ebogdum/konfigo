@@ -1,7 +1,7 @@
 apiVersion: "konfigo/v1alpha1"
 
 inputSchema:
-  path: "schemas/simple-input-schema.json"
+  path: "../schemas/simple-input-schema.json"
 
 vars:
   - name: "LOG_LEVEL"

@@ -1,17 +1,17 @@
 [app]
   format_test = "toml-output"
   name = "base-app"
-  port = 8080.0
+  port = 8080
   version = "1.0.0"
 
 [database]
   host = "localhost"
   name = "myapp"
-  port = 5432.0
+  port = 5432
   ssl = false
   [database.connection]
-    pool_size = 10.0
-    timeout = 30.0
+    pool_size = 10
+    timeout = 30
 
 [features]
   auth = true

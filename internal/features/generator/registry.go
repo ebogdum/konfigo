@@ -13,12 +13,11 @@ func Apply(config map[string]interface{}, definitions []Definition, resolver Var
 
 	logger.Debug("Applying %d generators...", len(definitions))
 
-	// Validate all generator definitions first
-	if err := ValidateDefinitions(definitions); err != nil {
+	registry := NewRegistry()
+
+	if err := ValidateDefinitionsWithRegistry(definitions, registry); err != nil {
 		return err
 	}
-
-	registry := NewRegistry()
 
 	for _, def := range definitions {
 		logger.Debug("  - Processing generator type '%s'", def.Type)
@@ -33,7 +32,6 @@ func Apply(config map[string]interface{}, definitions []Definition, resolver Var
 		}
 	}
 
-	delete(config, "_internal")
 
 	logger.Debug("All generators applied successfully")
 	return nil
@@ -47,8 +45,7 @@ func ApplyWithRegistry(config map[string]interface{}, definitions []Definition, 
 
 	logger.Debug("Applying %d generators with custom registry...", len(definitions))
 
-	// Validate all generator definitions first
-	if err := ValidateDefinitions(definitions); err != nil {
+	if err := ValidateDefinitionsWithRegistry(definitions, registry); err != nil {
 		return err
 	}
 
@@ -63,20 +60,23 @@ func ApplyWithRegistry(config map[string]interface{}, definitions []Definition, 
 		}
 	}
 
+
 	return nil
 }
 
-// ValidateDefinitions validates all generator definitions.
+// ValidateDefinitions validates all generator definitions using a new registry.
 func ValidateDefinitions(definitions []Definition) error {
-	registry := NewRegistry()
+	return ValidateDefinitionsWithRegistry(definitions, NewRegistry())
+}
 
+// ValidateDefinitionsWithRegistry validates all generator definitions using the provided registry.
+func ValidateDefinitionsWithRegistry(definitions []Definition, registry Registry) error {
 	for i, def := range definitions {
 		generator, exists := registry.Get(def.Type)
 		if !exists {
 			return fmt.Errorf("definition %d: unsupported generator type: %s", i, def.Type)
 		}
 
-		// Check if generator supports validation
 		if validator, ok := generator.(interface {
 			ValidateDefinition(Definition) error
 		}); ok {

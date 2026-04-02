@@ -46,6 +46,10 @@ func DiscoverFiles(rootPath string, recursive bool) ([]string, error) {
 			if err != nil {
 				return err
 			}
+			// Skip symlinks to prevent cycles and path escape
+			if d.Type()&fs.ModeSymlink != 0 {
+				return nil
+			}
 			if d.IsDir() {
 				return nil
 			}
@@ -61,8 +65,8 @@ func DiscoverFiles(rootPath string, recursive bool) ([]string, error) {
 			return nil, fmt.Errorf("failed to read directory %s: %w", rootPath, err)
 		}
 		for _, entry := range entries {
-			// Skip subdirectories.
-			if entry.IsDir() {
+			// Skip subdirectories and symlinks to prevent path escape.
+			if entry.IsDir() || entry.Type()&fs.ModeSymlink != 0 {
 				continue
 			}
 			if _, ok := supportedExtensions[strings.ToLower(filepath.Ext(entry.Name()))]; ok {

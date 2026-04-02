@@ -39,7 +39,12 @@ func NewResolver(envVars map[string]string, varsFromFile map[string]interface{},
 
 	// 3. Lowest precedence: Variables defined in the schema.
 	logger.Debug("Resolving variables from schema `vars` section")
+	seenSchemaVars := make(map[string]bool, len(schemaVars))
 	for _, varDef := range schemaVars {
+		if seenSchemaVars[varDef.Name] {
+			return nil, fmt.Errorf("duplicate variable name '%s' in schema vars section", varDef.Name)
+		}
+		seenSchemaVars[varDef.Name] = true
 		if _, exists := resolved[varDef.Name]; exists {
 			logger.Debug("  - Skipping var '%s' from schema (already defined with higher precedence)", varDef.Name)
 			continue

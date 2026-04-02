@@ -96,6 +96,10 @@ func Load(path string) (*Schema, error) {
 		return nil, errors.WrapError(errors.ErrorTypeSchemaProcess, "failed to internally process schema data", err)
 	}
 
+	const maxSchemaSize = 10 * 1024 * 1024 // 10 MiB
+	if len(yamlBytes) > maxSchemaSize {
+		return nil, errors.NewErrorf(errors.ErrorTypeSchemaLoad, "schema file exceeds maximum allowed size of %d bytes", maxSchemaSize)
+	}
 	var schema Schema
 	if err := yaml.Unmarshal(yamlBytes, &schema); err != nil {
 		return nil, errors.WrapError(errors.ErrorTypeSchemaLoad, "failed to decode schema structure", err).WithContext("file", path)

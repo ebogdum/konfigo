@@ -16,11 +16,9 @@ func New() *Config {
 	}
 }
 
-// Merge merges another configuration into this one.
+// Merge merges another configuration's metadata (Sources) into this one.
+// Data merging should use the merger package for proper deep merge semantics.
 func (c *Config) Merge(other *Config) {
-	for key, value := range other.Data {
-		c.Data[key] = value
-	}
 	for key, source := range other.Sources {
 		c.Sources[key] = source
 	}

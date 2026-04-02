@@ -60,11 +60,11 @@ func (t *ChangeCaseTransformer) applyCase(input, caseType string) (string, error
 	case "snake":
 		return strcase.ToSnake(input), nil
 	case "camel":
-		return strcase.ToCamel(input), nil
+		return strcase.ToLowerCamel(input), nil
 	case "kebab":
 		return strcase.ToKebab(input), nil
 	case "pascal":
-		return strcase.ToCamel(input), nil // Pascal is same as camel in this library
+		return strcase.ToCamel(input), nil
 	default:
 		return "", fmt.Errorf("unsupported case type '%s'. Supported: upper, lower, snake, camel, kebab, pascal", caseType)
 	}

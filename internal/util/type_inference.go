@@ -7,6 +7,8 @@ import (
 
 // InferType attempts to convert a string value to its most appropriate Go type.
 // This is used for environment variable type conversion.
+// Note: numeric-looking strings (ports, versions, all-digit API keys) will be
+// coerced to int/float. Use TryConvertType with "string" to preserve string type.
 func InferType(value string) interface{} {
 	// Handle empty string
 	if value == "" {

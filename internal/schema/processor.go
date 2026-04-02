@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"konfigo/internal/errors"
 	"konfigo/internal/features/generator"
 	"konfigo/internal/features/input_schema"
@@ -10,7 +11,9 @@ import (
 	"konfigo/internal/logger"
 	"konfigo/internal/parser"
 	"konfigo/internal/reader"
+	"konfigo/internal/util"
 	"path/filepath"
+	"reflect"
 )
 
 // Processor handles the orchestration of schema-driven configuration processing.
@@ -26,16 +29,33 @@ func (p *Processor) Process(config map[string]interface{}, schema *Schema, varsF
 	logger.Log("Applying schema...")
 
 	if schema.InputSchema != nil {
-		resolvedRef := resolveRefPath(schema.BaseDir, schema.InputSchema)
+		resolvedRef, err := resolveRefPath(schema.BaseDir, schema.InputSchema)
+		if err != nil {
+			return nil, errors.WrapError(errors.ErrorTypeSchemaLoad, "invalid input schema ref", err)
+		}
 		if err := input_schema.Validate(config, (*input_schema.Ref)(resolvedRef)); err != nil {
 			return nil, errors.WrapError(errors.ErrorTypeValidation, "input schema validation failed", err)
 		}
+	}
+
+	// Build immutable paths set for enforcement during generation/transformation
+	immutableSet := make(map[string]struct{}, len(schema.Immutable))
+	for _, ip := range schema.Immutable {
+		immutableSet[ip] = struct{}{}
 	}
 
 	// 1. Resolve variables, now including envVars
 	resolver, err := variables.NewResolver(envVars, varsFromFile, schema.Vars, config)
 	if err != nil {
 		return nil, errors.WrapError(errors.ErrorTypeVarResolution, "variable resolution failed", err)
+	}
+
+	// Snapshot immutable values before generators/transformers
+	immutableSnapshot := make(map[string]interface{}, len(immutableSet))
+	for ip := range immutableSet {
+		if val, found := util.GetNestedValue(config, ip); found {
+			immutableSnapshot[ip] = val
+		}
 	}
 
 	// 2. Run generators
@@ -48,6 +68,15 @@ func (p *Processor) Process(config map[string]interface{}, schema *Schema, varsF
 		return nil, errors.WrapError(errors.ErrorTypeInternal, "transform failed", err)
 	}
 
+	// Restore immutable values if they were modified by generators/transformers
+	for ip, originalVal := range immutableSnapshot {
+		currentVal, found := util.GetNestedValue(config, ip)
+		if !found || !reflect.DeepEqual(currentVal, originalVal) {
+			logger.Warn("Restoring immutable path '%s' that was modified by generator/transformer", ip)
+			util.SetNestedValue(config, ip, originalVal)
+		}
+	}
+
 	// 4. Substitute variables throughout the config
 	processedConfig := variables.Substitute(config, resolver)
 
@@ -57,7 +86,10 @@ func (p *Processor) Process(config map[string]interface{}, schema *Schema, varsF
 	}
 
 	if schema.OutputSchema != nil {
-		resolvedOutRef := resolveRefPath(schema.BaseDir, schema.OutputSchema)
+		resolvedOutRef, err := resolveRefPath(schema.BaseDir, schema.OutputSchema)
+		if err != nil {
+			return nil, errors.WrapError(errors.ErrorTypeSchemaLoad, "invalid output schema ref", err)
+		}
 		logger.Log("Filtering output against output schema: %s", resolvedOutRef.Path)
 		processedConfig, err = p.filterOutputSchema(processedConfig, resolvedOutRef)
 		if err != nil {
@@ -136,13 +168,25 @@ func (p *Processor) projectMap(data, schema map[string]interface{}, path string,
 }
 
 // resolveRefPath resolves a Ref's path relative to the schema's base directory.
-// If the path is already absolute, it is returned as-is.
-func resolveRefPath(baseDir string, ref *Ref) *Ref {
-	if ref == nil || ref.Path == "" || filepath.IsAbs(ref.Path) || baseDir == "" {
-		return ref
+// Since schemas are provided by the user (not untrusted input), path traversal
+// is allowed. The function cleans the path to prevent accidental issues.
+func resolveRefPath(baseDir string, ref *Ref) (*Ref, error) {
+	if ref == nil || ref.Path == "" {
+		return ref, nil
 	}
+
+	resolved := ref.Path
+	if !filepath.IsAbs(resolved) && baseDir != "" {
+		resolved = filepath.Join(baseDir, resolved)
+	}
+
+	absResolved, err := filepath.Abs(resolved)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve schema ref path %q: %w", ref.Path, err)
+	}
+
 	return &Ref{
-		Path:   filepath.Join(baseDir, ref.Path),
+		Path:   absResolved,
 		Strict: ref.Strict,
-	}
+	}, nil
 }

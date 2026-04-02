@@ -28,6 +28,11 @@ func (t *RenameKeyTransformer) Transform(config map[string]interface{}, def Defi
 		return fmt.Errorf("renameKey: source path '%s' not found", def.From)
 	}
 
+	// Check if destination already has a value
+	if _, exists := util.GetNestedValue(config, def.To); exists {
+		logger.Warn("renameKey: destination path '%s' already exists, value will be overwritten", def.To)
+	}
+
 	// Set the value at the destination path
 	util.SetNestedValue(config, def.To, value)
 

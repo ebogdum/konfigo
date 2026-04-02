@@ -13,16 +13,15 @@ func Apply(config map[string]interface{}, definitions []Definition, resolver Var
 
 	logger.Debug("Applying %d transformations...", len(definitions))
 
-	// Validate all transformer definitions first
-	if err := ValidateDefinitions(definitions); err != nil {
-		return err
-	}
-
 	registry := NewRegistry()
 
 	for _, def := range definitions {
-		// Substitute variables in the definition itself
+		// Substitute variables first, then validate the resolved definition
 		processedDef := substituteInDefinition(def, resolver)
+
+		if err := validateSingleDefinition(registry, processedDef); err != nil {
+			return err
+		}
 
 		logger.Debug("  - Processing transformer type '%s'", processedDef.Type)
 
@@ -48,13 +47,12 @@ func ApplyWithRegistry(config map[string]interface{}, definitions []Definition, 
 
 	logger.Debug("Applying %d transformations with custom registry...", len(definitions))
 
-	// Validate all transformer definitions first
-	if err := ValidateDefinitions(definitions); err != nil {
-		return err
-	}
-
 	for _, def := range definitions {
 		processedDef := substituteInDefinition(def, resolver)
+
+		if err := validateSingleDefinition(registry, processedDef); err != nil {
+			return err
+		}
 
 		transformer, exists := registry.Get(processedDef.Type)
 		if !exists {
@@ -69,23 +67,30 @@ func ApplyWithRegistry(config map[string]interface{}, definitions []Definition, 
 	return nil
 }
 
-// ValidateDefinitions validates all transformer definitions.
+// validateSingleDefinition validates a single transformer definition against the registry.
+func validateSingleDefinition(registry Registry, def Definition) error {
+	transformer, exists := registry.Get(def.Type)
+	if !exists {
+		return fmt.Errorf("unsupported transformer type: %s", def.Type)
+	}
+	if validator, ok := transformer.(interface {
+		ValidateDefinition(Definition) error
+	}); ok {
+		if err := validator.ValidateDefinition(def); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ValidateDefinitions validates all transformer definitions (pre-substitution, for structural checks only).
 func ValidateDefinitions(definitions []Definition) error {
 	registry := NewRegistry()
 
 	for i, def := range definitions {
-		transformer, exists := registry.Get(def.Type)
+		_, exists := registry.Get(def.Type)
 		if !exists {
 			return fmt.Errorf("definition %d: unsupported transformer type: %s", i, def.Type)
-		}
-
-		// Check if transformer supports validation
-		if validator, ok := transformer.(interface {
-			ValidateDefinition(Definition) error
-		}); ok {
-			if err := validator.ValidateDefinition(def); err != nil {
-				return fmt.Errorf("definition %d: %w", i, err)
-			}
 		}
 	}
 

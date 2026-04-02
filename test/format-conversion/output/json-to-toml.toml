@@ -7,7 +7,7 @@
   host = "db.example.com"
   name = "testdb"
   password = "testpass"
-  port = 5432.0
+  port = 5432
   ssl_mode = "prefer"
   username = "testuser"
 
@@ -18,10 +18,10 @@
 
 [server]
   host = "localhost"
-  port = 8080.0
+  port = 8080
   ssl = false
 
 [settings]
   debug = false
-  max_connections = 100.0
-  timeout = 30.0
+  max_connections = 100
+  timeout = 30

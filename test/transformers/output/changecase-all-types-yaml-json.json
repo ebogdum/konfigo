@@ -34,7 +34,7 @@
     "Mixed_Format": "mixed-format-string",
     "UPPER_CASE": "third_value",
     "kebab-case": "fourth_value",
-    "snake_case": "AnotherValue"
+    "snake_case": "anotherValue"
   },
   "user": {
     "email": "alice@example.com",

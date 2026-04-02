@@ -177,10 +177,6 @@ func (p *Pipeline) processBasicVariableSubstitution(baseConfig map[string]interf
 // generateOutputs handles output generation for single processing mode
 func (p *Pipeline) generateOutputs(finalConfig map[string]interface{}) error {
 	targets := writer.DetermineOutputTargets(p.Config.OutputFile, p.Config.OutputJSON, p.Config.OutputYAML, p.Config.OutputTOML, p.Config.OutputENV)
-	if len(targets) == 0 && p.Config.OutputFile == "" {
-		// Default to YAML stdout if no other output specified
-		targets = append(targets, writer.OutputTarget{Format: "yaml", Filename: ""})
-	}
 
 	for i, target := range targets {
 		outputBytes, err := marshaller.Marshal(finalConfig, target.Format)

@@ -1,13 +1,13 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
+	"os"
 )
 
 // PrintHelp displays the comprehensive help message for Konfigo
 func PrintHelp() {
-	out := flag.CommandLine.Output()
+	out := os.Stderr
 	fmt.Fprintf(out, "Konfigo: A versatile tool for merging and converting configuration files.\n\n")
 	fmt.Fprintf(out, "DESCRIPTION:\n")
 	fmt.Fprintf(out, "  Konfigo reads configuration files, merges them, and processes them against a schema\n")
@@ -48,7 +48,9 @@ func PrintHelp() {
 	fmt.Fprintf(out, "    Example: KONFIGO_VAR_RELEASE_VERSION=1.2.3\n")
 }
 
-// SetCustomUsage sets the flag.Usage to use our PrintHelp function
+// SetCustomUsage sets the flagSet usage to use our PrintHelp function
 func SetCustomUsage() {
-	flag.Usage = PrintHelp
+	if flagSet != nil {
+		flagSet.Usage = PrintHelp
+	}
 }

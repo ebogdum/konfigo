@@ -12,7 +12,7 @@
 [database]
   host = "localhost"
   name = "myapp_db"
-  port = 5432.0
+  port = 5432
 
 [feature]
   [feature.flags]
@@ -25,13 +25,13 @@
 
 [serverConfig]
   host = "0.0.0.0"
-  port = 8080.0
+  port = 8080
   ssl = false
 
 [settings]
   debug = true
-  retries = 3.0
-  timeout = 30.0
+  retries = 3
+  timeout = 30
 
 [strings]
   CamelCase = "testValue"
@@ -42,5 +42,5 @@
 
 [user]
   email = "alice@example.com"
-  id = 123.0
+  id = 123
   name = "Alice"

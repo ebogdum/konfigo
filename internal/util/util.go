@@ -8,6 +8,9 @@ import (
 
 // GetNestedValue retrieves a value from a nested map using a dot-separated path.
 func GetNestedValue(data map[string]interface{}, path string) (interface{}, bool) {
+	if path == "" {
+		return nil, false
+	}
 	keys := strings.Split(path, ".")
 	current := interface{}(data)
 
@@ -28,6 +31,9 @@ func GetNestedValue(data map[string]interface{}, path string) (interface{}, bool
 // SetNestedValue sets a value in a nested map using a dot-separated path.
 // It creates nested maps as needed.
 func SetNestedValue(data map[string]interface{}, path string, value interface{}) {
+	if path == "" {
+		return
+	}
 	keys := strings.Split(path, ".")
 	currentMap := data
 
@@ -177,28 +183,3 @@ func deepCopyValue(value interface{}) (interface{}, error) {
 	}
 }
 
-// StringsPool provides a simple string pool to reduce memory allocations
-type StringsPool struct {
-	pool map[string]string
-}
-
-// NewStringsPool creates a new string pool
-func NewStringsPool() *StringsPool {
-	return &StringsPool{
-		pool: make(map[string]string),
-	}
-}
-
-// Get returns a pooled string, adding it if not present
-func (sp *StringsPool) Get(s string) string {
-	if pooled, exists := sp.pool[s]; exists {
-		return pooled
-	}
-	sp.pool[s] = s
-	return s
-}
-
-// Clear clears the pool to free memory
-func (sp *StringsPool) Clear() {
-	sp.pool = make(map[string]string)
-}

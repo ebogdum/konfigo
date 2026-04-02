@@ -37,12 +37,19 @@ func (t *TrimTransformer) Transform(config map[string]interface{}, def Definitio
 
 	// Apply trimming
 	var newValue string
-	if def.Pattern == "" {
+	if len(def.Pattern) == 0 {
 		// Default: trim whitespace
 		newValue = strings.TrimSpace(strValue)
 	} else {
-		// Trim specified pattern
-		newValue = strings.Trim(strValue, def.Pattern)
+		// Trim the literal pattern string from both ends
+		trimmed := strValue
+		for strings.HasPrefix(trimmed, def.Pattern) {
+			trimmed = trimmed[len(def.Pattern):]
+		}
+		for strings.HasSuffix(trimmed, def.Pattern) {
+			trimmed = trimmed[:len(trimmed)-len(def.Pattern)]
+		}
+		newValue = trimmed
 	}
 
 	// Set the trimmed value
