@@ -138,12 +138,19 @@ func (p *Pipeline) resolveItemFilePath(itemFilePath string) (string, error) {
 	if err != nil {
 		return "", errors.WrapError(errors.ErrorTypeFileRead, "failed to resolve itemFile path", err).WithContext("file", itemFilePath)
 	}
-	// Resolve symlinks on the parent directory (the file itself may not exist yet for validation)
-	realItemPath, err := filepath.EvalSymlinks(filepath.Dir(absItemPath))
+	// Resolve the full path when it exists so a symlinked *file* cannot point
+	// outside the allowed directory; resolving only the parent would leave the
+	// leaf link unresolved and defeat the containment check below. Fall back to
+	// resolving just the parent when the file is absent, so a missing itemFile
+	// still fails with a clear read error instead of a symlink error.
+	realItemPath, err := filepath.EvalSymlinks(absItemPath)
 	if err != nil {
-		return "", errors.WrapError(errors.ErrorTypeFileRead, "failed to resolve itemFile symlinks", err).WithContext("file", itemFilePath)
+		realParent, parentErr := filepath.EvalSymlinks(filepath.Dir(absItemPath))
+		if parentErr != nil {
+			return "", errors.WrapError(errors.ErrorTypeFileRead, "failed to resolve itemFile symlinks", parentErr).WithContext("file", itemFilePath)
+		}
+		realItemPath = filepath.Join(realParent, filepath.Base(absItemPath))
 	}
-	realItemPath = filepath.Join(realItemPath, filepath.Base(absItemPath))
 
 	// Only enforce containment when we have a vars file to contain against
 	if p.Config.VarsFile != "" {

@@ -80,4 +80,3 @@ func (ofp *OptimizedFileProcessor) processFile(path string, formatOverride strin
 	data, err := parser.Parse(path, content, formatOverride)
 	return parseResult{FilePath: path, Data: data, Err: err}
 }
-

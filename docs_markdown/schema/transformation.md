@@ -260,14 +260,14 @@ app:
 
 ### 7. `trim` - Trim String Values
 
-Trims whitespace or specified characters from string values.
+Trims whitespace, or a specified literal string, from both ends of string values.
 
 **Structure:**
 ```yaml
 transform:
   - type: "trim"
     path: "path.to.string"
-    pattern: " \t\n"  # Optional, defaults to whitespace
+    pattern: "---"  # Optional literal string; defaults to whitespace trimming
 ```
 
 **Fields:**

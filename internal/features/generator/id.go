@@ -90,13 +90,7 @@ func generateSimpleId(rng *mrand.Rand, params string) (string, error) {
 		return "", fmt.Errorf("length must be positive: %d", length)
 	}
 
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	result := make([]byte, length)
-	for i := range result {
-		result[i] = charset[rng.Intn(len(charset))]
-	}
-
-	return string(result), nil
+	return randomStringFromCharset(rng, charsetAlphanumeric, length), nil
 }
 
 // generatePrefixId creates an ID with a prefix followed by random characters
@@ -116,13 +110,7 @@ func generatePrefixId(rng *mrand.Rand, params string) (string, error) {
 		return "", fmt.Errorf("length must be positive: %d", length)
 	}
 
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	suffix := make([]byte, length)
-	for i := range suffix {
-		suffix[i] = charset[rng.Intn(len(charset))]
-	}
-
-	return prefix + string(suffix), nil
+	return prefix + randomStringFromCharset(rng, charsetAlphanumeric, length), nil
 }
 
 // generateNumericId creates a numeric ID using only digits [0-9]
@@ -136,13 +124,7 @@ func generateNumericId(rng *mrand.Rand, params string) (string, error) {
 		return "", fmt.Errorf("length must be positive: %d", length)
 	}
 
-	const charset = "0123456789"
-	result := make([]byte, length)
-	for i := range result {
-		result[i] = charset[rng.Intn(len(charset))]
-	}
-
-	return string(result), nil
+	return randomStringFromCharset(rng, charsetNumeric, length), nil
 }
 
 // generateAlphaId creates an alphabetic ID using only letters [a-zA-Z]
@@ -156,13 +138,7 @@ func generateAlphaId(rng *mrand.Rand, params string) (string, error) {
 		return "", fmt.Errorf("length must be positive: %d", length)
 	}
 
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	result := make([]byte, length)
-	for i := range result {
-		result[i] = charset[rng.Intn(len(charset))]
-	}
-
-	return string(result), nil
+	return randomStringFromCharset(rng, charsetAlpha, length), nil
 }
 
 // sequentialCountersMu protects sequentialCounters from concurrent access.
@@ -186,13 +162,9 @@ func generateTimestampId(rng *mrand.Rand) string {
 	timestamp := time.Now().Unix()
 
 	// Add a 4-character random suffix to ensure uniqueness
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	suffix := make([]byte, 4)
-	for i := range suffix {
-		suffix[i] = charset[rng.Intn(len(charset))]
-	}
+	suffix := randomStringFromCharset(rng, charsetAlphanumeric, 4)
 
-	return fmt.Sprintf("%d%s", timestamp, string(suffix))
+	return fmt.Sprintf("%d%s", timestamp, suffix)
 }
 
 // ValidateDefinition validates an id generator definition.

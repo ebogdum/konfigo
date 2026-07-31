@@ -3,41 +3,10 @@
 package logger
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"sync/atomic"
 )
-
-// LogLevel represents the severity of a log message.
-type LogLevel int
-
-const (
-	// DEBUG level for detailed debugging information
-	DEBUG LogLevel = iota
-	// INFO level for general informational messages
-	INFO
-	// WARN level for warning messages that don't stop execution
-	WARN
-	// ERROR level for error messages
-	ERROR
-)
-
-// String returns the string representation of a log level.
-func (l LogLevel) String() string {
-	switch l {
-	case DEBUG:
-		return "DEBUG"
-	case INFO:
-		return "INFO"
-	case WARN:
-		return "WARN"
-	case ERROR:
-		return "ERROR"
-	default:
-		return "UNKNOWN"
-	}
-}
 
 var (
 	verboseFlag atomic.Bool
@@ -77,39 +46,4 @@ func Warn(format string, v ...interface{}) {
 // Error prints an error message unconditionally.
 func Error(format string, v ...interface{}) {
 	logWriter.Printf("ERROR: "+format, v...)
-}
-
-// LogAtLevel logs a message at the specified level.
-func LogAtLevel(level LogLevel, format string, v ...interface{}) {
-	switch level {
-	case DEBUG:
-		Debug(format, v...)
-	case INFO:
-		Log(format, v...)
-	case WARN:
-		Warn(format, v...)
-	case ERROR:
-		Error(format, v...)
-	}
-}
-
-// IsVerbose returns true if verbose logging is enabled.
-func IsVerbose() bool {
-	return verboseFlag.Load()
-}
-
-// IsQuiet returns true if quiet mode is enabled.
-func IsQuiet() bool {
-	return quietFlag.Load()
-}
-
-// SetOutput sets the output destination for the logger.
-func SetOutput(output *os.File) {
-	logWriter.SetOutput(output)
-}
-
-// Logf is a convenience function for formatted logging.
-func Logf(level LogLevel, format string, v ...interface{}) {
-	message := fmt.Sprintf(format, v...)
-	LogAtLevel(level, "%s", message)
 }

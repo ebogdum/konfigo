@@ -1,22 +1,22 @@
 environment = "testing"
 
 [code]
-  alpha = "fkaPak"
+  alpha = "iVxGYS"
 
 [config]
   enabled = true
-  randomBytes = "d829b6b01e940fa86ded2b89b30f0b10"
-  randomFloat = "0.926203"
+  randomBytes = "5f6b6f5604eee6bab4a31595b8429b94"
+  randomFloat = "0.104466"
 
 [instance]
-  id = "mck1bhCZ2v59"
+  id = "mPjYWc4P4plK"
 
 [metadata]
   author = "konfigo-test"
-  createdAt = "2026-02-24T19:30:47Z"
+  createdAt = "2026-07-31T18:55:43Z"
 
 [order]
-  number = "27564977"
+  number = "99649076"
 
 [service]
   name = "test-service"

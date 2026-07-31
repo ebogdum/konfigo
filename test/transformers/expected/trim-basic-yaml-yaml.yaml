@@ -9,7 +9,7 @@ config:
   newPort: 8080
 database:
   host: localhost
-  name: myapp_db
+  name: '''myapp_db'''
   port: 5432
 service:
   endpoint: https://service.com

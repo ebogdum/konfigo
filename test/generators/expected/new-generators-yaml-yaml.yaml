@@ -3,19 +3,19 @@ config:
 environment: testing
 metadata:
   author: konfigo-test
-  buildTime: "2026-02-24 20:30:47"
-  createdAt: "2026-02-24T20:30:47+01:00"
-  unixTime: "1771961447"
+  buildTime: "2026-07-31 20:55:43"
+  createdAt: "2026-07-31T20:55:43+02:00"
+  unixTime: "1785524143"
 request:
-  uuid: 96e00730-6769-465c-8c8a-4d1c288d6538
+  uuid: 54dbab7e-9cac-40de-8879-f4d2676f74ca
 service:
   name: test-service
-  port: "8100"
+  port: "8184"
   version: 2.1.0
 session:
   counter: "1"
-  token: sAYLT7CUnULFRdpArFkihLahOCyhWzAn
+  token: S1mmAU5fYMSPM820EjF2uaoQ5VOEGMgC
 trace:
-  id: 177196144748L4
+  id: 1785524143lqA6
 user:
-  id: usr_mS588MLP
+  id: usr_4Xhxnyq1

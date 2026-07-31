@@ -13,7 +13,7 @@
   },
   "database": {
     "host": "localhost",
-    "name": "myapp_db",
+    "name": "'myapp_db'",
     "port": 5432
   },
   "service": {

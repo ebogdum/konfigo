@@ -94,11 +94,12 @@ func mergeCaseInsensitive(dst, src map[string]interface{}, path string, immutabl
 		}
 
 		if !found {
-			// Still check immutability for case-insensitive paths
-			if isImmutableCaseInsensitive(currentPath, immutablePaths) {
-				logger.Debug("  - Skipping overwrite of immutable key: %s", currentPath)
-				continue
-			}
+			// The key is absent from dst, so there is no existing value to protect.
+			// Immutability guards against *overriding* an established value ("once set,
+			// immutable paths cannot be overridden"), not against the initial write —
+			// skipping here would make an immutable path permanently unsettable and
+			// silently drop the incoming value. This mirrors mergeCaseSensitive, which
+			// only skips when the key already exists in dst.
 			dst[srcKey] = srcVal
 			continue
 		}

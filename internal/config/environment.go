@@ -21,14 +21,6 @@ func NewEnvironment() *Environment {
 	}
 }
 
-// NewEnvironmentWithPrefixes creates a new environment loader with custom prefixes.
-func NewEnvironmentWithPrefixes(keyPrefix, varPrefix string) *Environment {
-	return &Environment{
-		keyPrefix: keyPrefix,
-		varPrefix: varPrefix,
-	}
-}
-
 // LoadResult contains the results of loading from environment.
 type LoadResult struct {
 	Config *Config
@@ -70,14 +62,4 @@ func (e *Environment) Load() *LoadResult {
 		Config: config,
 		Vars:   vars,
 	}
-}
-
-// GetKeyPrefix returns the current key prefix.
-func (e *Environment) GetKeyPrefix() string {
-	return e.keyPrefix
-}
-
-// GetVarPrefix returns the current variable prefix.
-func (e *Environment) GetVarPrefix() string {
-	return e.varPrefix
 }

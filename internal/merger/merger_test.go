@@ -167,3 +167,76 @@ func TestMerge_NestedArraysMerged(t *testing.T) {
 		t.Errorf("nested array merge: got %v, want %v", got, want)
 	}
 }
+
+// TestMerge_ImmutableAllowsInitialWrite guards against a regression where an
+// immutable path whose parent already existed in dst was silently dropped in
+// case-insensitive mode. Immutability protects an established value from being
+// overridden; it must not block the initial write.
+func TestMerge_ImmutableAllowsInitialWrite(t *testing.T) {
+	immutable := map[string]struct{}{"database.password": {}}
+	for _, caseSensitive := range []bool{true, false} {
+		dst := map[string]interface{}{
+			"database": map[string]interface{}{"host": "localhost"},
+		}
+		src := map[string]interface{}{
+			"database": map[string]interface{}{"password": "s3cret"},
+		}
+		Merge(dst, src, caseSensitive, immutable, false)
+
+		db, ok := dst["database"].(map[string]interface{})
+		if !ok {
+			t.Fatalf("caseSensitive=%v: database is not a map: %#v", caseSensitive, dst["database"])
+		}
+		if got := db["password"]; got != "s3cret" {
+			t.Errorf("caseSensitive=%v: immutable path dropped on initial write: got %v, want %q",
+				caseSensitive, got, "s3cret")
+		}
+		if got := db["host"]; got != "localhost" {
+			t.Errorf("caseSensitive=%v: sibling key lost: got %v, want %q", caseSensitive, got, "localhost")
+		}
+	}
+}
+
+// TestMerge_ImmutableProtectsExistingValue ensures the protection itself still
+// works in both matching modes after the initial-write fix.
+func TestMerge_ImmutableProtectsExistingValue(t *testing.T) {
+	immutable := map[string]struct{}{"database.password": {}}
+	for _, caseSensitive := range []bool{true, false} {
+		dst := map[string]interface{}{
+			"database": map[string]interface{}{"password": "original"},
+		}
+		src := map[string]interface{}{
+			"database": map[string]interface{}{"password": "hijacked"},
+		}
+		Merge(dst, src, caseSensitive, immutable, false)
+
+		db := dst["database"].(map[string]interface{})
+		if got := db["password"]; got != "original" {
+			t.Errorf("caseSensitive=%v: immutable value was overridden: got %v, want %q",
+				caseSensitive, got, "original")
+		}
+	}
+}
+
+// TestMerge_ImmutableProtectsChildPaths ensures marking a parent immutable still
+// blocks overrides of, and additions under, that subtree once it exists.
+func TestMerge_ImmutableProtectsChildPaths(t *testing.T) {
+	immutable := map[string]struct{}{"database": {}}
+	for _, caseSensitive := range []bool{true, false} {
+		dst := map[string]interface{}{
+			"database": map[string]interface{}{"host": "localhost"},
+		}
+		src := map[string]interface{}{
+			"database": map[string]interface{}{"host": "evil.example", "injected": true},
+		}
+		Merge(dst, src, caseSensitive, immutable, false)
+
+		db := dst["database"].(map[string]interface{})
+		if got := db["host"]; got != "localhost" {
+			t.Errorf("caseSensitive=%v: immutable child overridden: got %v", caseSensitive, got)
+		}
+		if _, injected := db["injected"]; injected {
+			t.Errorf("caseSensitive=%v: new key injected under immutable parent", caseSensitive)
+		}
+	}
+}

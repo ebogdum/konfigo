@@ -3,7 +3,10 @@
 # Main Validation Script
 # Runs all validation scripts across all test directories
 
-set -e
+# Note: Not using 'set -e' to allow continuing after individual validation
+# failures. Each suite is checked explicitly and tallied below; aborting on the
+# first failure would hide every remaining suite and skip the summary entirely.
+# The final exit code is driven by FAILED_VALIDATIONS.
 
 # Colors for output
 RED='\033[0;31m'

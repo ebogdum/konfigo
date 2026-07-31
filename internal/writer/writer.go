@@ -31,4 +31,3 @@ func WriteToStdout(content []byte) error {
 	}
 	return nil
 }
-

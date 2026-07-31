@@ -1,5 +1,5 @@
 cache:
-  maxSize: 1e+06
+  maxSize: 1000000
   ttl: 3600
   type: redis
 database:

@@ -32,7 +32,6 @@ func Apply(config map[string]interface{}, definitions []Definition, resolver Var
 		}
 	}
 
-
 	logger.Debug("All generators applied successfully")
 	return nil
 }
@@ -59,7 +58,6 @@ func ApplyWithRegistry(config map[string]interface{}, definitions []Definition, 
 			return fmt.Errorf("generator '%s' failed: %w", def.Type, err)
 		}
 	}
-
 
 	return nil
 }

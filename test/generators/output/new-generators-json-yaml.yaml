@@ -1,17 +1,17 @@
 code:
-  alpha: DABlDy
+  alpha: aFgiGU
 config:
   enabled: true
-  randomBytes: 942c4b827ef793bcd1944e4ca3c4c5f9
-  randomFloat: "0.260342"
+  randomBytes: fedc181ca8f6ae069c2ec029c49d202b
+  randomFloat: "0.050880"
 environment: testing
 instance:
-  id: 1mP5CaehJvRo
+  id: XB7ByZVHbiKS
 metadata:
   author: konfigo-test
-  createdAt: "2026-04-02T15:45:14Z"
+  createdAt: "2026-07-31T18:58:00Z"
 order:
-  number: "24146589"
+  number: "12467772"
 service:
   name: test-service
   version: 2.1.0

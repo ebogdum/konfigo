@@ -53,20 +53,11 @@ func (em *ENVMarshaller) flattenMap(prefix string, data map[string]interface{}, 
 
 		switch val := v.(type) {
 		case map[string]interface{}:
-			// Snapshot existing keys before recursion to detect collisions
-			before := make(map[string]struct{}, len(flattened))
-			for fk := range flattened {
-				before[fk] = struct{}{}
-			}
+			// Collisions with keys written by this recursion are reported by the
+			// scalar branches below, which check for an existing key before
+			// writing, so no extra bookkeeping is needed here.
 			if err := em.flattenMap(newKey, val, flattened); err != nil {
 				return err
-			}
-			// Check if any key added by recursion collided with a pre-existing key
-			for fk := range flattened {
-				if _, existed := before[fk]; !existed {
-					// new key from recursion — no collision possible here
-					continue
-				}
 			}
 		case string:
 			if _, exists := flattened[newKey]; exists {
@@ -82,14 +73,21 @@ func (em *ENVMarshaller) flattenMap(prefix string, data map[string]interface{}, 
 			if _, exists := flattened[newKey]; exists {
 				return fmt.Errorf("env marshaller: key collision on %q", newKey)
 			}
-			flattened[newKey] = fmt.Sprintf("%v", v)
+			// Quote non-string values through the same path as strings. A raw %v
+			// is unsafe: slices render as "[a b]" (an unquoted space breaks most
+			// dotenv parsers) and any embedded newline would terminate the line
+			// and inject an attacker-controlled KEY=VALUE pair into the output.
+			// quoteValue leaves simple scalars (numbers, booleans) untouched.
+			flattened[newKey] = em.quoteValue(fmt.Sprintf("%v", v))
 		}
 	}
 	return nil
 }
 
-// quoteValue quotes a string value for ENV format using single quotes for values
-// that need quoting, which is compatible with shell, Docker, and dotenv parsers.
+// quoteValue quotes a string value for ENV format using double quotes with
+// backslash escaping for values that need it, which is compatible with shell,
+// Docker, and dotenv parsers. Values with no special characters are emitted
+// bare.
 func (em *ENVMarshaller) quoteValue(s string) string {
 	if s == "" {
 		return `""`

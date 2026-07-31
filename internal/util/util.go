@@ -55,10 +55,12 @@ func SetNestedValue(data map[string]interface{}, path string, value interface{})
 
 // DeleteNestedValue deletes a key from a nested map.
 func DeleteNestedValue(data map[string]interface{}, path string) {
-	keys := strings.Split(path, ".")
-	if len(keys) == 0 {
+	// Guard the empty path as GetNestedValue and SetNestedValue do; without it
+	// strings.Split returns [""] and this would delete the empty-string key.
+	if path == "" {
 		return
 	}
+	keys := strings.Split(path, ".")
 	if len(keys) == 1 {
 		delete(data, keys[0])
 		return
@@ -182,4 +184,3 @@ func deepCopyValue(value interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("unsupported type for native copy: %T", v)
 	}
 }
-

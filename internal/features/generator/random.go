@@ -57,7 +57,7 @@ func (g *RandomGenerator) Generate(config map[string]interface{}, def Definition
 
 	switch {
 	case format == "uuid":
-		result = generateUUID()
+		result, genErr = generateUUID()
 	case len(format) >= 4 && format[:4] == "int:":
 		result, genErr = generateRandomInt(rng, format[4:])
 	case len(format) >= 6 && format[:6] == "float:":
@@ -86,17 +86,22 @@ func (g *RandomGenerator) Generate(config map[string]interface{}, def Definition
 	return nil
 }
 
-// generateUUID creates a UUID v4 format string using crypto/rand
-func generateUUID() string {
+// generateUUID creates a UUID v4 format string using crypto/rand.
+// A failure to read entropy is reported rather than ignored: silently
+// proceeding would leave b zero-filled and emit the fixed, fully predictable
+// UUID 00000000-0000-4000-8000-000000000000.
+func generateUUID() (string, error) {
 	b := make([]byte, 16)
-	_, _ = rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("failed to generate random bytes for uuid: %w", err)
+	}
 
 	// Set version (4) and variant bits according to RFC 4122
 	b[6] = (b[6] & 0x0f) | 0x40 // Version 4
 	b[8] = (b[8] & 0x3f) | 0x80 // Variant 10
 
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
-		b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
+		b[0:4], b[4:6], b[6:8], b[8:10], b[10:16]), nil
 }
 
 // generateRandomInt creates a random integer in the specified range
@@ -169,13 +174,7 @@ func generateRandomString(rng *mrand.Rand, params string) (string, error) {
 		return "", nil
 	}
 
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	result := make([]byte, length)
-	for i := range result {
-		result[i] = charset[rng.Intn(len(charset))]
-	}
-
-	return string(result), nil
+	return randomStringFromCharset(rng, charsetAlphanumeric, length), nil
 }
 
 // generateRandomBytes creates random bytes as hex string using crypto/rand

@@ -7,8 +7,8 @@ app:
     - authentication
     - logging
     - monitoring
-  name: base-application
-  port: 8080
+  name: override-app-name
+  port: 9000
   version: 1.0.0
 database:
   backup:

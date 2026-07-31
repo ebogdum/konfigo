@@ -127,6 +127,57 @@ TOTAL_VALIDATIONS=0
 PASSED_VALIDATIONS=0
 FAILED_VALIDATIONS=0
 
+# Rewrites values that are non-deterministic by design (UUIDs, timestamps) to a
+# fixed sentinel token, writing the result to stdout.
+#
+# Generator output changes on every run, so a byte-exact golden comparison can
+# never pass for those files. Normalising lets the comparison assert the thing
+# that is actually stable and meaningful — that a well-formed value of the right
+# shape was generated at the right key.
+#
+# The patterns are deliberately tight so this does not weaken the tests:
+#   - a malformed UUID does not match, so it still fails the diff
+#   - a literal wrongly replaced by a generated value still fails, because the
+#     expected side keeps the literal while the actual becomes a sentinel
+# Value-shape rules keyed by the config key that holds a generated value. Each
+# entry still asserts the shape, so a generator emitting the wrong *kind* of
+# value (or nothing) is caught; only the exact bytes are treated as free.
+# Matching covers JSON ("k": v), YAML (k: v) and TOML (k = v) in one pattern.
+normalize_generated_values() {
+    # Universally safe: these shapes are unambiguous wherever they appear.
+    local base=(
+        -e 's/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/<UUID_V4>/g'
+        -e 's/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})/<RFC3339>/g'
+        -e 's/[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/<DATETIME>/g'
+    )
+
+    # Suite-scoped: only enabled where values are generated on purpose (see
+    # generators/validate.sh). Applying these everywhere would mask real
+    # literals — other suites assert exact ports, ids and tokens.
+    #
+    # Note the quoting discriminator on `port`: the random generator emits a
+    # string, so a generated port is quoted ("8959") while a literal port is a
+    # bare number (5432) and is deliberately left untouched.
+    local extra=()
+    if [[ "${NORMALIZE_GENERATED_EXTRA:-0}" == "1" ]]; then
+        extra=(
+            -e 's/("?port"?[[:space:]]*[:=][[:space:]]*")[0-9]+(")/\1<GEN_PORT>\2/g'
+            -e 's/("?token"?[[:space:]]*[:=][[:space:]]*"?)[A-Za-z0-9]{32}("?)/\1<GEN_TOKEN>\2/g'
+            -e 's/("?id"?[[:space:]]*[:=][[:space:]]*"?)usr_[A-Za-z0-9]+("?)/\1<GEN_PREFIXED_ID>\2/g'
+            -e 's/("?id"?[[:space:]]*[:=][[:space:]]*"?)[A-Za-z0-9]+("?)/\1<GEN_ID>\2/g'
+            -e 's/("?alpha"?[[:space:]]*[:=][[:space:]]*"?)[A-Za-z]+("?)/\1<GEN_ALPHA>\2/g'
+            -e 's/("?number"?[[:space:]]*[:=][[:space:]]*"?)[0-9]+("?)/\1<GEN_NUMBER>\2/g'
+            -e 's/("?randomBytes"?[[:space:]]*[:=][[:space:]]*"?)[0-9a-fA-F]+("?)/\1<GEN_HEX>\2/g'
+            -e 's/("?randomFloat"?[[:space:]]*[:=][[:space:]]*"?)[0-9]+\.[0-9]+("?)/\1<GEN_FLOAT>\2/g'
+            -e 's/("?randomInt"?[[:space:]]*[:=][[:space:]]*"?)[0-9]+("?)/\1<GEN_INT>\2/g'
+            -e 's/("?randomString"?[[:space:]]*[:=][[:space:]]*"?)[A-Za-z0-9]+("?)/\1<GEN_STRING>\2/g'
+            -e 's/("?unixTime"?[[:space:]]*[:=][[:space:]]*"?)[0-9]+("?)/\1<GEN_UNIXTIME>\2/g'
+        )
+    fi
+
+    sed -E "${base[@]}" "${extra[@]}" "$1"
+}
+
 # Function to compare two files with detailed diff output
 compare_files() {
     local expected_file="$1"
@@ -147,7 +198,7 @@ compare_files() {
         return 1
     fi
     
-    if diff -q "$expected_file" "$output_file" >/dev/null 2>&1; then
+    if diff -q <(normalize_generated_values "$expected_file") <(normalize_generated_values "$output_file") >/dev/null 2>&1; then
         echo -e "${GREEN}✓ $test_name: Files match${NC}"
         PASSED_VALIDATIONS=$((PASSED_VALIDATIONS + 1))
         return 0
@@ -156,11 +207,11 @@ compare_files() {
         echo -e "${YELLOW}  Expected: $expected_file${NC}"
         echo -e "${YELLOW}  Actual:   $output_file${NC}"
         echo -e "${CYAN}  Differences:${NC}"
-        
+
         # Show contextual diff with line numbers
-        diff -u --label="Expected" --label="Actual" "$expected_file" "$output_file" | head -20
-        
-        local total_diff_lines=$(diff "$expected_file" "$output_file" | wc -l)
+        diff -u --label="Expected" --label="Actual" <(normalize_generated_values "$expected_file") <(normalize_generated_values "$output_file") | head -20
+
+        local total_diff_lines=$(diff <(normalize_generated_values "$expected_file") <(normalize_generated_values "$output_file") | wc -l)
         if [[ $total_diff_lines -gt 20 ]]; then
             echo -e "${YELLOW}  (showing first 20 lines of diff - total: $total_diff_lines lines)${NC}"
         fi
