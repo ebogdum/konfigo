@@ -9,6 +9,10 @@ import (
 
 // ReadStdin reads content from standard input.
 // It validates that stdin is actually a pipe and not a terminal.
+//
+// The same maxFileSize ceiling that applies to file inputs applies here: stdin
+// is an unbounded stream, so reading it without a limit would let a large or
+// endless pipe exhaust memory even though the equivalent file would be rejected.
 func ReadStdin() ([]byte, error) {
 	// Check if stdin is a terminal (not a pipe)
 	info, err := os.Stdin.Stat()
@@ -20,10 +24,14 @@ func ReadStdin() ([]byte, error) {
 		return nil, errors.New("stdin is a terminal, not a pipe")
 	}
 
-	// Read all content from stdin
-	content, err := io.ReadAll(os.Stdin)
+	// Read one byte past the limit so an oversize stream is detected without
+	// buffering all of it.
+	content, err := io.ReadAll(io.LimitReader(os.Stdin, maxFileSize+1))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from stdin: %w", err)
+	}
+	if len(content) > maxFileSize {
+		return nil, fmt.Errorf("stdin input exceeds limit %d bytes", maxFileSize)
 	}
 
 	return content, nil

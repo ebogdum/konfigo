@@ -50,11 +50,23 @@ func (p *Processor) Process(config map[string]interface{}, schema *Schema, varsF
 		return nil, errors.WrapError(errors.ErrorTypeVarResolution, "variable resolution failed", err)
 	}
 
-	// Snapshot immutable values before generators/transformers
+	// Snapshot immutable values before generators/transformers.
+	//
+	// The snapshot must be a deep copy. Maps and slices are reference types, so
+	// storing the value directly would leave the snapshot aliasing the live
+	// config: a generator mutating a child key changes both sides at once and
+	// the DeepEqual check below then compares the value against itself and
+	// never restores. That silently disabled protection for every map-valued
+	// immutable path, which is exactly the shape the docs recommend marking
+	// immutable (e.g. "database.credentials", "security.apiKeys").
 	immutableSnapshot := make(map[string]interface{}, len(immutableSet))
 	for ip := range immutableSet {
 		if val, found := util.GetNestedValue(config, ip); found {
-			immutableSnapshot[ip] = val
+			snapshot, err := util.DeepCopyValue(val)
+			if err != nil {
+				return nil, errors.WrapError(errors.ErrorTypeDeepCopy, "failed to snapshot immutable path", err).WithContext("path", ip)
+			}
+			immutableSnapshot[ip] = snapshot
 		}
 	}
 

@@ -811,8 +811,10 @@ Source files are parsed concurrently using a worker pool sized to the number of 
 
 ### File Size Limits
 
-- Configuration files: **50 MiB** maximum (larger files are rejected)
-- Schema files: **10 MiB** maximum
+- Configuration files: **50 MiB** maximum (larger files are rejected); stdin input uses the same ceiling
+- Any input parsed as YAML: **10 MiB** maximum, whether config, schema or vars file. The same content as JSON or TOML is accepted up to 50 MiB
+- `forEach` directive: **10 MiB** maximum once serialised
+- Nesting depth: no limit is enforced; deeply nested input recurses and can exhaust the stack
 
 ### Memory Optimizations
 

@@ -1,17 +1,17 @@
 code:
-  alpha: DwIXCP
+  alpha: Hsbjuk
 config:
   enabled: true
-  randomBytes: 31f72fbc9dcc1de4ec8fc6daf45f8070
-  randomFloat: "0.375213"
+  randomBytes: e87fa64aaec3ab7466f64c8789f3c9f2
+  randomFloat: "0.543593"
 environment: testing
 instance:
-  id: q2f1Ufy19Otq
+  id: UXZpDFTgGkly
 metadata:
   author: konfigo-test
-  createdAt: "2026-07-31T18:59:50Z"
+  createdAt: "2026-07-31T19:25:55Z"
 order:
-  number: "21012282"
+  number: "25461220"
 service:
   name: test-service
   version: 2.1.0

@@ -124,6 +124,31 @@ func DeepCopyMap(originalMap map[string]interface{}) (map[string]interface{}, er
 	return jsonCopiedMap, nil
 }
 
+// DeepCopyValue creates a deep copy of an arbitrary configuration value.
+//
+// Callers that snapshot a value for later comparison must use this rather than
+// holding the value directly: maps and slices are reference types, so a stored
+// reference mutates along with the original and any later equality check
+// compares the value against itself.
+func DeepCopyValue(value interface{}) (interface{}, error) {
+	copied, err := deepCopyValue(value)
+	if err == nil {
+		return copied, nil
+	}
+
+	// Fallback to JSON for types the native copier does not handle, mirroring
+	// DeepCopyMap.
+	bytes, err := json.Marshal(value)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal value for deep copy: %w", err)
+	}
+	var jsonCopied interface{}
+	if err := json.Unmarshal(bytes, &jsonCopied); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal value for deep copy: %w", err)
+	}
+	return jsonCopied, nil
+}
+
 // deepCopyMapNative performs native deep copy for common configuration data types.
 // Returns error if encounters unsupported types that require JSON fallback.
 func deepCopyMapNative(originalMap map[string]interface{}) (map[string]interface{}, error) {

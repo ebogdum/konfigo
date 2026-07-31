@@ -221,9 +221,16 @@ export KONFIGO_STREAMING_THRESHOLD=100M  # Not implemented yet
 ### Processing Limits
 
 - **Maximum source files**: No hard limit (limited by system resources)
-- **Maximum file size**: No hard limit (memory dependent)
-- **Maximum nesting depth**: 100 levels (prevents infinite recursion)
-- **Maximum variable substitutions**: 1000 per key (prevents infinite loops)
+- **Maximum file size**: **50 MiB** per input file; larger files are rejected. The
+  same ceiling applies to input read from stdin.
+- **YAML input**: additionally limited to **10 MiB**, which is lower than the
+  general file limit. A YAML file between 10 and 50 MiB is rejected by the YAML
+  parser even though the same content in JSON or TOML would be accepted.
+- **`forEach` directive**: limited to **10 MiB** once serialised.
+- **Maximum nesting depth**: no limit is enforced. Extremely deeply nested input
+  is processed recursively and can exhaust the stack.
+- **Variable substitution**: applied in a single pass per string, so a variable
+  whose value contains `${...}` is not re-expanded and substitution cannot loop.
 
 ## Security Configuration
 

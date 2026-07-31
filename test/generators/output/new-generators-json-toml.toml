@@ -1,22 +1,22 @@
 environment = "testing"
 
 [code]
-  alpha = "StHprA"
+  alpha = "kJTzpA"
 
 [config]
   enabled = true
-  randomBytes = "6602cf02e3295fb1e7e28b1c4e4f0c2d"
-  randomFloat = "0.234159"
+  randomBytes = "2bc170d24dd6aa8c9add162f167d42ae"
+  randomFloat = "0.930304"
 
 [instance]
-  id = "deZYgGzAYfHQ"
+  id = "qN2HO5qUt2AL"
 
 [metadata]
   author = "konfigo-test"
-  createdAt = "2026-07-31T18:59:50Z"
+  createdAt = "2026-07-31T19:25:55Z"
 
 [order]
-  number = "18451198"
+  number = "45699523"
 
 [service]
   name = "test-service"

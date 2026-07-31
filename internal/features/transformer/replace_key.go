@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"konfigo/internal/logger"
 	"konfigo/internal/util"
+	"strings"
 )
 
 // ReplaceKeyType is the type identifier for the replace key transformer.
@@ -55,6 +56,17 @@ func (t *ReplaceKeyTransformer) ValidateDefinition(def Definition) error {
 
 	if def.Path == def.Target {
 		return fmt.Errorf("replaceKey transformer: 'path' and 'target' cannot be the same")
+	}
+
+	// Same overlap hazard as renameKey: this writes to 'path' and then deletes
+	// 'target', so when one is nested inside the other the delete removes the
+	// value that was just written, or the write clobbers the parent holding it.
+	// Either way data disappears with no error, so refuse the definition.
+	if strings.HasPrefix(def.Path, def.Target+".") {
+		return fmt.Errorf("replaceKey transformer: 'path' %q is nested inside 'target' %q; deleting the target would discard the replaced value", def.Path, def.Target)
+	}
+	if strings.HasPrefix(def.Target, def.Path+".") {
+		return fmt.Errorf("replaceKey transformer: 'target' %q is nested inside 'path' %q; writing to the parent would drop the target's siblings", def.Target, def.Path)
 	}
 
 	return nil

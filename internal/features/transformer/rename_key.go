@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"konfigo/internal/logger"
 	"konfigo/internal/util"
+	"strings"
 )
 
 // RenameKeyType is the type identifier for the rename key transformer.
@@ -55,6 +56,18 @@ func (t *RenameKeyTransformer) ValidateDefinition(def Definition) error {
 
 	if def.From == def.To {
 		return fmt.Errorf("renameKey transformer: 'from' and 'to' paths cannot be the same")
+	}
+
+	// Reject overlapping paths. Moving a path into its own descendant (a -> a.b)
+	// makes the value contain itself and the subsequent delete of the source
+	// discards the whole subtree; moving a descendant onto its ancestor
+	// (a.b -> a) replaces the parent and silently drops its other children.
+	// Both destroy data without an error, so they are refused up front.
+	if strings.HasPrefix(def.To, def.From+".") {
+		return fmt.Errorf("renameKey transformer: 'to' path %q is nested inside 'from' path %q; renaming a path into its own descendant would discard it", def.To, def.From)
+	}
+	if strings.HasPrefix(def.From, def.To+".") {
+		return fmt.Errorf("renameKey transformer: 'from' path %q is nested inside 'to' path %q; this would overwrite the parent and drop its other keys", def.From, def.To)
 	}
 
 	return nil

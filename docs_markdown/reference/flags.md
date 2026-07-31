@@ -102,8 +102,9 @@ Use `-v` or `-d` flags to get detailed information about:
 ## Performance Considerations
 
 ### File Size Limits
-- Configuration files are limited to **50 MiB** each; larger files are rejected with an error
-- Schema files are limited to **10 MiB**
+- Configuration files are limited to **50 MiB** each; larger files are rejected with an error. The same limit applies to input read from stdin
+- Any input parsed as **YAML** is additionally limited to **10 MiB**, whether it is a config, schema or vars file. The equivalent JSON or TOML file is accepted up to the full 50 MiB
+- A `forEach` directive is limited to **10 MiB** once serialised
 - Consider splitting large configurations into multiple files and merging
 
 ### Memory Usage
