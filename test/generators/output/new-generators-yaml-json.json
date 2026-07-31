@@ -5,26 +5,26 @@
   "environment": "testing",
   "metadata": {
     "author": "konfigo-test",
-    "buildTime": "2026-07-31 21:25:55",
-    "createdAt": "2026-07-31T21:25:55+02:00",
-    "unixTime": "1785525955"
+    "buildTime": "2026-07-31 21:26:59",
+    "createdAt": "2026-07-31T21:26:59+02:00",
+    "unixTime": "1785526019"
   },
   "request": {
-    "uuid": "3e6f9c8d-ac30-4b9c-b15d-e0631d1dc163"
+    "uuid": "9ab7ff07-147e-4eea-a44d-534f73572c08"
   },
   "service": {
     "name": "test-service",
-    "port": "8383",
+    "port": "8963",
     "version": "2.1.0"
   },
   "session": {
     "counter": "1",
-    "token": "JAUAhIEidJWADwdDTw0spFbUJ8VnKIMI"
+    "token": "wJkEnDQjTU6wUGVTcfTfkIBYq76UyLKx"
   },
   "trace": {
-    "id": "17855259555YQP"
+    "id": "1785526019EiMT"
   },
   "user": {
-    "id": "usr_wv1hxbiN"
+    "id": "usr_PKITAQ87"
   }
 }

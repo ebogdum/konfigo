@@ -1,17 +1,17 @@
 code:
-  alpha: Hsbjuk
+  alpha: fMqZZI
 config:
   enabled: true
-  randomBytes: e87fa64aaec3ab7466f64c8789f3c9f2
-  randomFloat: "0.543593"
+  randomBytes: 6a74ccf60762b785de9fc15377c53bae
+  randomFloat: "0.251173"
 environment: testing
 instance:
-  id: UXZpDFTgGkly
+  id: q2GuYzAFrQm9
 metadata:
   author: konfigo-test
-  createdAt: "2026-07-31T19:25:55Z"
+  createdAt: "2026-07-31T19:26:59Z"
 order:
-  number: "25461220"
+  number: "05498040"
 service:
   name: test-service
   version: 2.1.0

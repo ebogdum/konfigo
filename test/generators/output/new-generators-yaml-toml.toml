@@ -5,24 +5,24 @@ environment = "testing"
 
 [metadata]
   author = "konfigo-test"
-  buildTime = "2026-07-31 21:25:55"
-  createdAt = "2026-07-31T21:25:55+02:00"
-  unixTime = "1785525955"
+  buildTime = "2026-07-31 21:26:59"
+  createdAt = "2026-07-31T21:26:59+02:00"
+  unixTime = "1785526019"
 
 [request]
-  uuid = "178603aa-6b2f-4d00-8b0c-f49c5c660b86"
+  uuid = "c4c4569e-6b61-4e2a-b6fd-2b934bf41394"
 
 [service]
   name = "test-service"
-  port = "8211"
+  port = "8048"
   version = "2.1.0"
 
 [session]
   counter = "1"
-  token = "gURY55kjA8zUrZqvaXDUEd1W53cCpN0z"
+  token = "Vj25OkgCkwEjYR7CC2YPIWIPpykIUkD8"
 
 [trace]
-  id = "1785525955kyuO"
+  id = "1785526019wevj"
 
 [user]
-  id = "usr_LvUt8qNR"
+  id = "usr_i1ZAftOL"
