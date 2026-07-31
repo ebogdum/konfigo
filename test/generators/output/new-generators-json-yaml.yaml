@@ -1,17 +1,17 @@
 code:
-  alpha: aFgiGU
+  alpha: DwIXCP
 config:
   enabled: true
-  randomBytes: fedc181ca8f6ae069c2ec029c49d202b
-  randomFloat: "0.050880"
+  randomBytes: 31f72fbc9dcc1de4ec8fc6daf45f8070
+  randomFloat: "0.375213"
 environment: testing
 instance:
-  id: XB7ByZVHbiKS
+  id: q2f1Ufy19Otq
 metadata:
   author: konfigo-test
-  createdAt: "2026-07-31T18:58:00Z"
+  createdAt: "2026-07-31T18:59:50Z"
 order:
-  number: "12467772"
+  number: "21012282"
 service:
   name: test-service
   version: 2.1.0
