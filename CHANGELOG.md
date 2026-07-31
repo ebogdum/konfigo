@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.0.3] - 2026-07-31
+
+### 🔒 **Security**
+- Resolved all 6 open Dependabot advisories in the documentation toolchain (`npm audit` now reports 0 vulnerabilities)
+- Vite pinned to `6.4.3` via npm `overrides`, fixing `server.fs.deny` bypass on Windows alternate paths (high), path traversal in optimized deps `.map` handling (medium), and NTLMv2 hash disclosure through `launch-editor` UNC path handling on Windows (medium)
+- Rollup pinned to `4.62.3` via npm `overrides`, fixing arbitrary file write via path traversal (high)
+- PostCSS pinned to `8.5.25` via npm `overrides`, fixing XSS via unescaped `</style>` in stringify output and arbitrary `.map` file disclosure via attacker-controlled `sourceMappingURL` (high)
+- `esbuild` bumped to `0.28.1`, fixing arbitrary file read when running the development server on Windows; the transitive copy pulled in by Vite now resolves to `0.25.12`, outside all affected ranges
+- No vulnerability affected the shipped `konfigo` binary — every advisory above is confined to the VitePress build and dev-server toolchain
+- `govulncheck` reports no vulnerabilities in the Go module or its dependencies
+
+### 🔧 **Enhancements**
+- `gopkg.in/ini.v1` updated from `1.67.1` to `1.67.3`
+
+### 🏗️ **Internal Changes**
+- Added an `overrides` block to `package.json` so transitive documentation dependencies stay on patched versions regardless of what VitePress `1.6.4` requests
+
+### 📚 **Documentation**
+- Rebuilt the published documentation site with the updated toolchain
+
+---
+
 ## [2.0.2] - 2026-04-02
 
 ### 🔧 **Enhancements**
